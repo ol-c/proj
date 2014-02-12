@@ -23,16 +23,7 @@ function generateToken() {
 function encodeToken(token) {
     return crypto.createHash('sha512').update(token).digest('hex');
 }
-
-//  encrypted session token to email
-var pending_authentications = {};
-
-//  session token to email
-var authenticated = {};
-
-var persistant = {};
-
-http.createServer(function (request, response) {
+var server = http.createServer(function (request, response) {
     var host = request.headers.host;
     var cookies = parseCookies(request);
     var url_data = url.parse(request.url);
@@ -46,51 +37,53 @@ http.createServer(function (request, response) {
         });
         cookies.session = token;
     }
-    
-    request.authentication = authenticated[cookies.session];
 
-    console.log(request.authentication);
+    var session = persistant.authentication[cookies.session];
+    if (session === undefined) {
+        session = persist.create('map', context);
+        persistant.authentication[cookies.session] = session;
+    }
+
     var path = url_data.pathname.substring(1).split('.');
 
     if (host.split('.').length = 2) {
         if (data.token) {
-            var encrypted_token = encodeToken(data.token + cookies.session);
-            var pending_auth = pending_authentications[encrypted_token];
-            if (pending_auth) {
-                authenticated[cookies.session] = pending_auth;
-                delete pending_authentications[encrypted_token];
+            var encrypted_token = encodeToken(session.pending_email + data.token + cookies.session);
+            if (session.encrypted_token == encrypted_token) {
+                session.email = session.pending_email;
                 response.end();
             }
             else {
                 response.statusCode = 401;
                 response.end();
             }
-       }
-       else if (data.email) {
-           var token = generateToken();
-           var authenticate_email = {
-               to : data.email,
-               from : 'authenticate@ol-c.com',
-               subject : 'ol-c authentication',
-               text : 'Your single use authentication token:\r\r' + token
-           }
-           email.send(authenticate_email, function (err) {
-               if (err) {
-                   console.log(err);
-                   response.statusCode = 500;
-                   response.end();
-               }
-               else {
-                   var encrypted_token = encodeToken(token + cookies.session);
-                   pending_authentications[encrypted_token] = data.email;
-                   response.end(JSON.stringify(pending_authentications, null, 4));
-               }
-           });
-       }
-       else {
-           response.statusCode = 405;
-           response.end();
-       }
+        }
+        else if (data.email) {
+            var token = generateToken();
+            var authenticate_email = {
+                to : data.email,
+                from : 'authenticate@ol-c.com',
+                subject : 'ol-c authentication',
+                text : 'Your single use authentication token:\r\r' + token
+            }
+            email.send(authenticate_email, function (err) {
+                if (err) {
+                    console.log(err);
+                    response.statusCode = 500;
+                    response.end();
+                }
+                else {
+                    var encrypted_token = encodeToken(data.email + token + cookies.session);
+                    session.encrypted_token = encrypted_token;
+                    session.pending_email = data.email;
+                    response.end();
+                }
+            });
+        }
+        else {
+            response.statusCode = 405;
+            response.end();
+        }
     }
     else {
         //  get reference
@@ -115,4 +108,23 @@ http.createServer(function (request, response) {
             response.end('404');
         }
     }
-}).listen(80);
+});
+
+var context = {};
+
+var persistant;
+//  load persistant object
+if (process.argv[2]) {
+    persistant = persist.load(process.argv[2], context, function (err, persistant) {
+        console.log('loaded existing persistant object');
+        server.listen(80);
+    });
+}
+else {
+    persistant = persist.create('map', context);
+    persistant.authentication = persist.create('map', context);
+    console.log('created new persistant root with id: ' + persist.identify(persistant));
+    server.listen(80);
+}
+
+
