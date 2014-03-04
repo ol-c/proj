@@ -16,6 +16,11 @@ app.use(express.static('./static'));
 var HTTPserver = http.createServer(app);
 HTTPserver.listen(80);
 
+//  load test object
+persist.load('1393833919196379100', {}, function (err, res) {
+    if (err) console.log('error loading test object');
+});
+
 //  persist communicates over websockets
 var WSserver = new ws.Server({server : HTTPserver});
 WSserver.on('connection', persist.handleWS);
