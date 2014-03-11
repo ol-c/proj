@@ -12,9 +12,16 @@ function getReference(reference, cb) {
 var ws = new WebSocket('ws://' + window.location.host + '/');
 
 $(function () {
+
+    var host_ids = {
+        '1.localhost' : '1394488436895988200',
+        '2.localhost' : '1394491492339584300',
+        '3.localhost' : '1394481424832363300',
+    };
+
     ws.onopen = function () {
         var message = {
-            id: '1393833919196379100', //  this will be the root reference for ol-c
+            id: host_ids[window.location.host], //  this will be the root reference for ol-c
             internal : window.location.hash.slice(1)
         };
         getReference(message, function (response) {
