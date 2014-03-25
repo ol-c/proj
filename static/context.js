@@ -22,7 +22,7 @@ $(function () {
     ws.onopen = function () {
         var message = {
             id: host_ids[window.location.host], //  this will be the root reference for ol-c
-            internal : window.location.hash.slice(1)
+            internal : window.location.pathname.slice(1)
         };
         getReference(message, function (response) {
             $('body').render(response);

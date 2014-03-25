@@ -6,53 +6,58 @@ var ws      = require('ws');
 var files   = require('files');
 var persist = require('persist');
 var authenticate = require('authenticate');
+var fs = require('fs');
 
 var special = {
     'files' : files.server,
     'ol-c'  : authenticate
 };
 
+//  TODO: have workers report the objectIDs they control
+//        along with their port numbers and hosts
+
 var processes = {
     '1' : {
-        objectID : '1394488436895988200',
-        host : '127.0.0.1',
+        root : '1394488436895988200',
         port  : 8001
     },
     '2' : {
-        objectID : '1394491492339584300',
-        host : '127.0.0.1',
+        root : '1394491492339584300',
         port  : 8002
     },
     '3' : {
-        objectID : '1394481424832363300',
-        host : '127.0.0.1',
-        port  : 8003
+        root : '1394481424832363300',
+        port : 8003
     }
 };
 
 if (cluster.isMaster) {
     var hosts = {};
-    var actions = {
-        'get host' : function (message, worker) {
-            worker.send({
-                token : message.token,
-                response : hosts[message.id]
-            });
-        }
-    };
+    //  TODO: create add subdomain processes as they come in
     for (var subdomain in processes) {
         var environment = processes[subdomain];
         worker = cluster.fork(environment);
-        hosts[environment.objectID] = {
-            host : environment.host,
+        worker.host = {
+            host : '127.0.0.1', //  replace with actual host
             port : environment.port
         };
         worker.on('message', respond(worker));
     }
     function respond(worker) {
+        var actions = {
+            'get host' : function (message) {
+                worker.send({
+                    token : message.token,
+                    response : hosts[message.id]
+                });
+            },
+            'controlling object' : function (message) {
+                hosts[message.id] = worker.host;
+            }
+        };
         return function (message) {
             var action = actions[message.action];
-            action(message, worker);
+            action(message);
         }
     }
 }
@@ -65,14 +70,26 @@ else {
         else next();
     });
     app.use(express.static('./static'));
+    app.use(function (request, response) {
+        response.end(fs.readFileSync('./static/index.html'));
+    });
     app.listen(80);
     var HTTPserver = http.createServer(app); 
     var WSserver = new ws.Server({server : HTTPserver});
     WSserver.on('connection', persist.handleWS);
     HTTPserver.listen(80);
 
+    //  notify master process when this worker has taken
+    //  control of an object
+    persist.on('control', function (id) {
+        process.send({
+            'action' : 'controlling object',
+            'id'     : id
+        });
+    });
+
     //  load root object
-    persist.load(process.env.objectID, {}, function (err, res) {
+    persist.load(process.env.root, {}, function (err, res) {
         if (err) console.log('error loading test object');
     });
 
@@ -100,9 +117,6 @@ else {
         //  log all the stuff leading up to this
         console.log(err.stack);
     });
-
-    //  TODO: notify master whenever persist loads a new object
-    //        so that this process can claim control
 
     //  persist communicates over tcp
     TCPserver = net.createServer(persist.handleTCP);
