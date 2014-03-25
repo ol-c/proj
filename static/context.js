@@ -16,7 +16,7 @@ $(function () {
     var host_ids = {
         '1.localhost' : '1394488436895988200',
         '2.localhost' : '1394491492339584300',
-        '3.localhost' : '1394481424832363300',
+        '3.localhost' : '1394481424832363300'
     };
 
     ws.onopen = function () {
