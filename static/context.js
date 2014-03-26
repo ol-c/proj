@@ -13,15 +13,34 @@ var ws = new WebSocket('ws://' + window.location.host + '/');
 
 $(function () {
     ws.onopen = function () {
-        var message = {
+        var root_id = window.location.host.split('.').shift();
+        var internal_reference = window.location.pathname.slice(1)
+        var root_reference_operation = {
             type      : 'source reference',
             reference : {
-                id        : window.location.host.split('.').shift(), //  this will be the root reference for ol-c
-                internal  : window.location.pathname.slice(1)
+                id        : root_id, //  this will be the root reference for ol-c
+                internal  : internal_reference
             }
         };
-        perform_operation(message, function (response) {
-            $('body').render(response);
+        var set_root_value_operation = {
+            type : 'set',
+            reference : {
+                id : root_id,
+                internal : 'more awesome function!'
+            },
+            value : {
+                type : 'function',
+                data : 'function () {\n    var x = 1;\n    var variation = new Date();\n    /* what a function! */\n}'
+            },
+            expected : {
+                type : 'undefined',
+                data : 'function () {\n    var x = 1;\n    var variation = new Date();\n    /* what a function! */\n}'
+            }
+        };
+        perform_operation(set_root_value_operation, function (response) {
+            perform_operation(root_reference_operation, function (response) {
+                $('body').render(response);
+            });
         });
     };
     ws.onmessage = function (event) {

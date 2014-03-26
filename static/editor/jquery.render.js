@@ -24,7 +24,10 @@ $.fn.render = function (item, after) {
 
             function render(container, reference, end) {
                 //  TODO: show loader
-                getReference(reference, function (item) {
+                perform_operation({
+                    type : 'source reference',
+                    reference : reference
+                }, function (item) {
                     container.render(item, end);
                 });
             }
