@@ -512,6 +512,7 @@ $.fn.render = function (item, after) {
         });
         $(this).append([loading, after]);
     } else if (item.type) {
+        console.log(item);
         var error_message = $('<span></span>');
         error_message.text('Error: ' + item.data);
         error_message.css({

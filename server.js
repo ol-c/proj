@@ -91,7 +91,7 @@ if (cluster.isMaster) {
                      else { /*  root object controlled! */ }
                  });
             },
-            'servers ready' : function (message) {
+            'initialized' : function (message) {
                 if (worker.onServerReady) worker.onServerReady();
                 delete worker.onServerReady;
             }
@@ -118,7 +118,7 @@ else {
     var HTTPserver = http.createServer(app); 
     var WSserver = new ws.Server({server : HTTPserver});
     WSserver.on('connection', persist.handleWS);
-    HTTPserver.listen(80, server_ready);
+    HTTPserver.listen(80, initialize);
 
     //  notify master process when this worker has taken
     //  control of an object
@@ -132,6 +132,7 @@ else {
     //  load root object
     persist.load(process.env.root, {}, function (err, res) {
         if (err) console.log('error loading root object');
+        else     initialize();
     });
 
     //  create resolver so persist can connect
@@ -164,13 +165,13 @@ else {
 
     //  persist instances communicat over TCP
     TCPserver = net.createServer(persist.handleTCP);
-    TCPserver.listen(process.env.port, server_ready);
+    TCPserver.listen(process.env.port, initialize);
 
-    var servers_initializing = 2;
-    function server_ready() {
-        servers_initializing -= 1;
-        if (servers_initializing == 0) {
-            process.send({ event : 'servers ready'});
+    var initializing = 3;
+    function initialize() {
+        initializing -= 1;
+        if (initializing == 0) {
+            process.send({ event : 'initialized'});
         }
     }
 }

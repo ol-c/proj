@@ -15,6 +15,7 @@ $(function () {
     ws.onopen = function () {
         var root_id = window.location.host.split('.').shift();
         var internal_reference = window.location.pathname.slice(1)
+        internal_reference = decodeURIComponent(internal_reference);
         var root_reference_operation = {
             type      : 'source reference',
             reference : {
@@ -37,10 +38,9 @@ $(function () {
                 data : 'function () {\n    var x = 1;\n    var variation = new Date();\n    /* what a function! */\n}'
             }
         };
-        perform_operation(set_root_value_operation, function (response) {
-            perform_operation(root_reference_operation, function (response) {
-                $('body').render(response);
-            });
+        perform_operation(root_reference_operation, function (response) {
+            console.log(response);
+            $('body').render(response);
         });
     };
     ws.onmessage = function (event) {
