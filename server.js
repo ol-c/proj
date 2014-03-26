@@ -13,28 +13,20 @@ var special = {
     'ol-c'  : authenticate
 };
 
-/*  Port usage:
-          80  http & ws
-        8000+ worker TCP ports
-*/
-
 if (cluster.isMaster) {
     var workers = [];
     var hosts = {};
     control_root_object('ol-c', function (err) {
         if (err) console.log(err);
-        else {
-            //  ready to start!
-        }
+        else { /* ready to start! */ }
     });
 
     function control_root_object(root, callback) {
-        //  Check if root already exists
-        //  if not, create it here and unload it
+        //  Check if root already exists, if not
+        //  create it here and unload it so worker
+        //  can take control
         persist.exists(root, function (err, exists) {
-            if (err) {
-                console.log('error seeing if root exists');
-            }
+            if (err) console.log('error seeing if root exists');
             else if (exists) spawn_worker_for_root(root, callback);
             else {
                  var root_object = persist.create('hashmap', {}, root);
@@ -57,15 +49,15 @@ if (cluster.isMaster) {
         hosts[environment.root] = environment;
         workers.push(worker);
         worker.onServerReady = function (err) {
-            console.log('worker online :)')
+            //  TODO: broadcast control to all other servers
             if (err) callback(err);
             else     callback(null, environment);
         }
         worker.on('message', respond(worker));
-        //  TODO: broadcast control to all other servers
     }
 
     function get_host(objectID, callback) {
+        //  TODO: check other servers
         callback(null, hosts[objectID]);
     }
 
@@ -96,9 +88,7 @@ if (cluster.isMaster) {
             'control root' : function (message) {
                  control_root_object(message.name, function (err) {
                      if (err) console.log(err);
-                     else {
-                         //  root object controlled!
-                     }
+                     else { /*  root object controlled! */ }
                  });
             },
             'servers ready' : function (message) {
@@ -141,10 +131,11 @@ else {
 
     //  load root object
     persist.load(process.env.root, {}, function (err, res) {
-        if (err) console.log('error loading test object');
+        if (err) console.log('error loading root object');
     });
 
-    //  create resolver
+    //  create resolver so persist can connect
+    //  to other pertsist instances
     var waiting_responses = {};
     persist.resolve_hosts(function (id, callback) {
         var token = Math.random();
@@ -165,7 +156,7 @@ else {
         }
     });
 
-    //  catch exceptions in the process
+    //  catch exceptions in this process
     process.on('uncaughtException', function (err) {
         //  log all the stuff leading up to this
         console.log(err.stack);

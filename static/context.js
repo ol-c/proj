@@ -14,6 +14,7 @@ var ws = new WebSocket('ws://' + window.location.host + '/');
 $(function () {
     ws.onopen = function () {
         var message = {
+            type     : 'source reference',
             id       : window.location.host.split('.').shift(), //  this will be the root reference for ol-c
             internal : window.location.pathname.slice(1)
         };
