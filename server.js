@@ -13,51 +13,102 @@ var special = {
     'ol-c'  : authenticate
 };
 
-//  TODO: have workers report the objectIDs they control
-//        along with their port numbers and hosts
-
-var processes = {
-    '1' : {
-        root : '1394488436895988200',
-        port  : 8001
-    },
-    '2' : {
-        root : '1394491492339584300',
-        port  : 8002
-    },
-    '3' : {
-        root : '1394481424832363300',
-        port : 8003
-    }
-};
+/*  Port usage:
+          80  http & ws
+        8000+ worker TCP ports
+*/
 
 if (cluster.isMaster) {
+    var workers = [];
     var hosts = {};
-    //  TODO: create add subdomain processes as they come in
-    for (var subdomain in processes) {
-        var environment = processes[subdomain];
-        worker = cluster.fork(environment);
-        worker.host = {
-            host : '127.0.0.1', //  replace with actual host
-            port : environment.port
-        };
-        worker.on('message', respond(worker));
+    control_root_object('ol-c', function (err) {
+        if (err) console.log(err);
+        else {
+            //  ready to start!
+        }
+    });
+
+    function control_root_object(root, callback) {
+        //  Check if root already exists
+        //  if not, create it here and unload it
+        persist.exists(root, function (err, exists) {
+            if (err) {
+                console.log('error seeing if root exists');
+            }
+            else if (exists) spawn_worker_for_root(root, callback);
+            else {
+                 var root_object = persist.create('hashmap', {}, root);
+                 persist.unload(root_object, function (err) {
+                     if (err) callback('error unloading before spawning worker');
+                     else     spawn_worker_for_root(root, callback);
+                 });
+            }
+        });
     }
+
+    function spawn_worker_for_root(root, callback) {
+        var environment = {
+            root : root,
+            host : '127.0.0.1',
+            port : 8000 + workers.length
+        };
+        worker = cluster.fork(environment);
+        worker.host = environment;
+        hosts[environment.root] = environment;
+        workers.push(worker);
+        worker.onServerReady = function (err) {
+            console.log('worker online :)')
+            if (err) callback(err);
+            else     callback(null, environment);
+        }
+        worker.on('message', respond(worker));
+        //  TODO: broadcast control to all other servers
+    }
+
+    function get_host(objectID, callback) {
+        callback(null, hosts[objectID]);
+    }
+
     function respond(worker) {
-        var actions = {
-            'get host' : function (message) {
-                worker.send({
-                    token : message.token,
-                    response : hosts[message.id]
+        var reactions = {
+            'host request' : function (message) {
+                get_host(message.id, function (err, host) {
+                    function respond(host) {
+                        worker.send({
+                            token : message.token,
+                            response : host
+                        });
+                    }
+                    if (err) callback('error getting external host');
+                    else if (host) respond(host);
+                    else {
+                        // claim control of this root since there is no other host
+                        control_root_object(message.id, function (err) {
+                            if (err) console.log('error occurred controlling root object');
+                            else     respond(hosts[message.id]);
+                        });
+                    }
                 });
             },
-            'controlling object' : function (message) {
+            'object controlled' : function (message) {
                 hosts[message.id] = worker.host;
+            },
+            'control root' : function (message) {
+                 control_root_object(message.name, function (err) {
+                     if (err) console.log(err);
+                     else {
+                         //  root object controlled!
+                     }
+                 });
+            },
+            'servers ready' : function (message) {
+                if (worker.onServerReady) worker.onServerReady();
+                delete worker.onServerReady;
             }
         };
         return function (message) {
-            var action = actions[message.action];
-            action(message);
+            var reaction = reactions[message.event];
+            reaction(message);
         }
     }
 }
@@ -73,18 +124,18 @@ else {
     app.use(function (request, response) {
         response.end(fs.readFileSync('./static/index.html'));
     });
-    app.listen(80);
+
     var HTTPserver = http.createServer(app); 
     var WSserver = new ws.Server({server : HTTPserver});
     WSserver.on('connection', persist.handleWS);
-    HTTPserver.listen(80);
+    HTTPserver.listen(80, server_ready);
 
     //  notify master process when this worker has taken
     //  control of an object
     persist.on('control', function (id) {
         process.send({
-            'action' : 'controlling object',
-            'id'     : id
+            'event' : 'object controlled',
+            'id'    : id
         });
     });
 
@@ -98,13 +149,14 @@ else {
     persist.resolve_hosts(function (id, callback) {
         var token = Math.random();
         process.send({
-            'token'  : token,
-            'action' : 'get host',
-            'id'     : id
+            'token' : token,
+            'event' : 'host request',
+            'id'    : id
         });
         waiting_responses[token] = callback;
     });
 
+    //  react to messages from master
     process.on('message', function (message) {
         var waiting = waiting_responses[message.token];
         if (waiting) {
@@ -113,12 +165,21 @@ else {
         }
     });
 
+    //  catch exceptions in the process
     process.on('uncaughtException', function (err) {
         //  log all the stuff leading up to this
         console.log(err.stack);
     });
 
-    //  persist communicates over tcp
+    //  persist instances communicat over TCP
     TCPserver = net.createServer(persist.handleTCP);
-    TCPserver.listen(process.env.port);
+    TCPserver.listen(process.env.port, server_ready);
+
+    var servers_initializing = 2;
+    function server_ready() {
+        servers_initializing -= 1;
+        if (servers_initializing == 0) {
+            process.send({ event : 'servers ready'});
+        }
+    }
 }
