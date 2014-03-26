@@ -1,12 +1,12 @@
-var cluster = require('cluster');
-var express = require('express');
-var http    = require('http');
-var net     = require('net');
-var ws      = require('ws');
-var files   = require('files');
-var persist = require('persist');
+var cluster      = require('cluster');
+var express      = require('express');
+var http         = require('http');
+var net          = require('net');
+var ws           = require('ws');
+var files        = require('files');
+var persist      = require('persist');
 var authenticate = require('authenticate');
-var fs = require('fs');
+var fs           = require('fs');
 
 var special = {
     'files' : files.server,
@@ -15,7 +15,7 @@ var special = {
 
 if (cluster.isMaster) {
     var workers = [];
-    var hosts = {};
+    var hosts   = {};
     control_root_object('ol-c', function (err) {
         if (err) console.log(err);
         else { /* ready to start! */ }
