@@ -4,8 +4,16 @@ $.fn.render = function (item, after) {
     });
     if (item.type == 'hashmap') {
         var self = this;
+        $(self).css({
+            whiteSpace : 'pre',
+            fontFamily : 'monospace'
+        });
+
         function actually_render_hashmap() {
             var open = $('<span>{</span>');
+            var command_line = $('<span>');
+            command_line.command(item.data);
+            open.append(command_line)
             var content_table = $('<table></table>');
             content_table.css({
                 borderCollapse : 'collapse',
@@ -13,10 +21,6 @@ $.fn.render = function (item, after) {
             });
             var content_body = $('<tbody>');
             var close = $('<span>}</span>');
-            $(self).css({
-                whiteSpace : 'pre',
-                fontFamily : 'monospace'
-            });
             content_body.css({
                 verticalAlign : 'top'
             });
@@ -95,6 +99,12 @@ $.fn.render = function (item, after) {
     }
     else if (item.type == 'list') {
         var self = this;
+
+        $(self).css({
+            whiteSpace : 'pre',
+            fontFamily : 'monospace'
+        });
+
         function actually_render_list() {
             var table = $('<table>');
             table.css('border-collapse', 'collapse');
