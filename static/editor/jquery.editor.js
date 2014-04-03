@@ -18,15 +18,20 @@
         fadeOut();
     });
     function fadeOut() {
-        cursor.fadeOut(100, wait(200, fadeIn));
+        if (current_editor) {
+            cursor.show();
+            cursor.css('opacity', 0.01); 
+        }
+        else cursor.hide();
+        setTimeout(fadeIn, 300);
     }
     function fadeIn() {
-        var after = wait(1000, fadeOut);
-        if (current_editor) cursor.fadeIn(100, after);
-        else fadeOut();
-    }
-    function wait(duration, fun) {
-        return function () { setTimeout(fun, duration); };
+        if (current_editor) {
+            cursor.show();
+            cursor.css('opacity', 0.9);
+        }
+        else cursor.hide();
+        setTimeout(fadeOut, 1000);
     }
 
     var editing = true;
@@ -51,7 +56,50 @@
 
         var self = this;
         self.selectable();
- 
+        self.css({
+            minWidth : '1ex',
+            borderBottom : '1px solid aliceblue'
+        });
+        self.hammer().on('touch', function () {
+            self.trigger('select', {});
+            self.append(cursor);
+        });
+
+        var children;
+
+        var collapsed = false;
+        self.on('collapse', function (event, data) {
+            if (collapsed) {
+                
+            }
+            else {
+                collapsed = true;
+                children = self.children();
+                children.detach();
+                self.append('&hellip;');
+            }
+        });
+        self.on('blur', function (event, data) {
+            if (self.text() == '') self.trigger('collapse');
+        });
+
+        var errors = [];
+        function mark_error(error) {
+            var element = self.children().eq(error.index);
+            errors.push(error);
+            error.element = element;
+            error.element.css({
+                background : 'red'
+            })
+        }
+        function clear_errors() {
+            while (errors.length > 0) {
+                errors.shift().element.css({
+                    background : 'none'
+                });
+            }
+        }
+
         var highlighters = {
             'none' : function () {},
             'javascript' : function () {
@@ -61,11 +109,25 @@
                     tokens : true
                 };
                 var styles = {
-                    Block : {color : 'grey'},
-                    Keyword : {color : 'purple'}
+                    Block      : {color : 'skyblue'},
+                    Line       : {color : 'skyblue'},
+                    Keyword    : {color : 'dodgerblue'},
+                    Identifier : {color : '#333333'},
+                    Punctuator : {color : '#888888'},
+                    Numeric    : {color : 'orangered'},
+                    String     : {color : 'orangered'},
+                    Boolean    : {color : 'orangered'},
+                    RegularExpression : {color : 'goldenrod'}
                 };
                 var source = self.text();
-                var ast = esprima.parse(source, options);
+                try {
+                    var ast = esprima.parse(source, options);
+                }
+                catch (error) {
+                    mark_error(error);
+                    return;
+                }
+                clear_errors();
                 var tokens = ast.tokens;
                 var comments = ast.comments.slice(0);
                 var index = 0;
@@ -77,11 +139,10 @@
                     var token_start = Infinity;
                     if (token) {
                         token_start = source.indexOf(token.value, index-1);
-                        console.log(token.value, token_start);
                     }
                     //  check if there is a comment before this
-                    //  token start. if there is, highlight the
-                    //  comment
+                    //  token starts. if there is, highlight the
+                    //  comment and advance the index past it
                     var s_com_start = source.indexOf('/*', index);
                     var m_com_start = source.indexOf('//', index);
                     if (s_com_start == -1) s_com_start = Infinity;
@@ -92,27 +153,42 @@
                         i -= 1;
                         token = comments.shift();
                         token_start = comment_start;
-                        if (token.type == 'Block') token.value = '/*' + token.value + '*/';
-                        else                         token.value = '//' + token.value;
+                        if (token.type == 'Block') {
+                            token.value = '/*'+token.value+'*/';
+                        }
+                        else {
+                            token.value = '//'+token.value;
+                        }
                     }
                     if (token) {
-                        if (token_start >= cursor_index) token_start += 1;
+                        if (token_start >= cursor_index) {
+                            token_start += 1;
+                        }
                         var style = styles[token.type];
                         if (style === undefined) style = {};
-                        self.children().slice(token_start, token_start + token.value.length).css(style);
                         index = token_start + token.value.length;
+                        if (token_start < cursor_index && index >= cursor_index) {
+                            index += 1;
+                        }
+                        self.children().slice(token_start, index).css(style);
                     }
                 }
             }
         };
 
-        current_editor.on('change', function () {
+        self.on('change', function () {
             var highlighting = self.settings.highlighting;
             highlighters[highlighting.toLowerCase()]();
         });
 
         self.on('select', function (event, info) {
+            if (current_editor) current_editor.trigger('blur');
             current_editor = self;
+            if (collapsed) {
+                collapsed = false;
+                self.empty();
+                self.append(children);
+            }
             if      (info.from_direction == 'next') self.append(cursor);
             else if (info.from_direction == 'prev') self.prepend(cursor);
         });
@@ -133,8 +209,9 @@
                 self.append(create_char('\n'));
             }
         }
-        
+
         current_editor = prev_current;
+        if (self.text() == '') self.trigger('blur');
     };
 
     function create_char(c) {

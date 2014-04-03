@@ -69,22 +69,24 @@ $.fn.render = function (item, after) {
             }
             rendered = $('<span>');
             content_table.append(content_body);
-            placeholder.after(rendered);
             $(rendered).append([open, content_table, close]);
+            container.append(rendered);
+            /*placeholder.after(rendered);
             function hide(e) {
                 e.stopPropagation();
                 rendered.toggle();
                 placeholder.toggle();
             }
             open.hammer().on('tap', hide);
-            close.hammer().on('tap', hide);
+            close.hammer().on('tap', hide);*/
         }
-        var placeholder = $('<span>{&nbsp;' + Object.keys(item.data).length + '&nbsp;}</span>');
+        //var placeholder = $('<span>{&nbsp;' + Object.keys(item.data).length + '&nbsp;}</span>');
         var container = $('<div></div>');
-        container.append(placeholder);
-        placeholder.after(after);
+        //container.append(placeholder);
+        //placeholder.after(after);
         $(this).append(container);
-        var rendered = false;
+        actually_render_hashmap();
+        /*var rendered = false;
         $(placeholder).hammer().on('tap', function (e) {
             e.stopPropagation();
             if (rendered) {
@@ -95,7 +97,7 @@ $.fn.render = function (item, after) {
                 placeholder.hide();
                 actually_render_hashmap();
             }
-        });
+        });*/
     }
     else if (item.type == 'list') {
         var self = this;
@@ -186,7 +188,7 @@ $.fn.render = function (item, after) {
         var begin_params = $('<span> (</span>');
         var end_params_begin_body = $('<span>) {</span>');
         declare.css({
-            color : 'blue'
+            color : 'dodgerblue'
         });
         begin_params.css({
             color : '#888888'
@@ -200,13 +202,13 @@ $.fn.render = function (item, after) {
         var end = item.data.indexOf(')');
         params.text(item.data.substring(start, end));
         var open = $('<span>').append([declare, begin_params, params]);
-        function toggle_body(e) {
+ /*       function toggle_body(e) {
             e.stopPropagation();
             body.stop();
             body.toggle();
             hide_indicator.toggle();
         }
-        open.hammer().on('tap', toggle_body);
+        open.hammer().on('tap', toggle_body);*/
         fun.append([open, params, end_params_begin_body]);
         var body = $('<span>');
         start = item.data.indexOf('{') + 1;
@@ -215,7 +217,7 @@ $.fn.render = function (item, after) {
         body.editor({
             highlighting : 'javascript'
         });
-
+/*
         var hide_indicator = $('<span>');
         hide_indicator.css({
             color : '#888888'
@@ -224,11 +226,11 @@ $.fn.render = function (item, after) {
         params.hammer().on('tap', toggle_body);
         fun.append(hide_indicator);
         body.hide();
-
-        var end_body = $('<span>}</span>');
         end_params_begin_body.hammer().on('tap', toggle_body);
-        end_body.hammer().on('tap', toggle_body);
-        hide_indicator.hammer().on('tap', toggle_body);
+*/
+        var end_body = $('<span>}</span>');
+//        end_body.hammer().on('tap', toggle_body);
+//        hide_indicator.hammer().on('tap', toggle_body);
         end_body.css({
             color : '#888888'
         });
