@@ -199,7 +199,6 @@ $.fn.render = function (item, after) {
         var start = item.data.indexOf('(') + 1;
         var end = item.data.indexOf(')');
         params.text(item.data.substring(start, end));
-        params.editor();
         var open = $('<span>').append([declare, begin_params, params]);
         function toggle_body(e) {
             e.stopPropagation();
@@ -213,7 +212,9 @@ $.fn.render = function (item, after) {
         start = item.data.indexOf('{') + 1;
         end = item.data.length - 1;
         body.text(item.data.substring(start, end));
-        body.editor();
+        body.editor({
+            highlighting : 'javascript'
+        });
 
         var hide_indicator = $('<span>');
         hide_indicator.css({

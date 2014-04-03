@@ -36,7 +36,8 @@
         var prev_current = current_editor;
         current_editor = this;
         current_editor.settings = {
-            multiline : true
+            multiline : true,
+            highlighting : 'none'
         };
 
         if (options) {
@@ -50,7 +51,66 @@
 
         var self = this;
         self.selectable();
-        
+ 
+        var highlighters = {
+            'none' : function () {},
+            'javascript' : function () {
+                var options = {
+                    tolerant : true,
+                    comment : true,
+                    tokens : true
+                };
+                var styles = {
+                    Block : {color : 'grey'},
+                    Keyword : {color : 'purple'}
+                };
+                var source = self.text();
+                var ast = esprima.parse(source, options);
+                var tokens = ast.tokens;
+                var comments = ast.comments.slice(0);
+                var index = 0;
+
+                var cursor_index = self.children().index(cursor);
+
+                for (var i=0; i<=tokens.length; i++) {
+                    var token = tokens[i];
+                    var token_start = Infinity;
+                    if (token) {
+                        token_start = source.indexOf(token.value, index-1);
+                        console.log(token.value, token_start);
+                    }
+                    //  check if there is a comment before this
+                    //  token start. if there is, highlight the
+                    //  comment
+                    var s_com_start = source.indexOf('/*', index);
+                    var m_com_start = source.indexOf('//', index);
+                    if (s_com_start == -1) s_com_start = Infinity;
+                    if (m_com_start == -1)  m_com_start = Infinity;
+                    var comment_start = Math.min(s_com_start, m_com_start);
+                    if (comment_start < token_start) {
+                        //  back up so we can process the token after the comment
+                        i -= 1;
+                        token = comments.shift();
+                        token_start = comment_start;
+                        if (token.type == 'Block') token.value = '/*' + token.value + '*/';
+                        else                         token.value = '//' + token.value;
+                    }
+                    if (token) {
+                        if (token_start >= cursor_index) token_start += 1;
+                        var style = styles[token.type];
+                        if (style === undefined) style = {};
+                        self.children().slice(token_start, token_start + token.value.length).css(style);
+                        index = token_start + token.value.length;
+                    }
+                }
+            }
+        };
+
+        current_editor.on('change', function () {
+            var highlighting = self.settings.highlighting;
+            highlighters[highlighting.toLowerCase()]();
+        });
+
         self.on('select', function (event, info) {
             current_editor = self;
             if      (info.from_direction == 'next') self.append(cursor);
@@ -158,6 +218,9 @@
                         current_editor.trigger('change');
                     }
                     current_editor.trigger('return');
+                }
+                else if (e.keyCode == 9) {
+                    e.preventDefault();
                 }
             }
         }
