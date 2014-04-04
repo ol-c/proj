@@ -35,7 +35,7 @@
     }
 
     var editing = true;
-    var normal_bottom_border = '1px solid aliceblue'
+    var normal_bottom_border = '1px solid aliceblue';
     var error_bottom_border  = '2px double red';
 
     $.fn.editor = function (options) {
@@ -61,13 +61,7 @@
         self.css({
             borderBottom : normal_bottom_border
         });
-        self.hammer().on('touch', function (event) {
-            if (event.target == self[0]) {
-                self.trigger('select', {});
-                self.append(cursor);
-            }
-        });
-
+        
         var children;
 
         var collapsed = false;
@@ -79,7 +73,17 @@
                 collapsed = true;
                 children = self.children();
                 children.detach();
-                self.append('ol-c');
+                var placeholder = $('<span>ol-c</span>');
+                placeholder.hammer().on('touch', function (event) {
+                    self.trigger('select', {});
+                    self.append(cursor);
+                });
+                placeholder.css({
+                    color : 'orange',
+                    background : '#EEEEEE',
+                    padding : '0 1ex'
+                });
+                self.append(placeholder);
             }
         });
         self.on('blur', function (event, data) {
@@ -89,6 +93,12 @@
             self.empty();
             if (self == current_editor) self.append(cursor);
             else self.trigger('collapse');
+        });
+        self.on('append', function (event, data) {
+            for (var i=0; i<data.length; i++) {
+                var char = create_char(data[i]);
+                self.append(char);
+            }
         });
 
         var errors = [];
@@ -196,7 +206,6 @@
 
         self.on('select', function (event, info) {
             cursor.show();
-            console.log(current_editor)
             if (current_editor) current_editor.trigger('blur');
             current_editor = self;
             if (collapsed) {
@@ -260,11 +269,11 @@
     }
 
     function jump_up() {
-        
+        current_editor.trigger('up');
     }
 
     function jump_down() {
-        
+        current_editor.trigger('down');
     }
 
 

@@ -1,4 +1,14 @@
 var responses = {};
+
+function user_context(object) {
+    var context = {
+        log : function (ref) {
+            console.log(ref);
+        }
+    };
+    return context;
+}
+
 function perform_operation(operation, cb) {
     var internal = '';
     if (operation.reference.internal) internal = '.' + operation.reference.internal;
