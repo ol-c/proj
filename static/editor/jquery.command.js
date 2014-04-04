@@ -5,7 +5,17 @@ $.fn.command = function (context) {
     });
     self.on('return', function () {
         var command = self.text();
-        console.log(command);
-        self.text('');
+        self.trigger('empty');
+        execute(command);
     });
+    function execute(command) {
+        var func;
+        try {
+            eval('func = function () {' + command + '}');
+            func.apply(context);
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
 }

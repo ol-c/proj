@@ -9,21 +9,13 @@ $.fn.render = function (item, after) {
             fontFamily : 'monospace'
         });
 
-        function actually_render_hashmap() {
+        function render_hashmap() {
             var open = $('<span>{</span>');
             var command_line = $('<span>');
             command_line.command(item.data);
             open.append(command_line)
-            var content_table = $('<table></table>');
-            content_table.css({
-                borderCollapse : 'collapse',
-                borderSpacing : 0
-            });
-            var content_body = $('<tbody>');
+            var content_body = $('<pre>');
             var close = $('<span>}</span>');
-            content_body.css({
-                verticalAlign : 'top'
-            });
             var keys = Object.keys(item.data);
 
             function render(container, reference, end) {
@@ -38,12 +30,12 @@ $.fn.render = function (item, after) {
 
             for (var i=0; i<keys.length; i++) {
                 var key = keys[i];
-                var field = $('<td>').text(key);
-                var divider = $('<td> : </td>');
+                var field = $('<span>').text('"' + key.replace('"', '\\"') + '"');
+                var divider = $('<span> : </span>');
                 divider.css({
                     color : '#888888'
                 });
-                var value = $('<td>');
+                var value = $('<span>');
                 var terminate = undefined;
                 
                 if (i < keys.length - 1) {
@@ -53,7 +45,7 @@ $.fn.render = function (item, after) {
                     });
                 }
                 render(value, item.data[key], terminate);
-                var row = $('<tr>');
+                var row = $('<div>');
                 row.append([field, divider, value]);
                 content_body.append(row);
                 $(field).add(divider).add(value).css({
@@ -61,43 +53,19 @@ $.fn.render = function (item, after) {
                     borderSpacing : 0,
                 });
                 field.css({
-                    textAlign : 'left',
-                    color : '#888888',
+                    color : 'lime',
+                });
+                row.css({
                     paddingLeft : '4ex'
                 });
-
             }
             rendered = $('<span>');
-            content_table.append(content_body);
-            $(rendered).append([open, content_table, close]);
+            $(rendered).append([open, content_body, close]);
             container.append(rendered);
-            /*placeholder.after(rendered);
-            function hide(e) {
-                e.stopPropagation();
-                rendered.toggle();
-                placeholder.toggle();
-            }
-            open.hammer().on('tap', hide);
-            close.hammer().on('tap', hide);*/
         }
-        //var placeholder = $('<span>{&nbsp;' + Object.keys(item.data).length + '&nbsp;}</span>');
         var container = $('<div></div>');
-        //container.append(placeholder);
-        //placeholder.after(after);
         $(this).append(container);
-        actually_render_hashmap();
-        /*var rendered = false;
-        $(placeholder).hammer().on('tap', function (e) {
-            e.stopPropagation();
-            if (rendered) {
-                placeholder.toggle();
-                rendered.toggle();
-            }
-            else {
-                placeholder.hide();
-                actually_render_hashmap();
-            }
-        });*/
+        render_hashmap();
     }
     else if (item.type == 'list') {
         var self = this;
@@ -179,7 +147,7 @@ $.fn.render = function (item, after) {
         });
     }
     else if (item.type == 'function') {
-        var fun = $('<pre>');
+        var fun = $('<span>');
         fun.css({
             margin : 0,
             padding : 0

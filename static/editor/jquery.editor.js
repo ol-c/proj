@@ -35,6 +35,8 @@
     }
 
     var editing = true;
+    var normal_bottom_border = '1px solid aliceblue'
+    var error_bottom_border  = '2px double red';
 
     $.fn.editor = function (options) {
         //  swap current editor for initialization
@@ -57,12 +59,13 @@
         var self = this;
         self.selectable();
         self.css({
-            minWidth : '1ex',
-            borderBottom : '1px solid aliceblue'
+            borderBottom : normal_bottom_border
         });
-        self.hammer().on('touch', function () {
-            self.trigger('select', {});
-            self.append(cursor);
+        self.hammer().on('touch', function (event) {
+            if (event.target == self[0]) {
+                self.trigger('select', {});
+                self.append(cursor);
+            }
         });
 
         var children;
@@ -76,26 +79,35 @@
                 collapsed = true;
                 children = self.children();
                 children.detach();
-                self.append('&hellip;');
+                self.append('ol-c');
             }
         });
         self.on('blur', function (event, data) {
             if (self.text() == '') self.trigger('collapse');
         });
+        self.on('empty', function (event, data) {
+            self.empty();
+            if (self == current_editor) self.append(cursor);
+            else self.trigger('collapse');
+        });
 
         var errors = [];
         function mark_error(error) {
             var element = self.children().eq(error.index);
+            if (element[0] == cursor[0]) element = cursor.next();
+            else if (error.index > self.children().index(cursor)) {
+                element = element.next();
+            }
             errors.push(error);
             error.element = element;
             error.element.css({
-                background : 'red'
+                borderBottom : error_bottom_border
             })
         }
         function clear_errors() {
             while (errors.length > 0) {
                 errors.shift().element.css({
-                    background : 'none'
+                    borderBottom : normal_bottom_border
                 });
             }
         }
@@ -133,6 +145,7 @@
                 var index = 0;
 
                 var cursor_index = self.children().index(cursor);
+                if (cursor_index == -1) cursor_index = Infinity;
 
                 for (var i=0; i<=tokens.length; i++) {
                     var token = tokens[i];
@@ -182,6 +195,8 @@
         });
 
         self.on('select', function (event, info) {
+            cursor.show();
+            console.log(current_editor)
             if (current_editor) current_editor.trigger('blur');
             current_editor = self;
             if (collapsed) {
@@ -212,14 +227,14 @@
 
         current_editor = prev_current;
         if (self.text() == '') self.trigger('blur');
+        else self.trigger('change', {})
     };
 
     function create_char(c) {
         var character = $('<span>');
         character.text(c);
         var this_editor = current_editor;
-        character.hammer().on('tap', function (e) {
-            current_editor = this_editor;
+        character.hammer().on('touch', function (e) {
             this_editor.trigger('select', {});
             var x = e.gesture.center.pageX;
             var offset = x - character.offset().left;
