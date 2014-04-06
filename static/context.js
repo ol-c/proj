@@ -70,6 +70,64 @@ function serializable(value, reference, callback) {
         callback(null, serializable);
 }
 
+//  Shared with Persist...
+//  take a serializable value and ble
+function instance_from_serializable(value) {
+    var unserialized;
+    //  TODO: if value.data has unexpected form
+    //        for type, throw an error
+    if (value.type == 'string') {
+        unserialized = value.data;
+    }
+    else if (value.type == 'function') {
+        unserialized = scoped(value.data, {});
+    }
+    else if (value.type == 'boolean') {
+        unserialized = value.data;
+    }
+    else if (value.type == 'null') {
+        unserialized = null;
+    }
+    else if (value.type == 'number') {
+        unserialized = value.data;
+    }
+    else if (value.type == 'reference') {
+        unserialized = new Reference(value.data);
+    }
+    else if (value.type == 'file') {
+        unserialized = new File(value.data);
+    }
+    else if (value.type == 'undefined') {
+        unserialized = undefined;
+    }
+    else {
+        throw new Error('cannot unserialize type: ' + value.type);
+    }
+    return unserialized;
+}
+
+
+function resolve_references(object, callback) {
+    var todo = 0;
+    var results = {};
+    function get_field(field) {
+        todo += 1;
+        return function (res) {
+            results[field] = instance_from_serializable(res);
+            todo -= 1;
+            if (todo == 0) callback(null, results);
+        }
+    }
+    for (var field in object) {
+        perform_operation({
+            type : 'source reference',
+            reference : object[field],
+        }, 
+        get_field(field));
+    }
+    if (todo == 0) callback(null, results);
+}
+
 function set_operation(item, field, old_value, new_value) {
     console.log(item, field, old_value, new_value);
     var internal = [field];
@@ -104,8 +162,8 @@ function set_operation(item, field, old_value, new_value) {
         value    : new_serializable
 
     }, function (err, result) {
-
-    })
+        
+    });
 }
 
 var ws = new WebSocket('ws://' + window.location.host + '/');
@@ -141,6 +199,9 @@ $(function () {
             $('body').render(response);
         });
     };
+
+var references = {};
+
     ws.onmessage = function (event) {
         var data = JSON.parse(event.data);
         console.log(data);
@@ -148,10 +209,7 @@ $(function () {
         var internal = '';
         if (data.reference.internal) internal = '.' + data.reference.internal;
         var response = responses[ref + internal];
-        console.log(ref, internal);
-        while (response.length > 0) {
-            response.pop()(data);
-        }
+        while (response.length > 0) response.pop()(data);
     };
     ws.onclose = function (event) {
         console.log("Connection is closed...", event); 
