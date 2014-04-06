@@ -12,7 +12,7 @@ $.fn.render = function (item, after) {
         function render_hashmap() {
             var open = $('<span>{</span>');
             var command_line = $('<span>');
-            command_line.command(item.data, user_context(item.data));
+            command_line.command(item, user_context(item));
             open.append(command_line)
             var content_body = $('<pre>');
             var close = $('<span>}</span>');

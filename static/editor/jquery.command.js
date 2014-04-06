@@ -1,4 +1,4 @@
-$.fn.command = function (object, environment) {
+$.fn.command = function (item, environment) {
     var self = $(this);
     self.editor({
         multiline : false
@@ -17,29 +17,32 @@ $.fn.command = function (object, environment) {
         if (history.length == 0) history.push(self.text());
         self.trigger('empty');
         self.trigger('append', history[history_index]);
-    })
+    });
     var history_index = 0;
     var history = [];
     self.on('return', function () {
         var command = self.text();
         history.push(command);
         history_index = history.length;
-        self.trigger('empty');
         execute(command);
+        self.trigger('empty');
     });
     function execute(command) {
-        var func;
+        var object = item.data;
+        //  assuming object type is hashmap
         try {
             var environment_string = '';
 
             for (var variable in environment) {
-                environment_string += 'var ' + variable + ' = environment["' + variable + '"];'
+                environment_string += 'var ' + variable + ' = environment["' + variable + '"];';
             }
 
-            var this_before = {}
+            //  hashmap is populated with refrerences to values as its field
+            var field_references = {};
             var field;
+
             for (field in object) {
-                this_before[field] = object[field];
+                field_references[field] = object[field];
             }
 
             eval('func = function () {' +
@@ -51,21 +54,30 @@ $.fn.command = function (object, environment) {
             var changed = {};
 
             function versions_match(field) {
-                return this_before[field] !== object[field];
+                return field_references[field] !== object[field];
             }
 
             //  tracking changed fields on object
-            for (field in this_before) {
+            for (field in field_references) {
                 changed[field] = versions_match(field);
             }
             for (field in object) {
                 changed[field] = versions_match(field);
             }
-            console.log(changed);
+            
+            //  apply modifications to fields:
+            for (field in changed) {
+                if (changed[field]) {
+                    var new_value = object[field];
+                    var value_reference = field_references[field];
+                    //  undefined expectaion means do not check for expected
+                    set_operation(item, field, undefined, new_value);
+                }
+            }
         }
         catch (error) {
-            throw error
-            console.log(error);
+            throw error;
+            console.log(error.toString());
         }
     }
 }
