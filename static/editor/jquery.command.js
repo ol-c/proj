@@ -1,7 +1,8 @@
 $.fn.command = function (item, environment) {
     var self = $(this);
     self.editor({
-        multiline : false
+        multiline : false,
+        highlighting : 'javascript'
     });
     self.on('up', function () {
         history_index = Math.max(0, history_index - 1);

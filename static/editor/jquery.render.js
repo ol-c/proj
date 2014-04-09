@@ -68,83 +68,6 @@ $.fn.render = function (item, after) {
         render_hashmap();
     }
     else if (item.type == 'list') {
-        var self = this;
-
-        $(self).css({
-            whiteSpace : 'pre',
-            fontFamily : 'monospace'
-        });
-
-        function actually_render_list() {
-            var table = $('<table>');
-            table.css('border-collapse', 'collapse');
-            var tbody = $('<tbody>');
-            table.append(tbody);
-            var open = $('<span>[</span>');
-            var close = $('<span>]</span>');
-
-            function render() {
-                tbody.empty();
-                var start  = 0;
-                var number = item.data.length;
-
-                for (var i = start; i < start + number; i++) {
-                    var current_item = $("<tr>");
-                    tbody.append(current_item);
-                    var index = $("<td>");
-                    index.text(i + ':');
-                    index.css({
-                        color : '#888888',
-                        paddingLeft : '1ex',
-                        paddingRight : '1ex'
-                    });
-                    var value = $("<td>");
-                    current_item.append([index, value]);
-                    value.render(item.data[i]);
-                    $(index).add(value).css({
-                        padding : 0,
-                        'border-spacing' : 0
-                    });
-                }
-            }
-            rendered = $('<span>');
-            rendered.append([open, table, close]);
-            $(placeholder).after(rendered);
-            function toggle_view(e) {
-                e.stopPropagation();
-                rendered.toggle();
-                placeholder.toggle();
-            }
-            open.hammer().on('tap', toggle_view);
-            close.hammer().on('tap', toggle_view);
-            $(rendered).hammer().on('hold', function (e) {
-                e.stopPropagation();
-            });
-            tbody.css({
-                verticalAlign : 'top'
-            });
-
-
-            render();
-        }
-        
-        var placeholder = $('<span>[&nbsp;' + Object.keys(item.data).length + '&nbsp;]</span>');
-        var container = $('<div>');
-        container.append(placeholder);
-        container.append(after);
-        $(this).append(container);
-        var rendered = false;
-        $(placeholder).hammer().on('tap', function (e) {
-            e.stopPropagation();
-            if (rendered) {
-                placeholder.toggle();
-                rendered.toggle();
-            }
-            else {
-                placeholder.hide();
-                actually_render_list();
-            }
-        });
     }
     else if (item.type == 'function') {
         var fun = $('<span>');
@@ -170,13 +93,7 @@ $.fn.render = function (item, after) {
         var end = item.data.indexOf(')');
         params.text(item.data.substring(start, end));
         var open = $('<span>').append([declare, begin_params, params]);
- /*       function toggle_body(e) {
-            e.stopPropagation();
-            body.stop();
-            body.toggle();
-            hide_indicator.toggle();
-        }
-        open.hammer().on('tap', toggle_body);*/
+
         fun.append([open, params, end_params_begin_body]);
         var body = $('<span>');
         start = item.data.indexOf('{') + 1;
@@ -185,20 +102,7 @@ $.fn.render = function (item, after) {
         body.editor({
             highlighting : 'javascript'
         });
-/*
-        var hide_indicator = $('<span>');
-        hide_indicator.css({
-            color : '#888888'
-        });
-        hide_indicator.append('&hellip;');
-        params.hammer().on('tap', toggle_body);
-        fun.append(hide_indicator);
-        body.hide();
-        end_params_begin_body.hammer().on('tap', toggle_body);
-*/
         var end_body = $('<span>}</span>');
-//        end_body.hammer().on('tap', toggle_body);
-//        hide_indicator.hammer().on('tap', toggle_body);
         end_body.css({
             color : '#888888'
         });
@@ -206,51 +110,21 @@ $.fn.render = function (item, after) {
         $(this).append(fun);
     }
     else if (item.type == 'string') {
-        var table = $('<table>');
-        table.css({
+        var string = $('<span>');
+        string.css({
             color : 'magenta',
             borderCollapse : 'collapse',
             borderSpacing : 0,
             padding : 0
         });
-        var tbody = $('<tbody>');
-        tbody.css({
-            verticalAlign : 'top'
-        });
-        var string = $('<tr>');
-        table.append(tbody);
-        tbody.append(string);
-        var open = $('<td></td>');
-        open.css({
-            textAlign : 'right'
-        });
-        function side_symbols() {
-            open.empty();
-            open.append('"');
-            var returns = content.text().split('\n').length - 1;
-            for (var i=0; i<returns; i++) {
-                var r = $('<div>&#8618;</div>');
-                r.css({
-                    color : '#BBBBBB'
-                });
-                open.append(r);
-            }
-        }
+        var open = $('<span>"</span>');
         string.append(open);
-        var content_cell = $('<td>');
         var content = $('<span>');
-        content.on('change', side_symbols);
         var close = $('<span>"</span>');
-        content_cell.append([content, close, after]);
+        string.append([content, close, after]);
         content.text(item.data);
+        $(this).append(string);
         content.editor();
-        string.append(content_cell);
-        $(open).add(content_cell).css({
-            'border-spacing' :  0,
-            padding : 0
-        });
-        $(this).append(table);
-        side_symbols();
     }
     else if (item.type == 'number') {
         var number = $('<span>');

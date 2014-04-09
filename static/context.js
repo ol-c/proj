@@ -70,6 +70,24 @@ function serializable(value, reference, callback) {
         callback(null, serializable);
 }
 
+
+function remote_function_call(reference) {
+    //  user argument is assumed
+    return function (params) {
+        perform_operation({
+            type : 'reference',
+            reference : reference,
+            parameters : params
+        }, function (response) {
+            if (reference.waiting instanceof Array) {
+                while (reference.waiting.length) {
+                    reference.waiting.pop()(response);
+                }
+            }
+        });
+    }
+}
+
 //  Shared with Persist...
 //  take a serializable value and ble
 function instance_from_serializable(value) {
@@ -80,7 +98,8 @@ function instance_from_serializable(value) {
         unserialized = value.data;
     }
     else if (value.type == 'function') {
-        unserialized = scoped(value.data, {});
+        //  server scopes the function, front end will call it remotely
+        unserialized = remote_function_call(value.reference);
     }
     else if (value.type == 'boolean') {
         unserialized = value.data;
@@ -200,7 +219,7 @@ $(function () {
         });
     };
 
-var references = {};
+    var references = {};
 
     ws.onmessage = function (event) {
         var data = JSON.parse(event.data);
