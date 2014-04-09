@@ -130,13 +130,13 @@ else {
     });
 
     //  load root object
-    persist.load(process.env.root, {}, function (err, res) {
+    persist.load(process.env.root, function (err, res) {
         if (err) console.log('error loading root object');
         else     initialize();
     });
 
     //  create resolver so persist can connect
-    //  to other pertsist instances
+    //  to other persist instances
     var waiting_responses = {};
     persist.resolve_hosts(function (id, callback) {
         var token = Math.random();
