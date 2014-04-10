@@ -75,7 +75,7 @@ function remote_function_call(reference) {
     //  user argument is assumed
     return function (params) {
         perform_operation({
-            type : 'reference',
+            type : 'evaluate',
             reference : reference,
             parameters : params
         }, function (response) {
@@ -86,6 +86,15 @@ function remote_function_call(reference) {
             }
         });
     }
+}
+
+function watch(reference, on_change) {
+    perform_operation({
+        type : 'watch',
+        reference : reference
+    },
+    function (response) {
+    });
 }
 
 //  Shared with Persist...
@@ -163,9 +172,10 @@ function set_operation(item, field, old_value, new_value) {
     var new_serializable;
 
     //  TODO: handle errors
+    //  this assumes serializable is synchronous
     if (old_value) {
         serializable(old_value, reference, function (err, res) {
-            console.log(err);
+            if (err) console.log(err);
             old_serializable = res;
         });
     }
@@ -199,23 +209,11 @@ $(function () {
                 internal  : internal_reference
             }
         };
-        var set_root_value_operation = {
-            type : 'set',
-            reference : {
-                id : root_id,
-                internal : 'more awesome function!'
-            },
-            value : {
-                type : 'function',
-                data : 'function () {\n    var x = 1;\n    var variation = new Date();\n    /* what a function! */\n}'
-            },
-            expected : {
-                type : 'undefined'
-            }
-        };
         perform_operation(root_reference_operation, function (response) {
             console.log(response);
             $('body').render(response);
+            watch(root_reference_operation.reference);
+            watch(root_reference_operation.reference);
         });
     };
 
