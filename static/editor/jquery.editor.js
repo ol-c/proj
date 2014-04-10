@@ -76,7 +76,6 @@
                 var placeholder = $('<span>ol-c</span>');
                 placeholder.hammer().on('touch', function (event) {
                     self.trigger('select', {});
-                    self.append(cursor);
                 });
                 placeholder.css({
                     color : 'orange',
@@ -215,6 +214,7 @@
             }
             if      (info.from_direction == 'next') self.append(cursor);
             else if (info.from_direction == 'prev') self.prepend(cursor);
+            else self.append(cursor);
         });
         self.css({
             whiteSpace : 'pre',

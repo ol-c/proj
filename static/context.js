@@ -157,7 +157,6 @@ function resolve_references(object, callback) {
 }
 
 function set_operation(item, field, old_value, new_value) {
-    console.log(item, field, old_value, new_value);
     var internal = [field];
     if (item.reference.internal) {
         internal = item.reference.internal.split('.');
@@ -180,7 +179,7 @@ function set_operation(item, field, old_value, new_value) {
         });
     }
     serializable(new_value, reference, function (err, res) {
-        console.log(err);
+        if (err) console.log(err);
         new_serializable = res;
     });
 
@@ -210,7 +209,6 @@ $(function () {
             }
         };
         perform_operation(root_reference_operation, function (response) {
-            console.log(response);
             $('body').render(response);
             watch(root_reference_operation.reference);
             watch(root_reference_operation.reference);

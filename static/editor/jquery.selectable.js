@@ -4,6 +4,14 @@
         
     }
 
+    function auto_select_first() {
+         if (selectable[0]) {
+             selectable[0].trigger('select', {});
+         }
+         else setTimeout(auto_select_first, 100);
+    }
+    auto_select_first();
+
     function index(item) {
        for (var i=0; i<selectable.length; i++) {
            if (item[0] == selectable[i][0]) return i;
