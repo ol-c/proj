@@ -220,7 +220,9 @@ $(function () {
     var references = {};
 
     ws.onmessage = function (event) {
-        var data = JSON.parse(event.data);
+        //  sending protocol adds """ to separate JSON responses
+        var data_string = event.data.replace('"""', '');
+        var data = JSON.parse(data_string);
         console.log(data);
         var ref = data.reference.id;
         var internal = '';

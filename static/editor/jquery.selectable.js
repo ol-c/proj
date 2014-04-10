@@ -3,6 +3,7 @@
     function sort_selectable() {
         
     }
+
     function index(item) {
        for (var i=0; i<selectable.length; i++) {
            if (item[0] == selectable[i][0]) return i;

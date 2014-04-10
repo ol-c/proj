@@ -137,7 +137,7 @@
                     Identifier : {color : '#333333'},
                     Punctuator : {color : '#888888'},
                     Numeric    : {color : 'orangered'},
-                    String     : {color : 'orangered'},
+                    String     : {color : 'magenta'},
                     Boolean    : {color : 'orangered'},
                     RegularExpression : {color : 'goldenrod'}
                 };
