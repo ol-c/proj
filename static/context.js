@@ -1,3 +1,4 @@
+
 var responses = {};
 
 function user_context(item) {
@@ -70,24 +71,6 @@ function serializable(value, reference, callback) {
         callback(null, serializable);
 }
 
-
-function remote_function_call(reference) {
-    //  user argument is assumed
-    return function (params) {
-        perform_operation({
-            type : 'evaluate',
-            reference : reference,
-            parameters : params
-        }, function (response) {
-            if (reference.waiting instanceof Array) {
-                while (reference.waiting.length) {
-                    reference.waiting.pop()(response);
-                }
-            }
-        });
-    }
-}
-
 function watch(reference, on_change) {
     perform_operation({
         type : 'watch',
@@ -156,43 +139,14 @@ function resolve_references(object, callback) {
     if (todo == 0) callback(null, results);
 }
 
-function set_operation(item, field, old_value, new_value) {
-    var internal = [field];
-    if (item.reference.internal) {
-        internal = item.reference.internal.split('.');
-        internal.push(field);
-    }
-    var reference = {
-        id       : item.reference.id,
-        internal : internal.join('.')
-    };
 
-    var old_serializable;
-    var new_serializable;
-
-    //  TODO: handle errors
-    //  this assumes serializable is synchronous
-    if (old_value) {
-        serializable(old_value, reference, function (err, res) {
-            if (err) console.log(err);
-            old_serializable = res;
-        });
-    }
-    serializable(new_value, reference, function (err, res) {
-        if (err) console.log(err);
-        new_serializable = res;
-    });
-
+function evaluate_script (reference, script) {
     perform_operation({
-        type : 'set',
+        type : "evaluate",
         reference : reference,
-        expected : old_serializable,
-        value    : new_serializable
-
-    }, function (err, result) {
-        
-    });
-}
+        script : script,
+    }, function () {});
+} 
 
 var ws = new WebSocket('ws://' + window.location.host + '/');
 
@@ -214,8 +168,6 @@ $(function () {
                 id : root_id,
                 internal : 'changed'
             };
-            watch(to_watch);
-            watch(to_watch);
         });
     };
 

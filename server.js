@@ -104,7 +104,7 @@ if (cluster.isMaster) {
 }
 else {
     var app = express();
-    app.use(express.favicon(__dirname + '/static/favicon.ico'));
+//    app.use(express.favicon(__dirname + '/static/favicon.ico'));
     app.use(function (req, res, next) {
         var subdomain = req.headers.host.split('.').shift();
         if (special[subdomain]) special[subdomain](req, res);
