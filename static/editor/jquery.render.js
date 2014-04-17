@@ -6,7 +6,7 @@ $.fn.render = function (item, after) {
         var self = this;
         $(self).css({
             whiteSpace : 'pre',
-            fontFamily : 'monospace'
+            fontFamily : 'monospace',
         });
 
         function render_hashmap() {
@@ -14,7 +14,7 @@ $.fn.render = function (item, after) {
             var command_line = $('<span>');
             command_line.command(item, user_context(item));
             open.append(command_line)
-            var content_body = $('<pre>');
+            var content_body = $('<div>');
             var close = $('<span>}</span>');
             var keys = Object.keys(item.data);
 

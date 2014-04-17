@@ -210,8 +210,12 @@ $(function () {
         };
         perform_operation(root_reference_operation, function (response) {
             $('body').render(response);
-            watch(root_reference_operation.reference);
-            watch(root_reference_operation.reference);
+            var to_watch = {
+                id : root_id,
+                internal : 'changed'
+            };
+            watch(to_watch);
+            watch(to_watch);
         });
     };
 

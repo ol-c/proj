@@ -1,9 +1,10 @@
 pipeline to record which references are being watched
+    most implemented, need to pass connection down chain
+    and send unwatch commands when a connection closed
     by which client connections, and push changes to clients
-    watching reference changes must always be on container
-    types since every other type is immutable
-        the only container type fro now is a hashmap
-client handling of incoming reference changes
+        watching reference changes must always be on container
+        types since every other type is immutable
+            the only container type for now is a hashmap
 since function, reference, and file primatives are wrapped in
     the client, when we reference them from the object command
     line, we need to reset any reference to them to actual
@@ -12,8 +13,12 @@ set actual requester on web socket connection
     attach requester to socket on connection
     attach requester to each incoming reference as first
         in requester array
+create container type from front end: Hashmap, List, Map, Set
 more container types: List, Map, Set
+render client command line errors
 save references
 save files
+client handling of incoming reference changes
+client renderers save changes
 X module to expose context for functions in persist module
     toolbox module

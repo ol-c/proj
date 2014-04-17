@@ -8,7 +8,7 @@
          if (selectable[0]) {
              selectable[0].trigger('select', {});
          }
-         else setTimeout(auto_select_first, 100);
+         else setTimeout(auto_select_first, 10);
     }
     auto_select_first();
 
