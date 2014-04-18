@@ -168,6 +168,8 @@ $(function () {
                 id : root_id,
                 internal : 'changed'
             };
+            watch(to_watch);
+            watch(to_watch);
         });
     };
 
