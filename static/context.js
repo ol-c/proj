@@ -72,6 +72,7 @@ function serializable(value, reference, callback) {
 }
 
 function watch(reference, on_change) {
+    //  TODO: perform on_change function when an update is passed
     perform_operation({
         type : 'watch',
         reference : reference
@@ -168,7 +169,6 @@ $(function () {
                 id : root_id,
                 internal : 'changed'
             };
-            watch(to_watch);
             watch(to_watch);
         });
     };
