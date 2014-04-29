@@ -15,3 +15,5 @@ save references
 save files
 client handling of incoming reference changes
 client renderers save changes
+render method for objects shown if available
+    ctrl + e to get into edit mode
