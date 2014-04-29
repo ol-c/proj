@@ -1,13 +1,15 @@
+
+client handling of incoming reference changes
+    client renderers save changes
+render client command line errors
+save references
+save files
+render method for objects shown if available
+    ctrl + e to get into edit mode for object
 set actual requester on web socket connection
     attach requester to socket on connection
     attach requester to each incoming reference as first
         in requester array
-more container types: List, Map, Set
-render client command line errors
-save references
-save files
-client handling of incoming reference changes
-client renderers save changes
-render method for objects shown if available
-    ctrl + e to get into edit mode for object
 special "permissions" field
+expose creating container types to command line
+more container types: List, Map, Set
