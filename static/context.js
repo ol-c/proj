@@ -13,10 +13,9 @@ function user_context(item) {
 function perform_operation(operation, cb) {
     var internal = '';
     if (operation.reference.internal) internal = '.' + operation.reference.internal;
-    if (responses[operation.reference.id + internal] === undefined) {
-        responses[operation.reference.id + internal] = [];
-    }
-    responses[operation.reference.id + internal].push(cb);
+    var token = Math.random() + '';
+    operation.token = token;
+    responses[token] = cb;
     ws.send(JSON.stringify(operation));
 }
 
@@ -141,12 +140,12 @@ function resolve_references(object, callback) {
 }
 
 
-function evaluate_script (reference, script) {
+function evaluate_script (reference, script, callback) {
     perform_operation({
         type : "evaluate",
         reference : reference,
         script : script,
-    }, function () {});
+    }, callback);
 } 
 
 var ws = new WebSocket('ws://' + window.location.host + '/');
@@ -183,8 +182,8 @@ $(function () {
         var ref = data.reference.id;
         var internal = '';
         if (data.reference.internal) internal = '.' + data.reference.internal;
-        var response = responses[ref + internal];
-        while (response.length > 0) response.pop()(data);
+        var response = responses[data.token];
+        if (response) response(data);
     };
     ws.onclose = function (event) {
         console.log("Connection is closed...", event); 
