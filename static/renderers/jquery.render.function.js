@@ -37,4 +37,11 @@ $.fn.render.function = function (item, after) {
         });
         fun.append([body, end_body, after]);
         $(this).append(fun);
+
+        body.on('change', throttle(3000, then_set(item.reference, function (callback) {
+            var fn = "function (user, params) {" + body.text() + "}";
+            callback(fn);
+        }, function (err, res) {
+            //  TODO: highlight unsaved changes and then highlight saved changes differently and fade out highlight
+        })));
 };

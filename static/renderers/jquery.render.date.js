@@ -13,6 +13,7 @@ $.fn.render.date = function (item, after) {
         'Nov',
         'Dec'
     ];
+/*
     var weekdays = [
         "Sun",
         "Mon",
@@ -88,4 +89,68 @@ $.fn.render.date = function (item, after) {
         ' ',
         timezone,
         after]);
+    */
+    var self = this;
+
+    var year = $('<span></span>');
+    var month = $('<span></span>');
+    var day = $('<span></span>');
+    var hour = $('<span></span>');
+    var minute = $('<span></span>');
+    var second = $('<span></span>');
+    var millisecond = $('<span></span>');
+
+    $(this).append([
+        month, ' ', day, ', ', year, ' ',
+        hour, ':', minute, ':', second, ':', millisecond
+    ]);
+    
+    function range(start, end) {
+        var current = start;
+        var elements = [];
+        var prefix = '';
+        function padding() {
+            var pad = '';
+            for (var i=(current + '').length; i< (end + '').length; i++) {
+                pad += '0';
+            }
+            return pad;
+        }
+        while (current <= end) {
+            elements.push($('<span>').text(padding() + current));
+            current += 1;
+        }
+        return elements;
+    }
+
+    function get_chooser(options) {
+        var chooser = $('<span>');
+        chooser.choose(options);
+        return chooser;
+    }
+
+   function get_digits(places) {
+       var digits = [];
+       for (var i=0; i<places; i++) {
+           digits.push(get_chooser(range(0, 9)));
+       }
+       return digits;
+   }
+
+   function get_text(text) {
+       var options = [];
+       for (var i=0; i<text.length; i++) {
+           options.push($('<span>').text(text[i]));
+       }
+       return get_chooser(options);
+   }
+
+    month.append(get_text(months));
+    day.append(get_chooser(range(1, 32)));
+    year.append(get_digits(4));
+    
+    hour.append(get_chooser(range(0, 23)));
+    minute.append(get_chooser(range(0, 59)));
+    second.append(get_chooser(range(0, 59)));
+    millisecond.append(get_digits(3));
 };

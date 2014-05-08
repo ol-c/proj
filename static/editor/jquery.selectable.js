@@ -27,21 +27,25 @@
             current = index(self);
         });
         self.on('select_prev', function (event, data) {
-            current = index(self);
-            if (current > 0) {
-                current -= 1;
-                $(selectable[current]).trigger('select', {
+            var cur = index(self);
+            if (cur > 0) {
+                cur -= 1;
+                self.trigger("unselect");
+                $(selectable[cur]).trigger('select', {
                     from_direction : 'next'
                 });
+                current = cur;
             }
         });
         self.on('select_next', function (event, data) {
-            current = index(self);
-            if (current < selectable.length - 1) {
-                current += 1;
-                $(selectable[current]).trigger('select', {
+            var cur = index(self);
+            if (cur < selectable.length - 1) {
+                cur += 1;
+                self.trigger("unselect");
+                $(selectable[cur]).trigger('select', {
                     from_direction : 'prev'
                 });
+                current = cur;
             }
         });
     }

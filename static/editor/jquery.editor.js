@@ -205,7 +205,6 @@
 
         self.on('select', function (event, info) {
             cursor.show();
-            if (current_editor) current_editor.trigger('blur');
             current_editor = self;
             if (collapsed) {
                 collapsed = false;
@@ -215,6 +214,11 @@
             if      (info.from_direction == 'next') self.append(cursor);
             else if (info.from_direction == 'prev') self.prepend(cursor);
             else self.append(cursor);
+        });
+        self.on('unselect', function (event, info) {
+            cursor.hide();
+            if (self.text() == '') self.trigger('collapse');
+            current_editor = null;
         });
         self.css({
             whiteSpace : 'pre',
@@ -328,14 +332,12 @@
     });
 
     $(window).on('keypress', function (e) {
-        if (current_editor) {
-            if (editing) {
-                e.preventDefault();
-                var char = String.fromCharCode(e.which);
-                var c = create_char(char);
-                cursor.before(c);
-                current_editor.trigger('change');
-            }
+        if (editing && current_editor && current_editor.selected()) {
+            e.preventDefault();
+            var char = String.fromCharCode(e.which);
+            var c = create_char(char);
+            cursor.before(c);
+            current_editor.trigger('change');
         }
     });
 })();
