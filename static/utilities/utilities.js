@@ -11,6 +11,7 @@ function then_set(reference, value_function, callback) {
 
 function throttle(ms_between, fn) {
     var last_execution = null;
+    var timeouts = [];
     function check_ready() {
         if (last_execution == null) {
             last_execution = Date.now();
@@ -18,11 +19,14 @@ function throttle(ms_between, fn) {
         var ms_since = Date.now() - last_execution;
         if (ms_since < ms_between) {
             var wait = ms_between - ms_since;
-            setTimeout(check_ready, wait);
+            timeouts.push(setTimeout(check_ready, wait));
         }
         else {
             last_execution = Date.now();
             fn();
+            while (timeouts.length) {
+                clearTimeout(timeouts.shift());
+            }
         }
     }
     return check_ready;

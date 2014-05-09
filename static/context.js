@@ -1,5 +1,15 @@
 
 var responses = {};
+var updates = {};
+
+function hash_reference(reference) {
+    var id = reference.id;
+    var internal = '';
+    if (reference.internal) {
+        internal = '.' + reference.internal;
+    }
+    return id + internal;
+}
 
 function user_context(item) {
     var context = {
@@ -11,6 +21,7 @@ function user_context(item) {
 }
 
 function perform_operation(operation, cb) {
+console.log('sending', operation);
     var internal = '';
     if (operation.reference.internal) internal = '.' + operation.reference.internal;
     var token = Math.random() + '';
@@ -18,6 +29,7 @@ function perform_operation(operation, cb) {
     responses[token] = cb;
     ws.send(JSON.stringify(operation));
 }
+
 
 //  shared code with persist
 function get_type(val) {
@@ -72,12 +84,32 @@ function serializable(value, reference, callback) {
 
 function watch(reference, on_change) {
     //  TODO: perform on_change function when an update is passed
-    perform_operation({
-        type : 'watch',
-        reference : reference
-    },
-    function (response) {
-    });
+    var hashed_reference = hash_reference(reference);
+    if (updates[hashed_reference] == undefined) {
+        perform_operation({
+            type : 'watch',
+            reference : reference
+        },
+        function (response) {
+
+        });
+        updates[hashed_reference] = [];
+    }
+    updates[hashed_reference].push(on_change);
+}
+
+function unwatch(reference, fn) {
+    var hashed_reference = hash_reference(reference);
+    var these_updates = updates[hashed_reference];
+    if (these_updates == undefined) {
+        these_updates = [];
+    }
+    for (var i=0; i<these_updates.length; i++) {
+        if (these_updates[i] == fn) {
+            these_updates.splice(i, 1);
+            i -= 1;
+        }
+    }
 }
 
 //  Shared with Persist...
@@ -168,7 +200,6 @@ $(function () {
                 id : root_id,
                 internal : 'changed'
             };
-            watch(to_watch);
         });
     };
 
@@ -179,11 +210,18 @@ $(function () {
         var data_string = event.data.replace('"""', '');
         var data = JSON.parse(data_string);
         console.log(data);
-        var ref = data.reference.id;
-        var internal = '';
-        if (data.reference.internal) internal = '.' + data.reference.internal;
         var response = responses[data.token];
         if (response) response(data);
+        if (data.type == 'update') {
+            var hashed_reference = hash_reference(data.reference);
+            var updates_to_do = updates[hashed_reference];
+            if (updates_to_do) {
+                var todo = updates_to_do.length;
+                for (var i=0; i<todo; i++) {
+                    updates_to_do[i](data);
+                }
+            }
+        }
     };
     ws.onclose = function (event) {
         console.log("Connection is closed...", event); 

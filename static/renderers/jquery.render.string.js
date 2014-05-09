@@ -1,4 +1,6 @@
 $.fn.render.string = function (item, after) {
+        var self = this;
+
         var string = $('<span>');
         string.css({
             color : 'magenta',
@@ -22,4 +24,17 @@ $.fn.render.string = function (item, after) {
         }, function (err, res) {
             // TODO: highlight unsaved changes and then highlight differently when saved and fade out highlight
         })));
+        
+        function watch_fn(update) {
+            if (false && update.value.type == 'string') {
+                
+            }
+            else {
+                self.empty();
+                self.render(update.value, after);
+                unwatch(item.reference, watch_fn);
+            }
+        }
+
+        watch(item.reference, watch_fn);
 }
