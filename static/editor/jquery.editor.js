@@ -100,6 +100,7 @@
             }
         });
 
+
         var errors = [];
         function mark_error(error) {
             var element = self.children().eq(error.index);
@@ -286,10 +287,6 @@
     $(window).on('keydown', function (e) {
         if (current_editor) {
             if (e.ctrlKey) {
-                if (e.keyCode == '83') {
-                    e.preventDefault();
-                    console.log('implement save');
-                }
             }
             else if (editing) {
                 if (e.keyCode == 37) {
@@ -311,6 +308,9 @@
                 else if (e.keyCode == 8) {
                     e.preventDefault();
                     if (cursor.prev().size() > 0) {
+                        //  user edit encodes user intention as best as possible
+                        var index_guess = index_guesser();
+                        current_editor.trigger('useredit', 'function (string) {return string.slice(0, ' + index_guess + ') + string.slice(' + index_guess + ' + 1);}');
                         cursor.prev().remove();
                         current_editor.trigger('change');
                     }
@@ -321,6 +321,8 @@
                         var c = create_char('\n');
                         cursor.before(c);
                         current_editor.trigger('change');
+                        var index_guess = index_guesser();
+                        current_editor.trigger('useredit', 'function (string) {return string.slice(0, ' + index_guess + ') + "\\n" + string.slice(' + index_guess + ');}');
                     }
                     current_editor.trigger('return');
                 }
@@ -331,6 +333,19 @@
         }
     });
 
+    /*
+        data sent on a useredit event is a function that takes a 
+        reference to the existing value, does its best to guess the
+        intended edit (easily perfect guess if not collaboratively
+        editing over a network) and returns the edited object
+        (necessery if the object is immutible, as in this case).
+    */
+
+
+    function index_guesser() {
+        return "(function () {return " + Math.max(cursor.index()-1, 0) + "})()";
+    }
+
     $(window).on('keypress', function (e) {
         if (editing && current_editor && current_editor.selected()) {
             e.preventDefault();
@@ -338,6 +353,14 @@
             var c = create_char(char);
             cursor.before(c);
             current_editor.trigger('change');
+
+
+            //  Guess cursor position
+            //  slice in the character
+            //  return the new string;
+
+            var index_guess = index_guesser();
+            current_editor.trigger('useredit', 'function (string) {return string.slice(0, ' + index_guess + ') + "' + char + '" + string.slice(' + index_guess + ');}');
         }
     });
 })();

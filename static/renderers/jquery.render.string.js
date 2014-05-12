@@ -16,18 +16,26 @@ $.fn.render.string = function (item, after) {
         content.text(item.data);
         $(this).append(string);
         content.editor();
-        content.on('change', throttle(3000, then_set(item.reference, function (callback) {
-            var text = content.text();
-            text = text.replace(/'/mg , "\\'");
-            text = text.replace(/\n/mg, "\\n");
-            callback("'" + text + "'");
+        var edits = [];
+        content.on('useredit', function (event, data) {
+            edits.push(data);
+        });
+        content.on('change', throttle(3000, function () {
+                if (edits.length) {
+                    var edit_source = '';
+                    while (edits.length) {
+                        edit_source += 'this.' + item.reference.internal + ' = (' + edits.shift() + ')(this.' + item.reference.internal + ');\n';
+                    }
+                    evaluate_script({id : item.reference.id}, edit_source);
+                }
         }, function (err, res) {
             // TODO: highlight unsaved changes and then highlight differently when saved and fade out highlight
-        })));
+            
+        }));
         
         function watch_fn(update) {
-            if (false && update.value.type == 'string') {
-                
+            if (update.value.type == 'string') {
+
             }
             else {
                 self.empty();
