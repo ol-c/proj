@@ -99,6 +99,25 @@
                 self.append(char);
             }
         });
+        self.on('update', function (event, data) {
+            var index = cursor.index();
+            self.empty();
+            var characters = data.split('');
+            var chars = [];
+            while (characters.length) {
+                chars.push(create_char(characters.shift()));
+            }
+            self.append(chars);
+            if (current_editor == self) {
+                if (index < 1) {
+                    self.prepend(cursor);
+                }
+                else {
+                    if (chars[index-1] == undefined) console.log(index, characters);
+                    chars[index-1].after(cursor);
+                }
+            }
+        });
 
 
         var errors = [];
@@ -281,9 +300,6 @@
         current_editor.trigger('down');
     }
 
-
-
-    //  zero width space span so can move cursor to very end
     $(window).on('keydown', function (e) {
         if (current_editor) {
             if (e.ctrlKey) {
@@ -320,9 +336,9 @@
                     if (current_editor.settings.multiline) {
                         var c = create_char('\n');
                         cursor.before(c);
-                        current_editor.trigger('change');
                         var index_guess = index_guesser();
                         current_editor.trigger('useredit', 'function (string) {return string.slice(0, ' + index_guess + ') + "\\n" + string.slice(' + index_guess + ');}');
+                        current_editor.trigger('change');
                     }
                     current_editor.trigger('return');
                 }
@@ -352,7 +368,6 @@
             var char = String.fromCharCode(e.which);
             var c = create_char(char);
             cursor.before(c);
-            current_editor.trigger('change');
 
 
             //  Guess cursor position
@@ -361,6 +376,7 @@
 
             var index_guess = index_guesser();
             current_editor.trigger('useredit', 'function (string) {return string.slice(0, ' + index_guess + ') + "' + char + '" + string.slice(' + index_guess + ');}');
+            current_editor.trigger('change');
         }
     });
 })();
