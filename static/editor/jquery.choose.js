@@ -3,6 +3,36 @@ $.fn.choose = function (options) {
 
     var option_index = 0;
     self.append(options[option_index]);
+    var interval = 500;
+    var hide_time = 500;
+    var show_time = 1000;
+    var current = 0;
+    setInterval(function () {
+        if (self.selected()) {
+            current += interval;
+            if (current == 0) {
+                show_cursor();
+            }
+            else if (current == show_time) {
+                hide_cursor();
+            }
+            else if (current == show_time + hide_time) {
+                show_cursor();
+            }
+        }
+    }, interval);
+    function show_cursor() {
+        current = 0;
+        self.css({
+            background : 'orange'
+        });
+    }
+    function hide_cursor() {
+        last_show = Date.now();
+        self.css({
+            background : 'none'
+        });
+    }
 
     function show_options() {
         var offset = self.offset();
@@ -16,13 +46,25 @@ $.fn.choose = function (options) {
         });
         var current_height = 0;
         for (var i=0; i<options.length; i++) {
+            var opacity = 1 / Math.pow(Math.abs(option_index - i), 2)
+            if (opacity < 0.2) {
+                options[i].hide();
+                continue;
+            }
+            
             if (i != option_index) {
                 $('body').append(options[i]);
+                options[i].css({
+                    padding : '0.5em 0',
+                    opacity : opacity
+                });
                 options[i].show();
             }
             else {
                 options[i].css({
+                    padding : 0,
                     background : 'none',
+                    opacity : 1
                 })
             }
             if (i < option_index) {
@@ -30,12 +72,14 @@ $.fn.choose = function (options) {
             }
         }
         for (var i=0; i<options.length; i++) {
+            var opacity = 1 / Math.pow(Math.abs(option_index - i), 2)
+            if (opacity < 0.2) continue;
             if (i != option_index) {
                 options[i].css({
                     position : "absolute",
                     top : offset.top + current_height,
                     left : offset.left,
-                    background : 'aliceblue'
+                    background : 'white', //'aliceblue'
                 });
             }
             current_height += options[i].outerHeight();
@@ -56,6 +100,10 @@ $.fn.choose = function (options) {
 
 
     self.selectable();
+
+    self.hammer().on('touch', function () {
+        self.trigger('select');
+    })
 
     self.on('select', function (info) {
         show_options();

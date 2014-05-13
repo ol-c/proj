@@ -24,13 +24,13 @@
         selectable.push(self);
         sort_selectable();
         self.on('select', function () {
+            if (current !== undefined) $(selectable[current]).trigger('unselect')
             current = index(self);
         });
         self.on('select_prev', function (event, data) {
             var cur = index(self);
             if (cur > 0) {
                 cur -= 1;
-                self.trigger("unselect");
                 $(selectable[cur]).trigger('select', {
                     from_direction : 'next'
                 });
@@ -41,7 +41,6 @@
             var cur = index(self);
             if (cur < selectable.length - 1) {
                 cur += 1;
-                self.trigger("unselect");
                 $(selectable[cur]).trigger('select', {
                     from_direction : 'prev'
                 });

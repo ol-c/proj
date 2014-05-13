@@ -20,7 +20,7 @@ $.fn.render.string = function (item, after) {
         content.on('useredit', function (event, data) {
             edits.push(data);
         });
-        content.on('change', throttle(3000, function () {
+        content.on('change', throttle(100, function () {
             if (edits.length) {
                 var edit_source = '';
                 while (edits.length) {

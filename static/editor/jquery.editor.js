@@ -13,29 +13,40 @@
         zIndex : -1
     });
     cursor.hide();
+    var interval = 500;
+    var hide_time = 500;
+    var show_time = 1000;
+    var current = 0;
+    setInterval(function () {
+        if (current_editor) {
+            current += interval;
+            if (current == 0) {
+                show_cursor();
+            }
+            else if (current == show_time) {
+                hide_cursor();
+            }
+            else if (current == show_time + hide_time) {
+                show_cursor();
+            }
+        }
+    }, interval);
+
     $(function () {
         $('body').append(cursor);
-        fadeOut();
     });
-    function fadeOut() {
-        if (current_editor) {
-            cursor.show();
-            cursor.css('opacity', 0.01); 
-        }
-        else cursor.hide();
-        setTimeout(fadeIn, 300);
+    var last_show = Date.now();
+    function show_cursor() {
+        current = 0;
+        cursor.show();
     }
-    function fadeIn() {
-        if (current_editor) {
-            cursor.show();
-            cursor.css('opacity', 0.9);
-        }
-        else cursor.hide();
-        setTimeout(fadeOut, 1000);
+    function hide_cursor() {
+        last_show = Date.now();
+        cursor.hide();
     }
 
     var editing = true;
-    var normal_bottom_border = '1px solid aliceblue';
+    var normal_bottom_border = 'none';
     var error_bottom_border  = '2px double red';
 
     $.fn.editor = function (options) {
@@ -59,7 +70,7 @@
         var self = this;
         self.selectable();
         self.css({
-            borderBottom : normal_bottom_border
+            borderBottom : normal_bottom_border,
         });
         
         var children;
@@ -73,13 +84,12 @@
                 collapsed = true;
                 children = self.children();
                 children.detach();
-                var placeholder = $('<span>ol-c</span>');
+                var placeholder = $('<span>&#9998</span>');
                 placeholder.hammer().on('touch', function (event) {
                     self.trigger('select', {});
                 });
                 placeholder.css({
                     color : 'orange',
-                    background : '#EEEEEE',
                     padding : '0 1ex'
                 });
                 self.append(placeholder);
@@ -113,8 +123,8 @@
                     self.prepend(cursor);
                 }
                 else {
-                    if (chars[index-1] == undefined) console.log(index, characters);
-                    chars[index-1].after(cursor);
+                    if (index > self.children().size()) self.append(cursor);
+                    else self.children().eq(index-1).after(cursor);
                 }
             }
         });
@@ -224,7 +234,7 @@
         });
 
         self.on('select', function (event, info) {
-            cursor.show();
+            show_cursor();
             current_editor = self;
             if (collapsed) {
                 collapsed = false;
@@ -305,6 +315,7 @@
             if (e.ctrlKey) {
             }
             else if (editing) {
+                show_cursor();
                 if (e.keyCode == 37) {
                     e.preventDefault();
                     jump_to_previous();
@@ -368,6 +379,7 @@
             var char = String.fromCharCode(e.which);
             var c = create_char(char);
             cursor.before(c);
+            show_cursor();
 
 
             //  Guess cursor position
