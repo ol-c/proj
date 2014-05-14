@@ -55,7 +55,8 @@
         current_editor = this;
         current_editor.settings = {
             multiline : true,
-            highlighting : 'none'
+            highlighting : 'none',
+            placeholder : ''
         };
 
         if (options) {
@@ -84,19 +85,18 @@
                 collapsed = true;
                 children = self.children();
                 children.detach();
-                var placeholder = $('<span>&#9998</span>');
+                var placeholder = $('<span></span>');
+                if (self.settings.placeholder) {
+                    placeholder.append(self.settings.placeholder);
+                }
                 placeholder.hammer().on('touch', function (event) {
                     self.trigger('select', {});
-                });
-                placeholder.css({
-                    color : 'orange',
-                    padding : '0 1ex'
                 });
                 self.append(placeholder);
             }
         });
         self.on('blur', function (event, data) {
-            if (self.text() == '') self.trigger('collapse');
+            if (self.text().trim() == '' && self.settings.placeholder) self.trigger('collapse');
         });
         self.on('empty', function (event, data) {
             self.empty();
@@ -126,6 +126,21 @@
                     if (index > self.children().size()) self.append(cursor);
                     else self.children().eq(index-1).after(cursor);
                 }
+            }
+        });
+        self.on('movecursor', function (event, index) {
+            if (!self.selected()) self.trigger('select', {});
+            hide_cursor();
+            var children = self.children();
+            var l = children.size();
+            if (index < 0) index = Math.max(0, l - index);
+            index = Math.min(l, index);
+            show_cursor();
+            if (index == l) {
+                self.append(cursor);
+            }
+            else {
+                children.eq(index).before(cursor);
             }
         });
 
@@ -247,7 +262,7 @@
         });
         self.on('unselect', function (event, info) {
             cursor.hide();
-            if (self.text() == '') self.trigger('collapse');
+            if (self.text().trim() == '' && self.settings.placeholder) self.trigger('collapse');
             current_editor = null;
         });
         self.css({
