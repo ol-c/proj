@@ -86,7 +86,7 @@
                 }
                 else break;
             }
-            console.log(before_cursor)
+            console.log(before_cursor);
         }
 
         var collapsed = false;
@@ -161,7 +161,7 @@
             var look = 0;
             var next_match = data.indexOf(before_cursor);
             var max_distance = 10;
-            while (next_match != -1) {
+            while (next_match != -1 && next_match < data.length) {
                 matches.push(next_match + before_cursor.length);
                 next_match = data.indexOf(before_cursor, next_match + 1);
             }
