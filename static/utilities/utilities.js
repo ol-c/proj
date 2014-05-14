@@ -70,45 +70,100 @@ function edits_between(a, b) {
     |  generate edits  |
     \******************/
  
-    var i = 0;
-    var j = 0;
-    var edits = [];
-    while (i < b.length || j < a.length) {
-        if (matrix[i+1] !== undefined
-        &&  matrix[i+1][j+1] !== undefined
-        &&  matrix[i][j] == matrix[i+1][j+1]
-        &&  matrix[i][j] < matrix[i+1][j]
-        &&  matrix[i][j] < matrix[i][j+1]) {
-            i += 1;
-            j += 1;
-            edits.push('skip...')
+    var i = b.length;
+    var j = a.length;
+    var operations = [];
+    var actual_edits = 0;
+    var path = '';
+    while (i > 0 || j > 0) {
+
+        path += i + ',' + j + ' ';
+        if (matrix[i-1] !== undefined
+        &&  matrix[i-1][j-1] !== undefined
+        &&  matrix[i][j] == matrix[i-1][j-1]
+        &&  matrix[i][j] <= matrix[i-1][j]
+        &&  matrix[i][j] <= matrix[i][j-1]
+        ) {
+            i -= 1;
+            j -= 1;
+            operations.push('skip');
         }
         else {
+            actual_edits += 1;
             var substitution = Infinity;
             var deletion = Infinity;
-            var insertion = matrix[i][j+1] || Infinity;
-            if (matrix[i+1]) {
-                if (matrix[i+1][j+1] !== undefined) substitution = matrix[i+1][j+1];
-                if (matrix[i+1][j]   !== undefined) deletion = matrix[i+1][j];
+            var insertion = Infinity;
+            if (matrix[i-1]) {
+                if (matrix[i-1][j-1] !== undefined) substitution = matrix[i-1][j-1];
+                if (matrix[i-1][j]   !== undefined) deletion = matrix[i-1][j];
             }
-            var edit = {};
-            edits.push(edit);
-            edit.index = j;
-            if (substitution < insertion && substitution < deletion) {
-                edit.type = 'substitution';
-                edit.character = a.charAt(j);
-                i += 1;
-                j += 1;
+            if (matrix[i][j-1] !== undefined) {
+                insertion = matrix[i][j-1];
             }
-            else if (deletion < substitution && deletion < insertion) {
-                edit.type = 'deletion';
-                i += 1;
+            path += '(' + substitution + ',' + insertion + ',' + deletion + ')'
+            if (substitution <= insertion && substitution <= deletion) {
+                operations.push('substitution');
+                i -= 1;
+                j -= 1;
+            }
+            else if (deletion <= substitution && deletion <= insertion) {
+                operations.push('deletion');
+                i -= 1;
             }
             else {
-                edit.type = 'insertion';
+                operations.push('insertion');
+                j -= 1;
+            }
+        }
+        path += '    '
+    }
+//    console.log(path)
+
+    var edits = [];
+
+    for (var i=0; i<matrix.length; i++) {
+        var row = '';
+        for (var j=0; j<matrix[i].length; j ++) {
+            row += matrix[i][j] + ' ';
+        }
+//        console.log(row)
+    }
+//    console.log(operations)
+
+    console.log(actual_edits, matrix[matrix.length-1][matrix[0].length-1])
+
+    var i = 0;
+    var j = 0;
+    var offset = 0;
+
+//  console.log(operations)
+
+    while (operations.length) {
+        var op = operations.pop();
+
+        if (op == 'skip') {
+            i += 1;
+            j += 1;
+        }
+        else {
+            var edit = {
+                type : op,
+                index : j
+            };
+            if (op == 'substitution') {
+                edit.character = a.charAt(j);
+                i += 1;
+                j += 1;
+            }
+            else if (op == 'deletion') {
+                i += 1;
+            }
+            else if (op == 'insertion') {
                 edit.character = a.charAt(j);
                 j += 1;
             }
+//            console.log(edit);
+            edits.push(edit);
         }
     }
 
@@ -128,6 +183,7 @@ function apply_edits(edits, string) {
         else if (edit.type == 'insertion') {
             str.splice(edit.index, 0, edit.character);
         }
+//        console.log(str.join(''));
     }
     return str.join('');
 }
@@ -139,14 +195,24 @@ function random_string(length) {
     return string;
 }
 
-function test() {
+function test(a, b) {
+    var edits = edits_between(a, b);
+ //   console.log(edits);
+    var result = apply_edits(edits, b);
+//    console.log(a);
+//    console.log(result);
+    console.log(result == a)
+}
+//*
+for (var i=0; i<10; i++) {
     var a = random_string(Math.floor(Math.random() * 1000));
     var b = random_string(Math.floor(Math.random() * 1000));
-    var edits = edits_between(a, b);
-    var result = apply_edits(edits, b);
-    console.log(a == result);
+    test(a, b);
 }
+//*/
 
-for (var i=0; i<1000; i++) {
-    test();
-}
+
+test(
+    "bbbc",
+    "a"
+)
