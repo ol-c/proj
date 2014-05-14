@@ -101,18 +101,18 @@ function edits_between(a, b) {
                 insertion = matrix[i][j-1];
             }
             path += '(' + substitution + ',' + insertion + ',' + deletion + ')'
-            if (substitution <= insertion && substitution <= deletion) {
+            if (insertion <= substitution && insertion <= deletion) {
+                operations.push('insertion');
+                j -= 1;
+            }
+            else if (substitution <= insertion && substitution <= deletion) {
                 operations.push('substitution');
                 i -= 1;
                 j -= 1;
             }
-            else if (deletion <= substitution && deletion <= insertion) {
+            else {
                 operations.push('deletion');
                 i -= 1;
-            }
-            else {
-                operations.push('insertion');
-                j -= 1;
             }
         }
         path += '    '
@@ -130,7 +130,7 @@ function edits_between(a, b) {
     }
 //    console.log(operations)
 
-    console.log(actual_edits, matrix[matrix.length-1][matrix[0].length-1])
+//    console.log(actual_edits, matrix[matrix.length-1][matrix[0].length-1])
 
     var i = 0;
     var j = 0;
@@ -151,7 +151,6 @@ function edits_between(a, b) {
                 index : j
             };
             if (op == 'substitution') {
-                edit.character = a.charAt(j);
                 i += 1;
                 j += 1;
             }
@@ -159,7 +158,6 @@ function edits_between(a, b) {
                 i += 1;
             }
             else if (op == 'insertion') {
-                edit.character = a.charAt(j);
                 j += 1;
             }
 //            console.log(edit);
@@ -170,22 +168,24 @@ function edits_between(a, b) {
     return edits;
 }
 
-function apply_edits(edits, string) {
-    var str = string.split('');
+//  From is an array of objects to apply edits to
+//  sub is function that performs substitution
+//  del is function that performs deletion
+//  ins is function that performs insertion
+function apply_edits(edits, from, sub, del, ins) {
     for (var i=0; i<edits.length; i++) {
         var edit = edits[i];
         if (edit.type == 'substitution') {
-            str[edit.index] = edit.character;
+            sub(edit.index, from[edit.index]);
         }
         else if (edit.type == 'deletion') {
-            str.splice(edit.index, 1);
+            del(edit.index);
         }
         else if (edit.type == 'insertion') {
-            str.splice(edit.index, 0, edit.character);
+            ins(edit.index, from[edit.index]);
         }
 //        console.log(str.join(''));
     }
-    return str.join('');
 }
 
 function random_string(length) {
@@ -198,21 +198,25 @@ function random_string(length) {
 function test(a, b) {
     var edits = edits_between(a, b);
  //   console.log(edits);
-    var result = apply_edits(edits, b);
+    var str = b.split('');
+    apply_edits(edits, a.split(''),
+        function sub(index, item) {
+            str[index] = item;
+        },
+        function del(index) {
+            str.splice(index, 1);
+        },
+        function ins(index, item) {
+            str.splice(index, 0, item)
+        });
 //    console.log(a);
 //    console.log(result);
-    console.log(result == a)
+    console.log(str.join('') == a)
 }
 //*
-for (var i=0; i<10; i++) {
-    var a = random_string(Math.floor(Math.random() * 1000));
-    var b = random_string(Math.floor(Math.random() * 1000));
+for (var i=0; i<100; i++) {
+    var a = random_string(Math.floor(Math.random() * 100));
+    var b = random_string(Math.floor(Math.random() * 100));
     test(a, b);
 }
 //*/
-
-
-test(
-    "bbbc",
-    "a"
-)

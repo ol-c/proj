@@ -20,12 +20,15 @@ $.fn.render.string = function (item, after) {
     content.on('useredit', function (event, data) {
         edits.push(data);
     });
+    //  Ignore the first update for a state that we sent here (only want to update when there is new information)
+    var local_updates = {};
     content.on('change', throttle(100, function () {
         if (edits.length) {
             var edit_source = '';
             while (edits.length) {
                 edit_source += 'this.' + item.reference.internal + ' = (' + edits.shift() + ')(this.' + item.reference.internal + ');\n';
             }
+            local_updates[content.text()] = true;
             evaluate_script({id : item.reference.id}, edit_source);
         }
     }, function (err, res) {
@@ -42,7 +45,13 @@ $.fn.render.string = function (item, after) {
 
     function watch_fn(update) {
         if (update.value.type == 'string') {
-            content.trigger('update', update.value.data);
+            if (local_updates[update.value.data]) {
+                console.log('purely local update!');
+                delete local_updates[update.value.data];
+            }
+            else {
+                content.trigger('update', update.value.data);
+            }
         }
         else {
             self.empty();

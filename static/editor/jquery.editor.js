@@ -75,6 +75,19 @@
         });
         
         var children;
+        var before_cursor = '';
+        function update_before_cursor() {
+            before_cursor = '';
+            var prev = cursor;
+            for (var i=0; i<3; i++) {
+                prev = prev.prev();
+                if (prev.size()) {
+                    before_cursor = prev.text() + before_cursor;
+                }
+                else break;
+            }
+            console.log(before_cursor)
+        }
 
         var collapsed = false;
         self.on('collapse', function (event, data) {
@@ -109,22 +122,56 @@
                 self.append(char);
             }
         });
+        self.on('useredit', function () {
+            update_before_cursor();
+        });
         self.on('update', function (event, data) {
-            var index = cursor.index();
-            self.empty();
-            var characters = data.split('');
-            var chars = [];
-            while (characters.length) {
-                chars.push(create_char(characters.shift()));
+            var edits = edits_between(data, self.text());
+            var children = [];
+            self.children().each(function (index, child)  {
+                if (child != cursor[0]) children.push($(child));
+            });
+            apply_edits(edits, data.split(''),
+                function sub(index, item) {
+                    children[index].text(item);
+                },
+                function del(index) {
+                    children[index].remove();
+                },
+                function ins(index, item) {
+                    var c = create_char(item);
+                    if (index == 0) {
+                        self.prepend(c);
+                    }
+                    else if (index > children.length) {
+                        self.append(c);
+                    }
+                    else {
+                        children[index-1].after(c);
+                    }
+                    children.splice(index, 0, c);
+                });
+            //  TODO: place the cursor in the proper location
+            //        strategy : find closest expected "before_cursor" substring
+            //                   if it is close enough to where the cursor actually is, place the cursor
+
+            var cursor_index = cursor.index();
+
+            var matches = [];
+            var look = 0;
+            var next_match = data.indexOf(before_cursor);
+            var max_distance = 10;
+            while (next_match != -1) {
+                matches.push(next_match + before_cursor.length);
+                next_match = data.indexOf(before_cursor, next_match + 1);
             }
-            self.append(chars);
-            if (current_editor == self) {
-                if (index < 1) {
-                    self.prepend(cursor);
-                }
-                else {
-                    if (index > self.children().size()) self.append(cursor);
-                    else self.children().eq(index-1).after(cursor);
+            var best_match = cursor_index;
+            var best_match_distance = Infinity
+            for (var i=1; i<matches.length; i++) {
+                var match_distance = Math.abs(cursor_index - matches[i]);
+                if (match_distance < best_match_distance && match_distance < max_distance) {
+                    best_match = matches[i];
+                    best_match_distance = match_distance;
                 }
             }
         });
