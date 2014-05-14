@@ -86,7 +86,6 @@
                 }
                 else break;
             }
-            console.log(before_cursor);
         }
 
         var collapsed = false;
@@ -137,6 +136,7 @@
                 },
                 function del(index) {
                     children[index].remove();
+                    children.splice(index, 1);
                 },
                 function ins(index, item) {
                     var c = create_char(item);
@@ -151,9 +151,12 @@
                     }
                     children.splice(index, 0, c);
                 });
-            //  TODO: place the cursor in the proper location
+            //  place the cursor in the proper location
             //        strategy : find closest expected "before_cursor" substring
             //                   if it is close enough to where the cursor actually is, place the cursor
+
+            //  this arises when doing lots of deletions from another terminal (deletion must be failing)
+            if (data !== self.text()) console.log('ERROR!!!!!!!!!!!');
 
             var cursor_index = cursor.index();
 

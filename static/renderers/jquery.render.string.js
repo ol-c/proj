@@ -46,7 +46,6 @@ $.fn.render.string = function (item, after) {
     function watch_fn(update) {
         if (update.value.type == 'string') {
             if (local_updates[update.value.data]) {
-                console.log('purely local update!');
                 delete local_updates[update.value.data];
             }
             else {
