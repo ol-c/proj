@@ -94,8 +94,17 @@ $.fn.choose = function (options) {
         }
     }
 
-    function choose(option) {
-        
+    function choose(index) {
+        if (option_index != index) {
+            options[option_index].detach();
+            option_index = index;
+            self.append(options[index]);
+            show_options();
+            if (!self.selected()) {
+                hide_options();
+            }
+            self.trigger('change', index);
+        }
     }
 
 
@@ -121,6 +130,10 @@ $.fn.choose = function (options) {
         $(window).off('keydown', on_keydown);
     });
 
+    self.on('update', function (data, option) {
+        choose(option);
+    });
+
     function on_keydown(e) {
         if (e.keyCode == 37) {
             self.trigger('select_prev');
@@ -130,15 +143,11 @@ $.fn.choose = function (options) {
         }
         else if (e.keyCode == 38 && option_index > 0) {
             e.preventDefault();
-            self.empty();
-            option_index -= 1;
-            show_options();
+            choose(option_index - 1);
         }
         else if (e.keyCode == 40 && option_index < options.length - 1) {
             e.preventDefault();
-            self.empty();
-            option_index += 1;
-            show_options();
+            choose(option_index + 1);
         }
         else if (e.keyCode == 13) {
             self.trigger('select_next');

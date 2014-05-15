@@ -1,6 +1,4 @@
-editing renderers saving changes
-client handling of incoming reference changes
-    client renderers save changes
+editing renderers making and showing updates
 render client command line errors
 save references
 save files
@@ -13,3 +11,4 @@ set actual requester on web socket connection
 special "permissions" field
 expose creating container types to command line
 more container types: List, Map, Set
+gaurd against circular references to container types

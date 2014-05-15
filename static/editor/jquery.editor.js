@@ -440,6 +440,7 @@
 
     $(window).on('keypress', function (e) {
         if (editing && current_editor && current_editor.selected()) {
+            if (e.which == 13) return;
             e.preventDefault();
             var char = String.fromCharCode(e.which);
             var c = create_char(char);
