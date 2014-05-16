@@ -34,7 +34,9 @@ $.fn.choose = function (options) {
         });
     }
 
+    var options_visible = false;
     function show_options() {
+        options_visible = true;
         var offset = self.offset();
         self.append(options[option_index]);
         options[option_index].show();
@@ -87,6 +89,7 @@ $.fn.choose = function (options) {
     }
 
     function hide_options() {
+        options_visible = false;
         for (var i=0; i<options.length; i++) {
             if (i != option_index) {
                 options[i].hide();
@@ -150,7 +153,12 @@ $.fn.choose = function (options) {
             choose(option_index + 1);
         }
         else if (e.keyCode == 13) {
-            self.trigger('select_next');
+            if (options_visible) {
+                hide_options();
+            }
+            else {
+                self.trigger('select_next');
+            }
         }
     }
 }

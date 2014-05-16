@@ -8,7 +8,7 @@ $.fn.render = function (item, after) {
     }
     else {
         var error_message = $('<span></span>');
-        console.log(item);
+        console.log(item, 'error...');
         error_message.text('Error: ' + item);
         error_message.css({color : 'red'});
         $(this).append([error_message, after]);

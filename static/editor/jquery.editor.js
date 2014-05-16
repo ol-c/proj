@@ -125,6 +125,9 @@
             update_before_cursor();
         });
         self.on('update', function (event, data) {
+            if (typeof data !== 'string') {
+                throw new Error('only strings are valid updates for an editor');
+            }
             var edits = edits_between(data, self.text());
             var children = [];
             self.children().each(function (index, child)  {

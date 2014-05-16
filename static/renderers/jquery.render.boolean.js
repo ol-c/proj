@@ -22,7 +22,6 @@ $.fn.render.boolean = function (item, after) {
     }
 
     function watch_fn(update) {
-        console.log('UPDATED', update)
         if (update.value.type == 'boolean') {
             var index = 1;
             if (update.value.data) index = 0;
