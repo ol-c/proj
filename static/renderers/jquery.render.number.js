@@ -17,7 +17,7 @@ $.fn.render.number = function (item, after) {
     });
 
     function is_number(test) {
-        return test.match(/^((NaN)|(-|)(Infinity|\d+(\.\d+|)([eE](\+|)\d+|)))$/);
+        return test.match(/^((NaN)|(-|)(Infinity|\d+(\.\d*|)([eE](\+|-|)\d+|)))$/);
     }
 
     var local_updates = {};

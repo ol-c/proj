@@ -128,29 +128,20 @@ $.fn.render.date = function (item, after) {
         chooser.choose(options);
         return chooser;
     }
-
-   function get_digits(places) {
-       var digits = [];
-       for (var i=0; i<places; i++) {
-           digits.push(get_chooser(range(0, 9)));
-       }
-       return digits;
-   }
-
-   function get_text(text) {
-       var options = [];
-       for (var i=0; i<text.length; i++) {
-           options.push($('<span>').text(text[i]));
-       }
-       return get_chooser(options);
-   }
+    function get_text(text) {
+        var options = [];
+        for (var i=0; i<text.length; i++) {
+            options.push($('<span>').text(text[i]));
+        }
+        return get_chooser(options);
+    }
 
     month.append(get_text(months));
     day.append(get_chooser(range(1, 32)));
-    year.append(get_digits(4));
+    year.numberroll(4);
     
     hour.append(get_chooser(range(0, 23)));
     minute.append(get_chooser(range(0, 59)));
     second.append(get_chooser(range(0, 59)));
-    millisecond.append(get_digits(3));
+    millisecond.numberroll(3, 3);
 };

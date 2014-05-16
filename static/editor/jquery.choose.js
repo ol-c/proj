@@ -37,7 +37,6 @@ $.fn.choose = function (options) {
     var options_visible = false;
     function show_options() {
         options_visible = true;
-        var offset = self.offset();
         self.append(options[option_index]);
         options[option_index].show();
         options[option_index].css({
@@ -46,55 +45,61 @@ $.fn.choose = function (options) {
             top : 0,
             left : 0
         });
-        var current_height = 0;
-        for (var i=0; i<options.length; i++) {
-            var opacity = 1 / Math.pow(Math.abs(option_index - i), 2)
-            if (opacity < 0.2) {
-                options[i].hide();
-                continue;
+
+        setTimeout(function () {
+            var offset = self.offset();
+            var current_height = 0;
+            for (var i=0; i<options.length; i++) {
+                var opacity = 1 / Math.pow(Math.abs(option_index - i), 2)
+                if (opacity < 0.2) {
+                    options[i].hide();
+                    continue;
+                }
+                
+                if (i != option_index) {
+                    $('body').append(options[i]);
+                    options[i].css({
+                        padding : '0.5em 0',
+                        opacity : opacity
+                    });
+                    options[i].show();
+                }
+                else {
+                    options[i].css({
+                        padding : 0,
+                        background : 'none',
+                        opacity : 1
+                    })
+                }
+                if (i < option_index) {
+                    current_height -= options[i].outerHeight();
+                }
             }
-            
-            if (i != option_index) {
-                $('body').append(options[i]);
-                options[i].css({
-                    padding : '0.5em 0',
-                    opacity : opacity
-                });
-                options[i].show();
+            for (var i=0; i<options.length; i++) {
+                var opacity = 1 / Math.pow(Math.abs(option_index - i), 2)
+                if (opacity < 0.2) continue;
+                if (i != option_index) {
+                    options[i].css({
+                        position : "absolute",
+                        top : offset.top + current_height,
+                        left : offset.left,
+                        background : 'white', //'aliceblue'
+                    });
+                }
+                current_height += options[i].outerHeight();
             }
-            else {
-                options[i].css({
-                    padding : 0,
-                    background : 'none',
-                    opacity : 1
-                })
-            }
-            if (i < option_index) {
-                current_height -= options[i].outerHeight();
-            }
-        }
-        for (var i=0; i<options.length; i++) {
-            var opacity = 1 / Math.pow(Math.abs(option_index - i), 2)
-            if (opacity < 0.2) continue;
-            if (i != option_index) {
-                options[i].css({
-                    position : "absolute",
-                    top : offset.top + current_height,
-                    left : offset.left,
-                    background : 'white', //'aliceblue'
-                });
-            }
-            current_height += options[i].outerHeight();
-        }
+        }, 1);
     }
 
     function hide_options() {
         options_visible = false;
-        for (var i=0; i<options.length; i++) {
-            if (i != option_index) {
-                options[i].hide();
+        setTimeout(function () {
+            for (var i=0; i<options.length; i++) {
+                if (i != option_index) {
+                    options[i].hide();
+                }
             }
-        }
+        }, 1);
     }
 
     function choose(index) {
@@ -118,6 +123,7 @@ $.fn.choose = function (options) {
     })
 
     self.on('select', function (info) {
+        //  set time out to execute other functions that might change location of selected thing
         show_options();
         self.css({
             'background' : 'orange'

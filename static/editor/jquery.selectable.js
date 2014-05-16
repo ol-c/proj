@@ -1,57 +1,43 @@
 (function () {
-    var selectable = [];
-    function sort_selectable() {
-        
-    }
-
+    var selected;
     function auto_select_first() {
-         if (selectable[0]) {
-             selectable[0].trigger('select', {});
-         }
-         else setTimeout(auto_select_first, 10);
+        var selectable = $('.selectable');
+        if (selectable.size()) {
+            selectable.first().trigger('select', {});
+        }
+        else setTimeout(auto_select_first, 10);
     }
-    auto_select_first();
-
+    $(function () {auto_select_first();});
     function index(item) {
-       for (var i=0; i<selectable.length; i++) {
-           if (item[0] == selectable[i][0]) return i;
-       }
-       return 0; 
+       return $('.selectable').index(item); 
     }
     var current;
     $.fn.selectable = function (action) {
         var self = this;
-        selectable.push(self);
-        sort_selectable();
+        self.addClass('selectable');
         self.on('select', function () {
-            if (current !== undefined) $(selectable[current]).trigger('unselect')
-            current = index(self);
+            var old = selected;
+            selected = this;
+            if (old !== undefined) $(old).trigger('unselect');
         });
         self.on('select_prev', function (event, data) {
-            var cur = index(self);
-            if (cur > 0) {
-                cur -= 1;
-                $(selectable[cur]).trigger('select', {
-                    from_direction : 'next'
-                });
-                current = cur;
-            }
+            var selectable = $('.selectable');
+            var index = selectable.index(this);
+            if (index > 0) selectable.eq(index - 1).trigger('select', {
+                from_direction : 'next'
+            });
         });
         self.on('select_next', function (event, data) {
-            var cur = index(self);
-            if (cur < selectable.length - 1) {
-                cur += 1;
-                $(selectable[cur]).trigger('select', {
+            var selectable = $('.selectable');
+            var index = selectable.index(this);
+            if (index < selectable.size() - 1) {
+                selectable.eq(index + 1).trigger('select', {
                     from_direction : 'prev'
                 });
-                current = cur;
             }
         });
     }
     $.fn.selected = function () {
-        if (current !== undefined) {
-            return selectable[current][0] == this[0];
-        }
-        else return false;
+        return selected == this[0];
     }
 })();
