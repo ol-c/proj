@@ -67,9 +67,10 @@ $.fn.render.hashmap = function (item, after) {
 
     function watch_fn(update) {
         if (update.value.type == 'hashmap') {
-            console.log(update);
+            console.log('HASHMAP UPDATED!!!!', update);
         }
         else {
+            console.log('uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuhhhhhhh')
             self.empty();
             self.render(update.value, after);
             unwatch(item.reference, watch_fn);
