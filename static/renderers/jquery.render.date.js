@@ -142,7 +142,7 @@ $.fn.render.date = function (item, after) {
         }
         else {
             self.empty();
-            self.render(update.value, after),
+            self.render(up.value, after),
             unwatch(item.reference, watch_fn);
         }
     }
