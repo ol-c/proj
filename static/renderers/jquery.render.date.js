@@ -1,109 +1,50 @@
 $.fn.render.date = function (item, after) {
     var months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
+        'January',
+        'February',
+        'March',
+        'April',
         'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec'
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December'
     ];
-/*
     var weekdays = [
-        "Sun",
-        "Mon",
-        "Tue",
-        "Wed",
-        "Thu",
-        "Fri",
-        "Sat"
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
     ];
-    var weekday = $('<span>');
-    var year = $('<span>');
-    var month = $('<span>');
-    var monthday = $('<span>');
-    var hour = $('<span>');
-    var minute = $('<span>');
-    var second = $('<span>');
-    var millisecond = $('<span>');
-    var timezone = $('<span>');
+    var self = this;
 
     var date = new Date(item.data);
 
-    weekday.text(weekdays[date.getDay()]);
-    month.text(months[date.getMonth()])
-    year.text(date.getFullYear());
-    monthday.text(date.getDate());
-    hour.text(date.getHours());
-    minute.text(date.getMinutes());
-    second.text(date.getSeconds());
-    millisecond.text(date.getMilliseconds());
-    var timestring = date.toTimeString();
-    timezone.text(timestring.substring(timestring.indexOf('(') + 1, timestring.length - 1))
+    function update(date) {
+        var _weekday = date.getDay();
+        var _monthday = date.getDate();
+        var _month = date.getMonth();
+        var _year = date.getFullYear();
+        var _hour = date.getHours();
+        var _minute = date.getMinutes();
+        var _second = date.getSeconds();
+        var _millisecond = date.getMilliseconds();
 
-    year.editor();
-    month.editor();
-    monthday.editor();
-    hour.editor();
-    minute.editor();
-    second.editor();
-    millisecond.editor();
-
-    var weekday_month_sep = $('<span>, </span>');
-    var hr_mn = $('<span>:</span>');
-    var mn_sc = $('<span>:</span>');
-    var sc_ms = $('<span>:</span>');
-
-    hr_mn
-        .add(weekday).add(mn_sc).add(sc_ms)
-        .add(weekday_month_sep)
-        .css('color', '#888888');
-
-    timezone
-        .add(year).add(month)
-        .add(monthday).add(hour).add(minute)
-        .add(second).add(millisecond)
-        .css('color', 'darkorchid');
-
-    $(this).append([
-        weekday,
-        weekday_month_sep,
-        month,
-        ' ',
-        monthday,
-        ' ',
-        year,
-        ' ',
-        hour,
-        hr_mn,
-        minute,
-        mn_sc,
-        second,
-        sc_ms,
-        millisecond,
-        ' ',
-        timezone,
-        after]);
-    */
-    var self = this;
-
-    var year = $('<span></span>');
-    var month = $('<span></span>');
-    var day = $('<span></span>');
-    var hour = $('<span></span>');
-    var minute = $('<span></span>');
-    var second = $('<span></span>');
-    var millisecond = $('<span></span>');
-
-    $(this).append([
-        month, ' ', day, ', ', year, ' ',
-        hour, ':', minute, ':', second, ':', millisecond
-    ]);
+        weekday.text(weekdays[_weekday]);
+        month.trigger('update', _month);
+        monthday.trigger('update', _monthday - 1);
+        year.trigger('update', _year);
+        hour.trigger('update', _hour);
+        minute.trigger('update', _minute);
+        second.trigger('update', _second);
+        millisecond.trigger('update', _millisecond);
+    }
     
     function range(start, end) {
         var current = start;
@@ -136,12 +77,70 @@ $.fn.render.date = function (item, after) {
         return get_chooser(options);
     }
 
-    month.append(get_text(months));
-    day.append(get_chooser(range(1, 32)));
+    var year = $('<span>');
+    var millisecond = $('<span>');
+
+    month = get_text(months);
+    monthday = get_chooser(range(1, 32));
+    weekday = $('<span>');
     year.numberroll(4);
     
-    hour.append(get_chooser(range(0, 23)));
-    minute.append(get_chooser(range(0, 59)));
-    second.append(get_chooser(range(0, 59)));
+    hour = get_chooser(range(0, 23));
+    minute = get_chooser(range(0, 59));
+    second = get_chooser(range(0, 59));
     millisecond.numberroll(3, 3);
+
+    var ref = {id : item.reference.id};
+    var internal_ref = 'this.' + item.reference.internal;
+
+    var local_updates = {};
+
+    function throttled_mod(mod_function) {
+        return throttle(100, function (event, value) {
+            if (mod_function == 'setDate') value += 1;
+            //  update local
+            date[mod_function](value);
+            local_updates[date.toJSON()] = true;
+            weekday.text(weekdays[date.getDay()]);
+            //  update remote
+            //  update date and set reference so we get an update
+            var script = internal_ref + '.' + mod_function + '(' + value + ');\n'
+                       + internal_ref + ' = new Date(' + internal_ref + ');'; 
+            evaluate_script(ref, script);
+        });
+    }
+
+    update(date);
+
+    $(year).on('change', throttled_mod('setFullYear'));
+    $(month).on('change', throttled_mod('setMonth'));
+    $(monthday).on('change', throttled_mod('setDate'));
+    $(hour).on('change', throttled_mod('setHours'));
+    $(minute).on('change', throttled_mod('setMinutes'));
+    $(second).on('change', throttled_mod('setSeconds'));
+    $(millisecond).on('change', throttled_mod('setMilliseconds'));
+
+    self.append([
+        weekday, ' ', month, ' ', monthday, ', ', year, ' ',
+        hour, ':', minute, ':', second, ':', millisecond
+    ]);
+
+    weekday.css({
+        color : '#AAAAAA'
+    });
+
+
+    function watch_fn(up) {
+        if (up.value.type == 'date') {
+            if (local_updates[up.value.data]) {
+                delete local_updates[up.value.data];
+            }
+            else {
+                date = new Date(up.value.data);
+                update(date);
+            }
+        }
+    }
+
+    watch(item.reference, watch_fn);
 };

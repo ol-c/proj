@@ -30,7 +30,6 @@ function throttle(ms_between, fn) {
         }
         else {
             last_execution = Date.now();
-            console.log(last_args)
             fn.apply(fn, last_args);
             while (timeouts.length) {
                 clearTimeout(timeouts.shift());
@@ -196,6 +195,7 @@ function apply_edits(edits, from, sub, del, ins) {
     }
 }
 
+/*
 function random_string(length) {
     var characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 ".split('');
     var string = "";
@@ -221,10 +221,12 @@ function test(a, b) {
 //    console.log(result);
     console.log(str.join('') == a)
 }
-//*
+
 for (var i=0; i<100; i++) {
     var a = random_string(Math.floor(Math.random() * 100));
     var b = random_string(Math.floor(Math.random() * 100));
     test(a, b);
 }
 //*/
+
+

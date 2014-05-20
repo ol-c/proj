@@ -1,6 +1,5 @@
 $.fn.numberroll = function (start_digits, max_digits) {
     max_digits = max_digits || Infinity;
-    console.log(max_digits)
     var self = this;
     var digits = [];
 
@@ -36,15 +35,17 @@ $.fn.numberroll = function (start_digits, max_digits) {
             }
         });
 
-        digit.on('change', function () {
+        digit.on('change', function (event) {
             while (digits.length > start_digits
                    && digits[0] !== digit
                    && digits[0].text() == '0') {
                 digits.shift().remove();
             }
-            if (digits[0].text() !== '0' && digits[0] == digit && digits.length < max_digits) {
+            if (digits[0].selected() && digits[0].text() !== '0' && digits[0] == digit && digits.length < max_digits) {
                 add_digit();
             }
+            event.stopPropagation();
+            self.trigger('change', parseInt(self.text()));
         });
     }
 
@@ -62,6 +63,23 @@ $.fn.numberroll = function (start_digits, max_digits) {
         behave(digit);
         return digit;
     }
+
+    self.on('update', function (event, number) {
+        if (event.target !== self[0]) {
+            //  update is propagated from child here
+        }
+        else {
+            var offset = 0;
+            var digit = number % 10;
+            while (digits.length - offset > 0) {
+                console.log(digits.length);
+                digits[digits.length - offset - 1].trigger('update', digit);
+                number = (number - digit) / 10;
+                digit = number % 10;
+                offset += 1;
+            }
+        }
+    });
 
     self.append(digits);
 }

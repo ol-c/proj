@@ -139,7 +139,7 @@ $.fn.choose = function (options) {
         $(window).off('keydown', on_keydown);
     });
 
-    self.on('update', function (data, option) {
+    self.on('update', function (event, option) {
         choose(option);
     });
 
