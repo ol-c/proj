@@ -72,7 +72,6 @@ $.fn.numberroll = function (start_digits, max_digits) {
             var offset = 0;
             var digit = number % 10;
             while (digits.length - offset > 0) {
-                console.log(digits.length);
                 digits[digits.length - offset - 1].trigger('update', digit);
                 number = (number - digit) / 10;
                 digit = number % 10;

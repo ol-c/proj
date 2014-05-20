@@ -140,6 +140,11 @@ $.fn.render.date = function (item, after) {
                 update(date);
             }
         }
+        else {
+            self.empty();
+            self.render(update.value, after),
+            unwatch(item.reference, watch_fn);
+        }
     }
 
     watch(item.reference, watch_fn);
