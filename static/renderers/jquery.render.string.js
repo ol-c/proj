@@ -36,7 +36,7 @@ $.fn.render.string = function (item, after) {
         
     }));
 
-    $(open ).hammer().on('touch', function () {
+    $(open).hammer().on('touch', function () {
         content.trigger('movecursor', 0);
     });
     $(close).hammer().on('touch', function () {

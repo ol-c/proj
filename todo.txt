@@ -4,7 +4,7 @@ editing renderers making and showing updates
     X null
     X number
     X date
-      function
+    X function
       hashmap
 render client command line errors
 save references

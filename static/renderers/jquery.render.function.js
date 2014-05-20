@@ -1,4 +1,5 @@
 $.fn.render.function = function (item, after) {
+        var self = this;
         var fun = $('<span>');
         fun.css({
             margin : 0,
@@ -17,17 +18,29 @@ $.fn.render.function = function (item, after) {
             color : '#888888'
         });
 
+        function params_body(source) {
+            var start = source.indexOf('(') + 1;
+            var end = source.indexOf(')');
+            var params = source.substring(start, end)
+            start = source.indexOf('{') + 1;
+            end = source.length - 1;
+            var body = source.substring(start, end);
+            return {
+                params : params,
+                body   : body
+            };
+        }
+
+        var pb = params_body(item.data);
+
         var params = $('<span>');
-        var start = item.data.indexOf('(') + 1;
-        var end = item.data.indexOf(')');
-        params.text(item.data.substring(start, end));
+        params.text(pb.params);
+        params.editor();
         var open = $('<span>').append([declare, begin_params, params]);
 
         fun.append([open, params, end_params_begin_body]);
         var body = $('<span>');
-        start = item.data.indexOf('{') + 1;
-        end = item.data.length - 1;
-        body.text(item.data.substring(start, end));
+        body.text(pb.body);
         body.editor({
             highlighting : 'javascript'
         });
@@ -38,10 +51,52 @@ $.fn.render.function = function (item, after) {
         fun.append([body, end_body, after]);
         $(this).append(fun);
 
-        body.on('change', throttle(3000, then_set(item.reference, function (callback) {
-            var fn = "function (user, params) {" + body.text() + "}";
-            callback(fn);
-        }, function (err, res) {
-            //  TODO: highlight unsaved changes and then highlight saved changes differently and fade out highlight
-        })));
+    var local_updates = {};
+
+    var throttled_set = throttle(100, function () {
+        try {
+            eval('function __tmp__ (' + params.text() + ') {' + body.text() + '}');
+        }
+        catch (error) {
+            console.log(error);
+            return
+        }
+        if (params.text().match(/^\s*(\w+(,\s*\w+)*|)\s*$/g)) {
+            var src = 'function (' + params.text() + ') {' + body.text() + '}';
+            local_updates[src] = true;
+            var source = 'this.' + item.reference.internal + ' = ' + src; 
+            evaluate_script({id : item.reference.id}, source);
+        }
+        else {
+            console.log('ERROR saving function parameters improper form')
+        }
+    }, function (err, res) {
+        // TODO: highlight unsaved changes and then highlight differently when saved and fade out highlight
+        
+    });
+
+    body.on('change', throttled_set);
+    params.on('change', throttled_set);
+
+    function watch_fn(update) {
+        if (update.value.type == 'function') {
+            if (local_updates[update.value.data]) {
+                delete local_updates[update.value.data];
+            }
+            else {
+                var pb = params_body(update.value.data);
+                params.trigger('update', pb.params);
+                body.trigger('update', pb.body);
+            }
+        }
+        else {
+            self.empty();
+            self.render(update.value, after);
+            unwatch(item.reference, watch_fn);
+        }
+    }
+
+    watch(item.reference, watch_fn);
+
+        
 };

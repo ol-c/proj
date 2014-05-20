@@ -56,7 +56,8 @@
         current_editor.settings = {
             multiline : true,
             highlighting : 'none',
-            placeholder : ''
+            placeholder : '',
+            editable : true
         };
 
         if (options) {
@@ -69,7 +70,7 @@
         }
 
         var self = this;
-        self.selectable();
+        if (self.settings.editable) self.selectable();
         self.css({
             borderBottom : normal_bottom_border,
         });
@@ -102,7 +103,9 @@
                     placeholder.append(self.settings.placeholder);
                 }
                 placeholder.hammer().on('touch', function (event) {
-                    self.trigger('select', {});
+                    if (self.settings.editable) {
+                        self.trigger('select', {});
+                    }
                 });
                 self.append(placeholder);
             }
@@ -346,12 +349,14 @@
         character.text(c);
         var this_editor = current_editor;
         character.hammer().on('touch', function (e) {
-            this_editor.trigger('select', {});
-            var x = e.gesture.center.pageX;
-            var offset = x - character.offset().left;
-            var after = offset > character.width() / 2;
-            if (after) character.after(cursor);
-            else       character.before(cursor);
+            if (current_editor.settings.editable) {
+                this_editor.trigger('select', {});
+                var x = e.gesture.center.pageX;
+                var offset = x - character.offset().left;
+                var after = offset > character.width() / 2;
+                if (after) character.after(cursor);
+                else       character.before(cursor);
+            }
         });
         return character;
     }

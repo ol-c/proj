@@ -83,7 +83,7 @@ $.fn.render.date = function (item, after) {
     month = get_text(months);
     monthday = get_chooser(range(1, 32));
     weekday = $('<span>');
-    year.numberroll(4);
+    year.numberroll(4, 4);
     
     hour = get_chooser(range(0, 23));
     minute = get_chooser(range(0, 59));
@@ -96,7 +96,7 @@ $.fn.render.date = function (item, after) {
     var local_updates = {};
 
     function throttled_mod(mod_function) {
-        return throttle(100, function (event, value) {
+        return throttle(300, function (event, value) {
             if (mod_function == 'setDate') value += 1;
             //  update local
             date[mod_function](value);

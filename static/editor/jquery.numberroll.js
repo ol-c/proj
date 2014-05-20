@@ -76,6 +76,9 @@ $.fn.numberroll = function (start_digits, max_digits) {
                 number = (number - digit) / 10;
                 digit = number % 10;
                 offset += 1;
+                if (digits.length == offset && number) {
+                    add_digit();
+                }
             }
         }
     });

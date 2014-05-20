@@ -64,4 +64,18 @@ $.fn.render.hashmap = function (item, after) {
     var container = $('<div></div>');
     $(this).append(container);
     render_hashmap();
+
+    function watch_fn(update) {
+        if (update.value.type == 'hashmap') {
+            console.log(update);
+        }
+        else {
+            self.empty();
+            self.render(update.value, after);
+            unwatch(item.reference, watch_fn);
+        }
+    }
+
+    watch(item.reference, watch_fn);
+
 };

@@ -6,7 +6,8 @@ $.fn.render.number = function (item, after) {
     });
     number.text(item.data);
     number.editor({
-        multiline : false
+        multiline : false,
+        editable : false
     });
     $(this).append([number, after]);
 
