@@ -35,7 +35,12 @@ $.fn.render.function = function (item, after) {
 
         var params = $('<span>');
         params.text(pb.params);
-        params.editor();
+        params.editor({
+            multiline : false
+        });
+        params.on('return', function () {
+            params.trigger('select_next', {from_direction : 'prev'});
+        })
         var open = $('<span>').append([declare, begin_params, params]);
 
         fun.append([open, params, end_params_begin_body]);
