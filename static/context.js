@@ -21,7 +21,6 @@ function user_context(item) {
 }
 
 function perform_operation(operation, cb) {
-console.log('sending', operation);
     var internal = '';
     if (operation.reference.internal) internal = '.' + operation.reference.internal;
     var token = Math.random() + '';

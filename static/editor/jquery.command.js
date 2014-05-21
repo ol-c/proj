@@ -1,38 +1,61 @@
 $.fn.command = function (item, environment) {
-    var self = $(this);
-    self.editor({
+    var self = this;
+    var command = $('<span>');
+    self.append(command);
+    var errors = $('<span>');
+    errors.css({
+        color : 'tomato',
+    });
+    self.append(errors);
+    command.editor({
         multiline : false,
         highlighting : 'javascript',
         placeholder : ' > '
     });
-    self.on('up', function () {
+    command.on('up', function () {
         history_index = Math.max(0, history_index - 1);
-        if (history.length == 0) history.push(self.text());
+        if (history.length == 0) history.push(command.text());
         if (history_index == history.length - 1) {
-            history.push(self.text());
+            history.push(command.text());
         }
-        self.trigger('empty');
-        self.trigger('append', history[history_index])
+        command.trigger('empty');
+        command.trigger('append', history[history_index])
     });
-    self.on('down', function () {
+    command.on('down', function () {
         history_index = Math.min(history.length-1, history_index + 1);
-        if (history.length == 0) history.push(self.text());
-        self.trigger('empty');
-        self.trigger('append', history[history_index]);
+        if (history.length == 0) history.push(command.text());
+        command.trigger('empty');
+        command.trigger('append', history[history_index]);
     });
     var history_index = 0;
     var history = [];
-    self.on('return', function () {
-        var command = self.text();
-        history.push(command);
+    command.on('return', function () {
+        var cmd = command.text();
+        history.push(cmd);
         history_index = history.length;
-        execute(command);
-        self.trigger('empty');
+        execute(cmd);
+        command.trigger('empty');
+        errors.empty();
     });
-    function execute(command) {
+    command.on('change', function () {
+        errors.empty();
+    });
+    command.on('unselect', function () {
+        errors.empty();
+    });
+    function execute(cmd) {
         var object = item.data;
         var values = item.values;
         //  assuming object type is hashmap
-        evaluate_script(item.reference, command);
+        evaluate_script(item.reference, cmd, function (res) {
+            if (res.type == 'error') {
+                var error = $('<span>');
+                errors.append(error);
+                error.text(res.data);
+            }
+            else {
+               console.log(res);
+            }
+        });
     }
 }

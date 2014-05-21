@@ -50,6 +50,7 @@ $.fn.render.hashmap = function (item, after) {
         open.append(command_line)
         var close = $('<span>}</span>');
         var keys = Object.keys(item.data);
+        keys.reverse();
 
         for (var i=0; i<keys.length; i++) {
             var key = keys[i];
