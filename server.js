@@ -8,7 +8,7 @@ var persist      = require('persist');
 var authenticate = require('authenticate');
 var fs           = require('fs');
 
-var special = {
+var special_domains = {
     'files' : files.server,
     'ol-c'  : authenticate
 };
@@ -107,7 +107,7 @@ else {
 //    app.use(express.favicon(__dirname + '/static/favicon.ico'));
     app.use(function (req, res, next) {
         var subdomain = req.headers.host.split('.').shift();
-        if (special[subdomain]) special[subdomain](req, res);
+        if (special_domains[subdomain]) special_domains[subdomain](req, res);
         else next();
     });
     app.use(express.static('./static'));
