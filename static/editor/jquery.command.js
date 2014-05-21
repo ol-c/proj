@@ -2,11 +2,8 @@ $.fn.command = function (item, environment) {
     var self = this;
     var command = $('<span>');
     self.append(command);
-    var errors = $('<span>');
-    errors.css({
-        color : 'tomato',
-    });
-    self.append(errors);
+    var output = $('<span>');
+    self.append(output);
     command.editor({
         multiline : false,
         highlighting : 'javascript',
@@ -20,28 +17,32 @@ $.fn.command = function (item, environment) {
         }
         command.trigger('empty');
         command.trigger('append', history[history_index])
+        output.empty();
     });
     command.on('down', function () {
         history_index = Math.min(history.length-1, history_index + 1);
         if (history.length == 0) history.push(command.text());
         command.trigger('empty');
         command.trigger('append', history[history_index]);
+        output.empty();
     });
     var history_index = 0;
     var history = [];
     command.on('return', function () {
-        var cmd = command.text();
-        history.push(cmd);
-        history_index = history.length;
-        execute(cmd);
+        var cmd = command.text().trim();
+        if (cmd != '') {
+            history.push(cmd);
+            history_index = history.length;
+            execute(cmd);
+        }
         command.trigger('empty');
-        errors.empty();
+        output.empty();
     });
     command.on('change', function () {
-        errors.empty();
+        output.empty();
     });
     command.on('unselect', function () {
-        errors.empty();
+        output.empty();
     });
     function execute(cmd) {
         var object = item.data;
@@ -49,12 +50,16 @@ $.fn.command = function (item, environment) {
         //  assuming object type is hashmap
         evaluate_script(item.reference, cmd, function (res) {
             if (res.type == 'error') {
-                var error = $('<span>');
-                errors.append(error);
+                var error = $('<span>').css({
+                    'color' : 'tomato'
+                });
+                output.append(error);
                 error.text(res.data);
             }
-            else {
-               console.log(res);
+            else if (res.value.type !== 'undefined'){
+               var message = $('<span>');
+               output.append(message);
+               message.text(JSON.stringify(res.value, null, 4))
             }
         });
     }
