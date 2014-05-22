@@ -18,7 +18,7 @@ if (cluster.isMaster) {
     var hosts   = {};
     control_root_object('ol-c', function (err) {
         if (err) console.log(err);
-        else { /* ready to start! */ }
+        else {}
     });
 
     function control_root_object(root, callback) {
@@ -131,6 +131,7 @@ else {
 
     //  load root object
     persist.load(process.env.root, function (err, res) {
+        console.log(err);
         if (err) console.log('error loading root object');
         else     initialize();
     });
