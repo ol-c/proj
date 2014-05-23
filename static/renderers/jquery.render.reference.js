@@ -1,47 +1,39 @@
 $.fn.render.reference = function (item, after)  {
-    var table = $('<table>');
-    table.css('border-collapse', 'collapse');
-    var body = $('<tbody>');
-    var row = $('<tr>');
-    var reference = $('<td>');
-    var reference_text = $('<span>');
-    reference_text.text(item.data);
-    reference.append(reference_text);
-    reference_text.editor();
-    var value = $('<td>');
-    var divider = $('<td> : <td>');
-    divider.css({
-        color : '#888888'
-    });
-    reference.css({
-        color : 'dodgerblue'
-    });
-    table.append(body.append(row.append([reference, divider, value])))
-    $([reference, divider, value]).css('border-spacing', 0);
-    var placeholder_after = $('<span>');
-    reference.hammer().one('doubletap', function () {
-        value.render(get_reference(item.data), placeholder_after);
-        placeholder_after.append(after);
-        value.fadeIn();
-        divider.fadeIn();
-        reference.hammer().on('doubletap', function () {
-            value.stop();
-            divider.stop();
-            if (!value.is(':visible')) placeholder_after.append(after);
-            divider.toggle();
-            value.toggle(function () {
-                if (value.is(':visible')) {
-                    placeholder_after.append(after);
-                }
-                else {
-                    reference.append(after);
-                }
-            });
-        });
-    });
-    reference.append(after);
-    $(this).append(table);
-    value.hide();
-    divider.hide();
-    reference.click();
+    var self = this;
+    var content = $('<span>');
+    self.append(content);
+    function dot_reference(name) {
+        return '.' + name;
+    }
+    function bracket_reference(name) {
+        return '["' + name + '"]';
+    }
+    function render(data) {
+        content.empty();
+        content.append('reference');
+        for (var i=0; i<data.length; i++) {
+            var name = data[i];
+            if (name.match(/^\w(\w|\d)*$/)) {
+                content.append(dot_reference(name));
+            }
+            else {
+                content.append(bracket_reference(name));
+            }
+        }
+    }
+    render(item.data);
+    self.append(after);
+
+    function watch_fn(update) {
+        if (update.value.type == 'reference') {
+            render(update.value.data);
+        }
+        else {
+            self.empty();
+            self.render(update.value, after);
+            unwatch(item.reference, watch_fn);
+        }
+    }
+
+    watch(item.reference, watch_fn);
 };

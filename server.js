@@ -131,7 +131,6 @@ else {
 
     //  load root object
     persist.load(process.env.root, function (err, res) {
-        console.log(err);
         if (err) console.log('error loading root object');
         else     initialize();
     });

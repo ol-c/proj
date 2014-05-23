@@ -1,6 +1,7 @@
 X editing renderers making and showing updates
 X render client command line errors
-  save references
+X save references
+  resolve references
   save files
   special "render" field
       ctrl + e to get into edit mode for object
@@ -9,6 +10,6 @@ X render client command line errors
       attach requester to each incoming reference as first
           in requester array
   special "permissions" field
-  expose creating container types to command line
-  more container types: List, Map, Set
+  expose creating persistant object to command line
+  special set, list ETC operations for hashmaps
   gaurd against circular references to container types
