@@ -56,7 +56,7 @@ $.fn.command = function (item, environment) {
                 output.append(error);
                 error.text(res.data);
             }
-            else if (res.value.type !== 'undefined'){
+            else {
                var message = $('<span>');
                output.append(message);
                message.text(JSON.stringify(res.value, null, 4))

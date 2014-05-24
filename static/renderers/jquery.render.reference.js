@@ -5,6 +5,9 @@ $.fn.render.reference = function (item, after)  {
     function dot_reference(name) {
         return '.' + name;
     }
+    function function_reference(name) {
+        return '.' + name;
+    }
     function bracket_reference(name) {
         return '["' + name + '"]';
     }
@@ -15,6 +18,9 @@ $.fn.render.reference = function (item, after)  {
             var name = data[i];
             if (name.match(/^\w(\w|\d)*$/)) {
                 content.append(dot_reference(name));
+            }
+            else if (name.match(/^\w(\w|\d)*(|\(.*)\)$/)) {
+                content.append(function_reference(name));
             }
             else {
                 content.append(bracket_reference(name));
