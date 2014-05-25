@@ -1,8 +1,9 @@
 X editing renderers making and showing updates
 X render client command line errors
 X save references
-  resolve references
-  save files
+X resolve references
+X save files
+  link files to upload and request loop
   special "render" field
       ctrl + e to get into edit mode for object
   set actual requester on web socket connection
@@ -11,5 +12,5 @@ X save references
           in requester array
   special "permissions" field
   expose creating persistant object to command line
-  special set, list ETC operations for hashmaps
   gaurd against circular references to container types
+  special set, list ETC operations for hashmaps
