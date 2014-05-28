@@ -107,6 +107,13 @@ else {
 //    app.use(express.favicon(__dirname + '/static/favicon.ico'));
     app.use(function (req, res, next) {
         var subdomain = req.headers.host.split('.').shift();
+
+        var host = req.headers.host;
+        res.setHeader('Access-Control-Allow-Origin', 'http://' + host.split('.').slice(1).join('.'));
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+        res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+        res.setHeader('Access-Control-Allow-Credentials', true);
+
         if (special_domains[subdomain]) special_domains[subdomain](req, res);
         else next();
     });

@@ -3,6 +3,7 @@ $.fn.render.hashmap = function (item, after) {
     $(self).css({
         whiteSpace : 'pre',
         fontFamily : 'monospace',
+        lineHeight : '1.5em'
     });
 
     var rendered_fields = {};

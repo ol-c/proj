@@ -145,9 +145,11 @@ $.fn.choose = function (options) {
 
     function on_keydown(e) {
         if (e.keyCode == 37) {
+            e.stopImmediatePropagation();
             self.trigger('select_prev');
         }
         else if (e.keyCode == 39) {
+            e.stopImmediatePropagation();
             self.trigger('select_next');
         }
         else if (e.keyCode == 38 && option_index > 0) {

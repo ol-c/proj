@@ -349,7 +349,7 @@
         character.text(c);
         var this_editor = current_editor;
         character.hammer().on('touch', function (e) {
-            if (current_editor.settings.editable) {
+            if (this_editor.settings.editable) {
                 this_editor.trigger('select', {});
                 var x = e.gesture.center.pageX;
                 var offset = x - character.offset().left;
@@ -391,18 +391,22 @@
                 show_cursor();
                 if (e.keyCode == 37) {
                     e.preventDefault();
+                    e.stopImmediatePropagation();
                     jump_to_previous();
                 }
                 else if (e.keyCode == 39) {
                     e.preventDefault();
+                    e.stopImmediatePropagation();
                     jump_to_next();
                 }
                 else if (e.keyCode == 38) {
                     e.preventDefault();
+                    e.stopImmediatePropagation();
                     jump_up();
                 }
                 else if (e.keyCode == 40) {
                     e.preventDefault();
+                    e.stopImmediatePropagation();
                     jump_down();
                 }
                 else if (e.keyCode == 8) {
