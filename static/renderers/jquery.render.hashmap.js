@@ -15,7 +15,9 @@
         });
 
         var hashed_ref = hash_reference(item.reference);
-        console.log(hashed_ref);
+
+
+        console.log('rendering: ' + hashed_ref, rendered[hashed_ref])
         if (rendered[hashed_ref]) {
 
             container.hammer().on('touch', function () {
@@ -151,9 +153,9 @@
                 var row = render_field(key, item.data[key], terminate);
                 content_body.append(row);
             }
-            var rendered = $('<span>');
-            $(rendered).append([open, content_body, close]);
-            container.append(rendered);
+            var r = $('<span>');
+            r.append([open, content_body, close]);
+            container.append(r);
         }
         $(this).append(container);
         render_hashmap();
@@ -172,8 +174,8 @@
                                 color : '#888888'
                             });
                         }
-                        var rendered = render_field(field, updated_fields[field], after);
-                        content_body.prepend(rendered);
+                        var r = render_field(field, updated_fields[field], after);
+                        content_body.prepend(r);
                     }
                 }
                 for (field in rendered_fields) {
@@ -183,13 +185,18 @@
                     }
                     //  necessary since references to objects inside of objects are still absolute
                     //  this will see if a reference was changed, indicating a need to refresh the field
-                    else if (rendered_fields[field] && hash_reference(updated_fields[field]) !== hash_reference(item.data[field])) {
+                    //  internal condition to make sure the value we are updating to is a container type (other types handle updates themselves)
+                    else if (
+                   (updated_fields[field].internal || (updated_fields[field].internal === undefined && item.data[field].internal === undefined))
+                    && hash_reference(updated_fields[field]) !== hash_reference(item.data[field])) {
                         // TODO: after char
                         var old = rendered_fields[field];
+                        delete rendered_fields[field];
                         old.before(render_field(field, updated_fields[field]));
                         old.remove();
                     }
                 }
+                item.data = updated_fields;
             }
             else {
                 //  this should never be called, as a persistant type
