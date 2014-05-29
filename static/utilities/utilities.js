@@ -229,20 +229,7 @@ for (var i=0; i<100; i++) {
 }
 //*/
 
-/*
-function (fileoptions, callback) {
-    var progress  = options.progress;
-    $(this).on('change', function (event) {
-        var file = this.files[0];
-        progress(0);
-        getSignedURLs(file.type, function (err, urls) {
-            if (err) callback(err);
-            else     upload(urls, file, progress, callback);
-        });
-    });
-*/
-
-function upload(upload_url, file, progress, cb) {
+function upload(upload_url, file, type, progress, cb) {
     progress(0);
     function success ()    { cb(null); }
     function error   (err) { cb(err); }
@@ -270,27 +257,7 @@ function upload(upload_url, file, progress, cb) {
         error       : error,
         xhr         : onProg
     };
-    if (file.type.length) request.contentType = file.type;
+    if (type.length) request.contentType = type;
     else request.contentType = 'binary/octet-stream';
     $.ajax(request);
 }
-
-/*
-    function getSignedURLs(type, cb) {
-        function success(urls) {
-            cb(null, JSON.parse(urls));
-        }
-        function error (xhr, status, err) {
-            cb(err);
-        }
-        var request = {
-            method  : 'GET',
-            url     : '/files/',
-            data    : { ContentType : type },
-            success : success,
-            error   : error
-        };
-        $.ajax(request);
-    }
-}
-*/

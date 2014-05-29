@@ -305,6 +305,7 @@
         });
 
         self.on('select', function (event, info) {
+            event.stopImmediatePropagation();
             show_cursor();
             current_editor = self;
             if (collapsed) {

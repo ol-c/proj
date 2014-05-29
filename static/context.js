@@ -195,10 +195,6 @@ $(function () {
         };
         perform_operation(root_reference_operation, function (response) {
             $('body').render(response);
-            var to_watch = {
-                id : root_id,
-                internal : 'changed'
-            };
         });
     };
 
@@ -228,4 +224,7 @@ $(function () {
     ws.onerror = function (event) {
         console.log('error', event);
     }
+
+    var scale = 1;
+    var offset = [0,0]
 });

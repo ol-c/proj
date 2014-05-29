@@ -2,8 +2,10 @@ $.fn.render.file = function (item, after) {
     var self = this;
 
     var download = item.data.url;
-    console.log(item)
-    if (download) {
+    if (download && download.substring(0, 7) == 'http://') {
+        download = item.data.url;
+    }
+    else if (download) {
         download = 'http://files.' + document.domain + '/' + item.data.url;
     }
     var uploaded = false;
@@ -13,15 +15,18 @@ $.fn.render.file = function (item, after) {
     var on_return = null;
     var type;
 
+    var icon_height = 3; //em
+
 
     var renderers = {
-        'text/*' : function () {
+        'text/*' : function (content_type, response) {
             var container = $('<div>');
             container.css({
-                width : '2em',
-                height : '2.75em',
-                padding : '0.25em',
-                border : '1px solid #CCCCCC',
+                width : (icon_height * 8.5/11) + 'em',
+                height : icon_height + 'em',
+                padding : (icon_height * 1.5/11) + 'em',
+                background : 'beige',
+                border : '2px solid white',
                 overflow : 'hidden',
                 display : 'inline-block',
                 verticalAlign : 'middle'
@@ -30,44 +35,62 @@ $.fn.render.file = function (item, after) {
                 container.css({borderColor : 'orange'});
             };
             unhighlighter = function () {
-                container.css({borderColor : '#CCCCCC'});
+                container.css({borderColor : 'white'});
             };
-            $.ajax({
-                url : download,
-                success : function (response) {
-                    //  TODO: find something that is a nicely frameable page
-                    //        and toy with wrapping
-                    if (response.length > 1000) {
-                        response = response.substring(0, 1000);
-                    }
-                    container.text(response);
-                    container.behave({
-                        'fitText' : {alignment : 'top'},
-                    });
-                },
-                error : function () {
-                    console.log('error');
-                }
-            })
+            //  TODO: find something that is a nicely frameable page
+            //        and toy with wrapping
+            if (response.length > 1000) {
+                response = response.substring(0, 1000);
+            }
+            container.text(response);
+            container.behave({
+                'fitText' : {alignment : 'top'},
+            });
             return container;
         },
-        'binary/*' : function (content_type) {
-            var download_button = $('<span>');
-            download_button.text(content_type);
+        'image/.*' : function () {
+            var image = $('<img>');
+            image.css({
+                border : '2px solid white',
+                height : icon_height + 'em',
+                verticalAlign : 'middle'
+            });
+            highlighter = function () {
+                image.css('border', '2px solid orange');
+            }
+            unhighlighter = function () {
+                image.css('border', '2px solid white');
+            }
+            image.attr('src', download);
+            return image;
+        },
+        '.*/.*' : function (content_type, response) {
+            content_type = content_type.split('/', 2);
+            var maintype = $('<span>').text(content_type[0]);
+            var subtype = $('<span>').text('/'+content_type[1]);
+            maintype.css({color : 'black'});
+            subtype.css({color : '#888888'});
+            var download_button = $('<div>');
+            download_button.css({
+                color : 'white',
+                background : '#EEEEEE',
+                display : 'inline-block',
+                padding : '0 1ch'
+            })
+            download_button.append([maintype, subtype]);
             download_button.hammer().on('tap', function () {
                 window.location.assign(download);
             });
-            download_button.css({color : 'darkmagenta'});
             unhighlighter = function () {
-                download_button.css({color : 'darkmagenta'});
+                download_button.css({background : '#EEEEEE'});
             }
  
             highlighter = function () {
-                download_button.css({color : 'orange'});
+                download_button.css({background : 'orange'});
             }
             return download_button;
         }
-    }
+    };
 
     self.selectable();
     self.hammer().on('touch', function () {
@@ -176,21 +199,34 @@ $.fn.render.file = function (item, after) {
                 else {
                     var script = 'this.' + item.reference.internal + ' = new File("' + filename + '")';
                     evaluate_script({id : item.reference.id}, script, function (response) {
-                        console.log(response)
                         render();
                     });
+                }
+            }
+
+            var extension_types = {
+                'json' : 'text/json'
+            };
+
+            var type = file.type
+
+            if (type === "" || type === undefined) {
+                var extension = file.name.split('.').pop();
+                if (extension_types[extension]) {
+                    type = extension_types[extension];
                 }
             }
 
             $.ajax({
                 url : 'http://files.' + document.domain + '/',
                 data : {
-                    ContentType : file.type
+                    ContentType : type
                 },
                 success : function (response) {
                     filename = response.filename;
                     download = 'http://files.' + document.domain + '/' + filename;
-                    upload(response.upload, file, progress, done);
+
+                    upload(response.upload, file, type, progress, done);
                 },
                 error : function (error) {
                     console.log(error);
@@ -227,7 +263,6 @@ $.fn.render.file = function (item, after) {
         text.css({
             position : 'absolute',
             fontSize : '2em',
-            lineHeight : '1em'
         });
         upload_container.append(uploader);
         uploader.css({
@@ -248,9 +283,16 @@ $.fn.render.file = function (item, after) {
         render();
     }
     function render() {
+        highlighter = function () {
+            loading.css({background : 'orange'});
+        };
+
+        unhighlighter = function () {
+            loading.css({background : 'none'});
+        }
         self.empty();
         $.ajax({
-            method : 'HEAD',
+            method : 'GET',
             url : download,
             success : function (response, textStatus, xhr) {
                 self.empty();
@@ -268,34 +310,46 @@ $.fn.render.file = function (item, after) {
                     textDecoration : 'none',
                     color : 'purple'
                 });
-                for (var renderer in renderers) {
-                    if (type.match(new RegExp(renderer))) {
-                        var bottom = $('<div>');
-                        bottom.css({
-                            display : 'inline-block',
-                            verticalAlign : 'bottom'
-                        });
-                        var f = $('<span>file </span>');
-                        f.css({
-                            color : '#888888'
-                        });
-                        self.append(f);
-                        self.append(renderers[renderer](type));
-                        self.append(bottom);
-                        bottom.append(after);
-                        break;
+                if (type == undefined) {
+                    var bottom = $('<div>');
+                    bottom.css({
+                        display : 'inline-block',
+                        verticalAlign : 'bottom'
+                    });
+                    self.append(renderers['.*/.*']('type/unknown', response));
+                    self.append(bottom);
+                    bottom.append(after);
+                }
+                else {
+                    for (var renderer in renderers) {
+                        if (type.match(new RegExp(renderer))) {
+                            var bottom = $('<div>');
+                            bottom.css({
+                                display : 'inline-block',
+                                verticalAlign : 'bottom'
+                            });
+                            self.append(renderers[renderer](type, response));
+                            self.append(bottom);
+                            bottom.append(after);
+                            break;
+                        }
                     }
                 }
                 if (self.selected()) highlight();
+
             },
             error : function (error) {
-                loading.remove();
-                var error_placeholder = $('<span>');
-                error_placeholder.text('ERROR loading file');
-                error_placeholder.css({
-                    color : 'red'
+                //  try image
+                var image = $('<img>');
+                image.attr('src', download);
+                image.on('load', function () {
+                    self.empty();
+                    self.append([renderers['image/.*'](), after]);
                 });
-                $(self).prepend(error_placeholder);
+                image.on('error', function () {
+                    var error_message = $("<span>").text("Error loading file: " + download);
+                    self.append([error_message, after]);
+                });
             }
         });
         var loading = $('<span>Loading</span>');
@@ -304,4 +358,15 @@ $.fn.render.file = function (item, after) {
         });
         self.append([loading, after]);
     }
+
+
+
+    function watch_fn(update) {
+        self.empty();
+        self.render(update.value, after);
+        unwatch(item.reference, watch_fn);
+    }
+
+    watch(item.reference, watch_fn);
+
 };

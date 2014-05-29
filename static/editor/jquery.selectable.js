@@ -15,7 +15,7 @@
     $.fn.selectable = function (action) {
         var self = this;
         self.addClass('selectable');
-        self.on('select', function () {
+        self.on('select', function (event) {
             var old = selected;
             selected = this;
             if (old !== undefined) $(old).trigger('unselect');

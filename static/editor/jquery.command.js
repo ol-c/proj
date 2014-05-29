@@ -19,6 +19,9 @@ $.fn.command = function (item, environment) {
         command.trigger('append', history[history_index])
         output.empty();
     });
+    self.on('select', function () {
+        command.trigger('select', {});
+    })
     command.on('down', function () {
         history_index = Math.min(history.length-1, history_index + 1);
         if (history.length == 0) history.push(command.text());

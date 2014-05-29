@@ -3,7 +3,7 @@ X render client command line errors
 X save references
 X resolve references
 X save files
-  link files to upload and request loop
+X link files to upload and request loop
   special "render" field
       ctrl + e to get into edit mode for object
   set actual requester on web socket connection
