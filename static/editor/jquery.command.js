@@ -9,6 +9,9 @@ $.fn.command = function (item, environment) {
         highlighting : 'javascript',
         placeholder : ' > '
     });
+    command.css({
+        color : '#888888'
+    });
     command.on('up', function () {
         history_index = Math.max(0, history_index - 1);
         if (history.length == 0) history.push(command.text());

@@ -17,7 +17,6 @@
         var hashed_ref = hash_reference(item.reference);
 
 
-        console.log('rendering: ' + hashed_ref, rendered[hashed_ref])
         if (rendered[hashed_ref]) {
 
             container.hammer().on('touch', function () {

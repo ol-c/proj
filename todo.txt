@@ -4,6 +4,8 @@ X save references
 X resolve references
 X save files
 X link files to upload and request loop
+X expose creating persistant object to command line
+X gaurd against circular references to container types
   special "render" field
       ctrl + e to get into edit mode for object
   set actual requester on web socket connection
@@ -11,6 +13,4 @@ X link files to upload and request loop
       attach requester to each incoming reference as first
           in requester array
   special "permissions" field
-  expose creating persistant object to command line
-  gaurd against circular references to container types
   special set, list ETC operations for hashmaps
