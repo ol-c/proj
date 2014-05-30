@@ -7,10 +7,7 @@ $.fn.command = function (item, environment) {
     command.editor({
         multiline : false,
         highlighting : 'javascript',
-        placeholder : ' > '
-    });
-    command.css({
-        color : '#888888'
+        placeholder : $('<span> &gt; </span> ').css('color', '#888888')
     });
     command.on('up', function () {
         history_index = Math.max(0, history_index - 1);
