@@ -186,15 +186,46 @@ $(function () {
         var root_id = window.location.host.split('.').shift();
         var internal_reference = window.location.pathname.slice(1)
         internal_reference = decodeURIComponent(internal_reference);
-        var root_reference_operation = {
-            type      : 'source reference',
-            reference : {
-                id        : root_id, //  this will be the root reference for ol-c
-                internal  : internal_reference
-            }
+        var reference = {
+            id        : root_id,
+            internal  : internal_reference
         };
-        perform_operation(root_reference_operation, function (response) {
-            $('body').render(response);
+        var source_ref = 'this';
+        if (internal_reference) source_ref += '.' + internal_reference;
+        //  try and show the rendered version of a datatype, otherwise show the code version
+        evaluate_script(reference, source_ref + '.render ? ' + source_ref + '.render() : ' + source_ref + ';', function (response) {
+            console.log(response)
+            if (response.value.type == 'string') {
+                $(document.body).append(response.value.data);
+            }
+            else {
+                $(document.body).render(response.value);
+            }
+        });
+
+        var editing = false;
+
+        $(window).on('keydown', function (e) {
+            if (!editing && e.ctrlKey && e.which == 69) {
+                editing = true;
+                e.preventDefault();
+                evaluate_script(reference, source_ref, function (response) {
+                    var container = $('<div>');
+                    $(document.body).append(container);
+                    $(container).render(response.value);
+                    container.css({
+                        position: 'absolute',
+                        top : 0,
+                        left : 0,
+                        backgroundColor :'rgba(255,255,255, .9)',
+                        padding : '1em',
+                        border : '2px solid #CCCCCC'
+                    });
+                    container.behave({
+                        zoomable : {}
+                    });
+                });
+            }
         });
     };
 

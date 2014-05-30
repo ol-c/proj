@@ -114,8 +114,8 @@
             });
             row.css({
                 paddingLeft : (4 + key_width) +'ch',
-                paddingTop : '0.25em',
-                paddingBottom : '0.25em'
+                paddingTop : '0.5em',
+                paddingBottom : '0.5em'
             });
 
             perform_operation({
@@ -187,7 +187,7 @@
                     //  internal condition to make sure the value we are updating to is a container type (other types handle updates themselves)
                     else if (
                    (updated_fields[field].internal || (updated_fields[field].internal === undefined && item.data[field].internal === undefined))
-                    && hash_reference(updated_fields[field]) !== hash_reference(item.data[field])) {
+                    && item.data[field] && hash_reference(updated_fields[field]) !== hash_reference(item.data[field])) {
                         // TODO: after char
                         var old = rendered_fields[field];
                         delete rendered_fields[field];

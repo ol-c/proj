@@ -1,16 +1,16 @@
 (function () {
     var current_editor = null;
+    var last_highlight = null;
     var cursor = $('<span>');
     cursor.css({
         display : 'inline-block',
         height : '12px',
-        borderLeft : '1ex solid orange',
+        borderLeft : '1ch solid orange',
         marginLeft : '0',
-        marginRight : '-1ex',
+        marginRight : '-1ch',
         position : 'relative',
         top : '2px',
-        opacity : 0.9,
-        zIndex : -1
+        zIndex : 9999
     });
     cursor.hide();
     var interval = 500;
@@ -49,7 +49,31 @@
     var normal_bottom_border = 'none';
     var error_bottom_border  = '2px double red';
 
+    var highlighter;
+    var unhighlighter;
+
+
+    var timeouts = [];
+    function highlight() {
+        var time_on = 1000;
+        var time_off = 500;
+        if (current_editor && current_editor.selected()) {
+            while (timeouts.length) {
+                clearTimeout(timeouts.pop());
+            }
+            if (highlighter) highlighter();
+            timeouts.push(setTimeout(function () {
+                if (unhighlighter) unhighlighter()
+                timeouts.push(setTimeout(highlight, time_off));
+            }, time_on));
+        }
+        else {
+            if (unhighlighter) unhighlighter();
+        }
+    }
+
     $.fn.editor = function (options) {
+
         //  swap current editor for initialization
         var prev_current = current_editor;
         current_editor = this;
@@ -185,6 +209,7 @@
             }
         });
         self.on('movecursor', function (event, index) {
+            console.log('hmmmmm')
             if (!self.selected()) self.trigger('select', {});
             hide_cursor();
             var children = self.children();
@@ -316,11 +341,37 @@
             if      (info.from_direction == 'next') self.append(cursor);
             else if (info.from_direction == 'prev') self.prepend(cursor);
             else self.append(cursor);
+
+            highlighter = function() {
+                cursor.next().css({
+                    background : 'rgba(255,165,0,0.9)'
+                });
+                if (cursor.next().size()) {
+                    cursor.css({zIndex : -1});
+                }
+                else {
+                    cursor.css({zIndex : 9999});
+                }
+                unhighlighter();
+                last_highlight = cursor.next();
+            }
+
+            unhighlighter = function() {
+                if (last_highlight) {
+                    last_highlight.css({
+                        background : 'none'
+                    });
+                }
+                last_highlight = null;
+            }
+
+            highlight();
         });
         self.on('unselect', function (event, info) {
             cursor.hide();
             if (self.text().trim() == '' && self.settings.placeholder) self.trigger('collapse');
             current_editor = null;
+            highlight();
         });
         self.css({
             whiteSpace : 'pre',
@@ -367,6 +418,7 @@
             cursor.prev().before(cursor);
         }
         else current_editor.trigger('select_prev');
+        highlight();
     }
 
     function jump_to_next(editor) {
@@ -374,14 +426,17 @@
             cursor.next().after(cursor);
         }
         else current_editor.trigger('select_next');
+        highlight();
     }
 
     function jump_up() {
         current_editor.trigger('up');
+        highlight();
     }
 
     function jump_down() {
         current_editor.trigger('down');
+        highlight();
     }
 
     $(window).on('keydown', function (e) {
