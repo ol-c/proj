@@ -4,33 +4,17 @@
     var cursor = $('<span>');
     cursor.css({
         display : 'inline-block',
-        height : '12px',
+        height : '1em',
         borderLeft : '1ch solid orange',
         marginLeft : '0',
         marginRight : '-1ch',
         position : 'relative',
         top : '2px',
+        verticalAlign : 'text-top',
         zIndex : 9999
     });
     cursor.hide();
-    var interval = 500;
-    var hide_time = 500;
-    var show_time = 1000;
     var current = 0;
-    setInterval(function () {
-        if (current_editor) {
-            current += interval;
-            if (current == 0) {
-                show_cursor();
-            }
-            else if (current == show_time) {
-                hide_cursor();
-            }
-            else if (current == show_time + hide_time) {
-                show_cursor();
-            }
-        }
-    }, interval);
 
     $(function () {
         $('body').append(cursor);
@@ -73,7 +57,6 @@
     }
 
     $.fn.editor = function (options) {
-
         //  swap current editor for initialization
         var prev_current = current_editor;
         current_editor = this;
@@ -346,13 +329,13 @@
                 cursor.next().css({
                     background : 'rgba(255,165,0,0.9)'
                 });
-                if (cursor.next().size()) {
-                    cursor.css({zIndex : -1});
+                unhighlighter();
+                if (cursor.next().size() && cursor.next().text() !== '\n') {
+                    cursor.css({opacity : 0});
                 }
                 else {
-                    cursor.css({zIndex : 9999});
+                    cursor.css({zIndex : 9999, opacity : 1});
                 }
-                unhighlighter();
                 last_highlight = cursor.next();
             }
 
@@ -362,6 +345,7 @@
                         background : 'none'
                     });
                 }
+                cursor.css({opacity : 0});
                 last_highlight = null;
             }
 

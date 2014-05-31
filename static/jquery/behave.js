@@ -201,6 +201,40 @@ $.fn.behave = function (behaviors) {
             fit();
             parentChange(element, fit);
         },
+        draggable : function(element, options) {
+            var offset = [0, 0];
+            var scale = 1;
+            var rotation = 0;
+            var last_drag;
+            var scroll_lock;
+            console.log(offset);
+            $(element).on('touchstart, mousedown', function (e) {
+                e.preventDefault();
+            });
+            
+            $(element).hammer().on('drag', function (e) {
+                e.stopPropagation()
+                if (last_drag == undefined) {
+                    last_drag = [e.gesture.deltaX, e.gesture.deltaY];
+                }
+                if (scroll_lock != 'vertical') {
+                    offset[0] += e.gesture.deltaX - last_drag[0];
+                }
+                
+                if (scroll_lock != 'horizontal') {
+                    offset[1] += e.gesture.deltaY - last_drag[1];
+                }
+
+                last_drag = [e.gesture.deltaX, e.gesture.deltaY];
+
+                render(element, offset, scale, rotation);
+            });
+
+            $(element).hammer().on('release', function () {
+                last_drag = [0, 0];
+            });
+
+        },
         zoomable : function (element, options) {
             
             var scale = 1;
@@ -237,7 +271,7 @@ $.fn.behave = function (behaviors) {
 
                     clamp();
 
-                    render();
+                    render(element, offset, 1, 0);
                 }
             });
 
@@ -277,7 +311,7 @@ $.fn.behave = function (behaviors) {
                 last_pinch = [e.gesture.deltaX, e.gesture.deltaY];
 
                 clamp();
-                render();
+                render(element, offset, scale, rotation);
             });
 
             $(element).on('touchend touchcancel mouseup', function (e) {
@@ -348,26 +382,26 @@ $.fn.behave = function (behaviors) {
             }
 
             var scroll_lock = null;
-
-            function render() {
-                var x = offset[0] / scale;
-                var y = offset[1] / scale;
-                
-                rotation = 0;
-                
-                var transform3d =    'scale3d(' + scale + ', '  + scale + ',1) ' + 'translate3d(' + x + 'px,' + y + 'px,0px) rotate3d(0,0,0,' + rotation + 'deg)';
-                var transform2d =    'scale(' + scale + ', '     + scale + ') ' + 'translate(' + x + 'px,' + y + 'px) rotate(' + rotation + 'deg`)';
-
-                $(element).css({
-                    'webkitTransform':    transform3d,
-                    'oTransform':        transform2d,
-                    'msTransform':        transform2d,
-                    'mozTransform':        transform2d,
-                    'transform':        transform3d
-                });
-            }
         }
     }
+
+
+    function render(element, offset, scale, rotation) {
+        var x = offset[0] / scale;
+        var y = offset[1] / scale;
+        
+        var transform3d =    'scale3d(' + scale + ', '  + scale + ',1) ' + 'translate3d(' + x + 'px,' + y + 'px,0px) rotate3d(0,0,0,' + rotation + 'deg)';
+        var transform2d =    'scale(' + scale + ', '     + scale + ') ' + 'translate(' + x + 'px,' + y + 'px) rotate(' + rotation + 'deg`)';
+
+        $(element).css({
+            'webkitTransform':    transform3d,
+            'oTransform':        transform2d,
+            'msTransform':        transform2d,
+            'mozTransform':        transform2d,
+            'transform':        transform3d
+        });
+    }
+
 
     function parentChange(element, fn) {
         var parent = $(element).parent();

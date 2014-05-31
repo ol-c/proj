@@ -214,7 +214,7 @@ $(function () {
                     $(document.body).append(container);
                     $(container).render(response.value);
                     container.css({
-                        position: 'absolute',
+                        position: 'fixed',
                         top : 0,
                         left : 0,
                         backgroundColor :'rgba(255,255,255, .9)',
@@ -222,7 +222,7 @@ $(function () {
                         border : '2px solid #CCCCCC'
                     });
                     container.behave({
-                        zoomable : {}
+                        draggable : {}
                     });
                 });
             }
