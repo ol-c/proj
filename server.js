@@ -5,12 +5,10 @@ var net          = require('net');
 var ws           = require('ws');
 var files        = require('files');
 var persist      = require('persist');
-var authenticate = require('authenticate');
 var fs           = require('fs');
 
 var special_domains = {
-    'files' : files.server,
-    'ol-c'  : authenticate
+    'files' : files.server
 };
 
 if (cluster.isMaster) {
