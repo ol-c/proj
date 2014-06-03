@@ -8,9 +8,8 @@ X expose creating persistant object to command line
 X gaurd against circular references to container types
 X special "render" field
 X     ctrl + e to get into edit mode for object
-  set actual requester on web socket connection
-      attach requester to socket on connection
-      attach requester to each incoming reference as first
-          in requester array
-  special "permissions" field
+X special "permissions" field
+  associate proper agent for each function so authorize can
+      check permissions
+  cache permissions / increase efficiency
   special set, list ETC operations for hashmaps
