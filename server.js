@@ -134,6 +134,9 @@ else {
         });
     });
 
+    //  set agent so we know what agent to attach to executing functions
+    persist.set_agent(process.env.root);
+
     //  load root object
     persist.load(process.env.root, function (err, res) {
         if (err) console.log('error loading root object');

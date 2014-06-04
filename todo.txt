@@ -11,5 +11,4 @@ X     ctrl + e to get into edit mode for object
 X special "permissions" field
   associate proper agent for each function so authorize can
       check permissions
-  cache permissions / increase efficiency
   special set, list ETC operations for hashmaps
