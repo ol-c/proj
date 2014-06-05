@@ -199,7 +199,7 @@ $(function () {
                 $(document.body).append(response.value.data);
             }
             else {
-                $(document.body).render(response.value);
+                show_in_container(response.value);
             }
         });
 
@@ -210,23 +210,27 @@ $(function () {
                 editing = true;
                 e.preventDefault();
                 evaluate_script(reference, source_ref, function (response) {
-                    var container = $('<div>');
-                    $(document.body).append(container);
-                    $(container).render(response.value);
-                    container.css({
-                        position: 'fixed',
-                        top : 0,
-                        left : 0,
-                        backgroundColor :'rgba(255,255,255, .9)',
-                        padding : '1em',
-                        border : '2px solid #CCCCCC'
-                    });
-                    container.behave({
-                        draggable : {}
-                    });
+                    show_in_container(response.value);
                 });
             }
         });
+        function show_in_container(value) {
+            var container = $('<div>');
+            $(document.body).append(container);
+            $(container).render(value);
+            container.css({
+                position: 'fixed',
+                top : 0,
+                left : 0,
+                backgroundColor :'rgba(255,255,255, .9)',
+                padding : '1em',
+                border : '2px solid #CCCCCC'
+            });
+            container.behave({
+                draggable : {}
+            });
+         }
+
     };
 
     var references = {};

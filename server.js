@@ -6,10 +6,24 @@ var ws           = require('ws');
 var files        = require('files');
 var persist      = require('persist');
 var fs           = require('fs');
+var auth         = require('auth');
 
 var special_domains = {
     'files' : files.server
 };
+
+function parseCookies (request) {
+    var list = {};
+    var rc = request.headers.cookie;
+
+    rc && rc.split(';').forEach(function( cookie ) {
+        var parts = cookie.split('=');
+        list[parts.shift().trim()] = unescape(parts.join('='));
+    });
+
+    return list;
+}
+
 
 if (cluster.isMaster) {
     var workers = [];
@@ -104,16 +118,22 @@ else {
     var app = express();
 //    app.use(express.favicon(__dirname + '/static/favicon.ico'));
     app.use(function (req, res, next) {
-        var subdomain = req.headers.host.split('.').shift();
+        require('crypto').randomBytes(16, function(ex, buf) {
+            //  save encrypted token as a key in storage
+            var subdomain = req.headers.host.split('.').shift();
+            var token = buf.toString('hex');
+            var host = req.headers.host;
+            res.setHeader('Access-Control-Allow-Origin', 'http://' + host.split('.').slice(1).join('.'));
+            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+            res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+            res.setHeader('Access-Control-Allow-Credentials', true);
+            if (parseCookies(req).id == undefined) {
+                res.setHeader('Set-Cookie', ['id=' + token])
+            }
 
-        var host = req.headers.host;
-        res.setHeader('Access-Control-Allow-Origin', 'http://' + host.split('.').slice(1).join('.'));
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-        res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-        res.setHeader('Access-Control-Allow-Credentials', true);
-
-        if (special_domains[subdomain]) special_domains[subdomain](req, res);
-        else next();
+            if (special_domains[subdomain]) special_domains[subdomain](req, res, next);
+            else next();
+        });
     });
     app.use(express.static('./static'));
     app.use(function (request, response) {
@@ -122,7 +142,14 @@ else {
 
     var HTTPserver = http.createServer(app); 
     var WSserver = new ws.Server({server : HTTPserver});
-    WSserver.on('connection', persist.handleWS);
+    WSserver.on('connection', function (websocket) {
+        var cookies = parseCookies(websocket.upgradeReq);
+        websocket.session = {
+            id : cookies.id
+        };
+        websocket.type = 'websocket';
+        persist.handleWS(websocket);
+    });
     HTTPserver.listen(80, initialize);
 
     //  notify master process when this worker has taken
