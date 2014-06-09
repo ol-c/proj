@@ -186,14 +186,12 @@
             }
         });
         self.on('movecursor', function (event, index) {
-            console.log('hmmmmm')
             if (!self.selected()) self.trigger('select', {});
             hide_cursor();
             var children = self.children();
             var l = children.size();
             if (index < 0) index = Math.max(0, l - index);
             index = Math.min(l, index);
-            cursor.show();
             if (index == l) {
                 self.append(cursor);
             }
@@ -316,7 +314,12 @@
             }
             if      (info.from_direction == 'next') self.append(cursor);
             else if (info.from_direction == 'prev') self.prepend(cursor);
-            else self.append(cursor);
+            else if (info.from_character) {
+                
+            }
+            else {
+                self.prepend(cursor);
+            }
 
             highlighter = function() {
                 unhighlighter();
@@ -380,12 +383,12 @@
         var this_editor = current_editor;
         character.hammer().on('touch', function (e) {
             if (this_editor.settings.editable) {
-                this_editor.trigger('select', {});
                 var x = e.gesture.center.pageX;
                 var offset = x - character.offset().left;
                 var after = offset > character.width() / 2;
                 if (after) character.after(cursor);
                 else       character.before(cursor);
+                this_editor.trigger('select', {from_character : true});
             }
         });
         return character;
