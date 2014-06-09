@@ -207,7 +207,6 @@ $.fn.behave = function (behaviors) {
             var rotation = 0;
             var last_drag;
             var scroll_lock;
-            console.log(offset);
             $(element).on('touchstart, mousedown', function (e) {
                 e.preventDefault();
             });
@@ -337,7 +336,6 @@ $.fn.behave = function (behaviors) {
                         scale = parent_height / height;
                         scroll_lock = 'horizontal';
                     }
-                    console.log(scale);
                     var position = $(element).position()
                     offset[0] = -position.left;
                     offset[1] = -position.top;

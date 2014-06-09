@@ -14,20 +14,6 @@
         zIndex : 9999
     });
     cursor.hide();
-    var current = 0;
-
-    $(function () {
-        $('body').append(cursor);
-    });
-    var last_show = Date.now();
-    function show_cursor() {
-        current = 0;
-        cursor.show();
-    }
-    function hide_cursor() {
-        last_show = Date.now();
-        cursor.hide();
-    }
 
     var editing = true;
     var normal_bottom_border = 'none';
@@ -118,12 +104,18 @@
             }
         });
         self.on('blur', function (event, data) {
-            if (self.text().trim() == '' && self.settings.placeholder) self.trigger('collapse');
+            if (self.text().trim() == '' && self.settings.placeholder) {
+                 self.trigger('collapse');
+             }
         });
         self.on('empty', function (event, data) {
             self.empty();
-            if (self == current_editor) self.append(cursor);
-            else self.trigger('collapse');
+            if (self == current_editor) {
+                self.append(cursor);
+            }
+            else {
+                self.trigger('collapse');
+            }
         });
         self.on('append', function (event, data) {
             for (var i=0; i<data.length; i++) {
@@ -141,7 +133,9 @@
             var edits = edits_between(data, self.text());
             var children = [];
             self.children().each(function (index, child)  {
-                if (child != cursor[0]) children.push($(child));
+                if (child != cursor[0]) {
+                    children.push($(child));
+                }
             });
             apply_edits(edits, data.split(''),
                 function sub(index, item) {
@@ -199,7 +193,7 @@
             var l = children.size();
             if (index < 0) index = Math.max(0, l - index);
             index = Math.min(l, index);
-            show_cursor();
+            cursor.show();
             if (index == l) {
                 self.append(cursor);
             }
@@ -314,7 +308,6 @@
 
         self.on('select', function (event, info) {
             event.stopImmediatePropagation();
-            show_cursor();
             current_editor = self;
             if (collapsed) {
                 collapsed = false;
@@ -326,15 +319,16 @@
             else self.append(cursor);
 
             highlighter = function() {
+                unhighlighter();
                 cursor.next().css({
                     background : 'rgba(255,165,0,0.9)'
                 });
-                unhighlighter();
                 if (cursor.next().size() && cursor.next().text() !== '\n') {
                     cursor.css({opacity : 0});
                 }
                 else {
                     cursor.css({zIndex : 9999, opacity : 1});
+                    cursor.show();
                 }
                 last_highlight = cursor.next();
             }
@@ -428,7 +422,6 @@
             if (e.ctrlKey) {
             }
             else if (editing) {
-                show_cursor();
                 if (e.keyCode == 37) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
@@ -497,7 +490,6 @@
             var char = String.fromCharCode(e.which);
             var c = create_char(char);
             cursor.before(c);
-            show_cursor();
 
 
             //  Guess cursor position
