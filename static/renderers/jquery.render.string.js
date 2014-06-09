@@ -22,7 +22,7 @@ $.fn.render.string = function (item, after) {
     });
     //  Ignore the first update for a state that we sent here (only want to update when there is new information)
     var local_updates = {};
-    content.on('change', throttle(100, function () {
+    content.on('change', throttle(300, function () {
         if (edits.length) {
             var edit_source = '';
             while (edits.length) {

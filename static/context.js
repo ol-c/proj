@@ -222,9 +222,10 @@ $(function () {
                 position: 'fixed',
                 top : 0,
                 left : 0,
-                backgroundColor :'rgba(255,255,255, .9)',
+                backgroundColor :'rgba(245,245,245, .95)',
                 padding : '1em',
-                border : '2px solid #CCCCCC'
+                boxShadow: "2px 2px 5px rgba(100, 100, 100, 0.5)",
+                border : '1px solid rgba(210, 210, 210, 0.5)'
             });
             container.behave({
                 draggable : {}
