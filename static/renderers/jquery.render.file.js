@@ -26,7 +26,7 @@ $.fn.render.file = function (item, after) {
                 height : icon_height + 'em',
                 padding : (icon_height * 1.5/11) + 'em',
                 background : 'beige',
-                border : '2px solid white',
+                border : '2px solid rgba(0,0,0,0)',
                 overflow : 'hidden',
                 display : 'inline-block',
                 verticalAlign : 'middle'
@@ -35,7 +35,7 @@ $.fn.render.file = function (item, after) {
                 container.css({borderColor : 'orange'});
             };
             unhighlighter = function () {
-                container.css({borderColor : 'white'});
+                container.css({borderColor : 'rgba(0,0,0,0)'});
             };
             //  TODO: find something that is a nicely frameable page
             //        and toy with wrapping
@@ -51,7 +51,7 @@ $.fn.render.file = function (item, after) {
         'image/.*' : function () {
             var image = $('<img>');
             image.css({
-                border : '2px solid white',
+                border : '2px solid rgba(0,0,0,0)',
                 height : icon_height + 'em',
                 verticalAlign : 'middle'
             });
@@ -59,7 +59,7 @@ $.fn.render.file = function (item, after) {
                 image.css('border', '2px solid orange');
             }
             unhighlighter = function () {
-                image.css('border', '2px solid white');
+                image.css('border', '2px solid rgba(0, 0, 0, 0)');
             }
             image.attr('src', download);
             return image;

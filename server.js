@@ -8,6 +8,10 @@ var persist      = require('persist');
 var fs           = require('fs');
 var auth         = require('auth');
 
+var special_subdomains = {
+    files : files.server
+};
+
 function parseCookies (request) {
     var list = {};
     var rc = request.headers.cookie;
@@ -20,17 +24,15 @@ function parseCookies (request) {
     return list;
 }
 
-
-
 if (cluster.isMaster) {
     var workers = [];
     var hosts   = {};
-    control_root_object('ol-c', function (err) {
+    control_root_object('ol-c', 'fordjason@gmail.com', function (err) {
         if (err) console.log(err);
         else {}
     });
 
-    function control_root_object(root, callback) {
+    function control_root_object(root, owner, callback) {
         //  Check if root already exists, if not
         //  create it here and unload it so worker
         //  can take control
@@ -38,11 +40,14 @@ if (cluster.isMaster) {
             if (err) console.log('error seeing if root exists');
             else if (exists) spawn_worker_for_root(root, callback);
             else {
-                 var root_object = persist.create('hashmap', root);
-                 persist.unload(root_object, function (err) {
-                     if (err) callback('error unloading before spawning worker');
-                     else     spawn_worker_for_root(root, callback);
-                 });
+                var root_object = persist.create('hashmap', root);
+                if (root_object.owner == undefined) {
+                    root_object.owner = owner;
+                }
+                persist.unload(root_object, function (err) {
+                    if (err) callback('error unloading before spawning worker');
+                    else     spawn_worker_for_root(root, callback);
+                });
             }
         });
     }
@@ -84,7 +89,7 @@ if (cluster.isMaster) {
                     else if (host) respond(host);
                     else {
                         // claim control of this root since there is no other host
-                        control_root_object(message.id, function (err) {
+                        control_root_object(message.id, message.requester, function (err) {
                             if (err) console.log('error occurred controlling root object');
                             else     respond(hosts[message.id]);
                         });
@@ -95,9 +100,9 @@ if (cluster.isMaster) {
                 hosts[message.id] = worker.host;
             },
             'control root' : function (message) {
-                 control_root_object(message.name, function (err) {
+                 control_root_object(message.name, message.owner, function (err) {
                      if (err) console.log(err);
-                     else { /*  root object controlled! */ }
+                     else {}
                  });
             },
             'initialized' : function (message) {
@@ -115,6 +120,15 @@ else {
     var app = express();
 //    app.use(express.favicon(__dirname + '/static/favicon.ico'));
     app.use(auth.middleware);
+    app.use(function (req, res, next) {
+        var subdomain = req.headers.host.split('.').shift();
+        if (special_subdomains[subdomain]) {
+            special_subdomains[subdomain](req, res, next);
+        }
+        else {
+            next();
+        }
+    });
     app.use(express.static('./static'));
     app.use(function (request, response) {
         response.end(fs.readFileSync('./static/index.html'));
@@ -148,9 +162,7 @@ else {
     persist.load(process.env.root, function (err, res) {
         if (err) console.log('error loading root object');
         else {
-            if (res.owner == undefined) {
-                res.owner = 'fordjason@gmail.com'
-            }
+            persist.freeze(res, 'owner');
             persist.set_owner(res.owner);
             initialize();
         }
@@ -159,11 +171,12 @@ else {
     //  create resolver so persist can connect
     //  to other persist instances
     var waiting_responses = {};
-    persist.resolve_hosts(function (id, callback) {
+    persist.resolve_hosts(function (id, requester, callback) {
         var token = Math.random();
         process.send({
             'token' : token,
             'event' : 'host request',
+            'requester' : requester,
             'id'    : id
         });
         waiting_responses[token] = callback;

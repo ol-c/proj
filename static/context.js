@@ -200,23 +200,31 @@ $(function () {
             }
             else if (response.value.type == 'string') {
                 $(document.body).append(response.value.data);
+                $(window).on('keydown', function (e) {
+                    if (!editing && e.ctrlKey && e.which == 69) {
+                        editing = true;
+                        e.preventDefault();
+                        evaluate_script(reference, source_ref, function (response) {
+                            show_in_container(response.value);
+                        });
+                    }
+                });
+
             }
             else {
                 show_in_container(response.value);
             }
         });
 
-        var editing = false;
-
         $(window).on('keydown', function (e) {
-            if (!editing && e.ctrlKey && e.which == 69) {
-                editing = true;
+            if (e.ctrlKey && e.which == 69) {
                 e.preventDefault();
-                evaluate_script(reference, source_ref, function (response) {
-                    show_in_container(response.value);
-                });
             }
         });
+
+
+        var editing = false;
+
         function show_in_container(value) {
             var container = $('<div>');
             $(document.body).append(container);

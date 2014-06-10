@@ -9,7 +9,6 @@
         marginLeft : '0',
         marginRight : '-1ch',
         position : 'relative',
-        top : '2px',
         verticalAlign : 'text-top',
         zIndex : 9999
     });
@@ -469,6 +468,7 @@
                 else if (e.keyCode == 9) {
                     e.preventDefault();
                 }
+                highlight();
             }
         }
     });
