@@ -195,7 +195,10 @@ $(function () {
         //  try and show the rendered version of a datatype, otherwise show the code version
         evaluate_script(reference, source_ref + '.render ? ' + source_ref + '.render() : ' + source_ref + ';', function (response) {
             console.log(response)
-            if (response.value.type == 'string') {
+            if (response.type == 'error') {
+                $(document.body).render(response);
+            }
+            else if (response.value.type == 'string') {
                 $(document.body).append(response.value.data);
             }
             else {

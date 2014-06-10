@@ -8,10 +8,6 @@ var persist      = require('persist');
 var fs           = require('fs');
 var auth         = require('auth');
 
-var special_domains = {
-    'files' : files.server
-};
-
 function parseCookies (request) {
     var list = {};
     var rc = request.headers.cookie;
@@ -23,6 +19,7 @@ function parseCookies (request) {
 
     return list;
 }
+
 
 
 if (cluster.isMaster) {
@@ -117,24 +114,7 @@ if (cluster.isMaster) {
 else {
     var app = express();
 //    app.use(express.favicon(__dirname + '/static/favicon.ico'));
-    app.use(function (req, res, next) {
-        require('crypto').randomBytes(16, function(ex, buf) {
-            //  save encrypted token as a key in storage
-            var subdomain = req.headers.host.split('.').shift();
-            var token = buf.toString('hex');
-            var host = req.headers.host;
-            res.setHeader('Access-Control-Allow-Origin', 'http://' + host.split('.').slice(1).join('.'));
-            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-            res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-            res.setHeader('Access-Control-Allow-Credentials', true);
-            if (parseCookies(req).id == undefined) {
-                res.setHeader('Set-Cookie', ['id=' + token])
-            }
-
-            if (special_domains[subdomain]) special_domains[subdomain](req, res, next);
-            else next();
-        });
-    });
+    app.use(auth.middleware);
     app.use(express.static('./static'));
     app.use(function (request, response) {
         response.end(fs.readFileSync('./static/index.html'));
@@ -167,7 +147,13 @@ else {
     //  load root object
     persist.load(process.env.root, function (err, res) {
         if (err) console.log('error loading root object');
-        else     initialize();
+        else {
+            if (res.owner == undefined) {
+                res.owner = 'fordjason@gmail.com'
+            }
+            persist.set_owner(res.owner);
+            initialize();
+        }
     });
 
     //  create resolver so persist can connect
