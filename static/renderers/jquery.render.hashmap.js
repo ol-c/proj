@@ -122,7 +122,24 @@
                 type : 'source reference',
                 reference : reference
             }, function (item) {
-                value.render(item, after);
+                if (item.type == 'hashmap') {
+                    evaluate_script(reference, "typeof this.render === 'function' ? this.render() : false", function (result) {
+                       if (result.type == 'success') {
+                           if (result.value.type == 'boolean') {
+                               value.render(item, after);
+                           }
+                           else {
+                               value.append(result.value.data);
+                           }
+                       }
+                       else {
+                           //  TODO: render error...
+                       }
+                    });
+                }
+                else {
+                    value.render(item, after);
+                }
             });
             
             rendered_fields[key] = row;
