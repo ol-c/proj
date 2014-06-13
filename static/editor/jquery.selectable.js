@@ -1,7 +1,7 @@
 (function () {
     var selected;
     function auto_select_first() {
-        var selectable = $('.selectable');
+        var selectable = $('.selectable:visible');
         if (selectable.size()) {
             selectable.first().trigger('select', {});
         }
@@ -23,15 +23,16 @@
         });
         self.on('select_prev', function (event, data) {
             event.stopPropagation();
-            var selectable = $('.selectable');
+            var selectable = $('.selectable:visible');
             var index = selectable.index(this);
             if (index > 0) selectable.eq(index - 1).trigger('select', {
                 from_direction : 'next'
             });
         });
         self.on('select_next', function (event, data) {
+            console.log('selecting next!')
             event.stopPropagation();
-            var selectable = $('.selectable');
+            var selectable = $('.selectable:visible');
             var index = selectable.index(this);
             if (index < selectable.size() - 1) selectable.eq(index+1).trigger('select', {
                 from_direction : 'prev'

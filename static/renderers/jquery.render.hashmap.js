@@ -1,9 +1,21 @@
+$(window).on('keydown', function (e) {
+    if (e.ctrlKey && e.which == 69) {
+        e.preventDefault();
+    }
+});
+               
+
 (function () {
 
     var rendered = {};
 
     $.fn.render.hashmap = function (item, after) {
         var container = $('<div>');
+        //  transparent border so can highlight without trouble
+        container.css({
+            display : 'inline-block',
+            border : '2px solid rgba(0,0,0,0)'
+        });
         this.append(container);
         var self = container;
 
@@ -40,6 +52,7 @@
                 position: 'fixed',
                 top : 0,
                 left : 0,
+                display : 'inline-block',
                 backgroundColor :'rgba(255,255,255, .95)',
                 padding : '1em',
                 boxShadow: "0px 0px 32px rgba(200, 200, 200, 0.95)",
@@ -48,54 +61,68 @@
             container.behave({
                 draggable : {}
             });
+            return container;
         }
         var editing = false;
         evaluate_script(item.reference, "typeof this.render === 'function' ? this.render() : false", function (result) {
             if (result.type == 'success') {
-                if (result.value.type == 'boolean') {
-                    show_in_container(render_generic());
-                }
-                else {
-                    //  append html
-                    self.append(result.value.data);
-                    $(window).on('keydown', function (e) {
-                        if (!editing && self.selected() && e.ctrlKey && e.which == 69) {
-                            editing = true;
-                            e.preventDefault();
-                            show_in_container(render_generic());
-                        }
-                        if (self.selected()) {
-                            if (e.keyCode == 37) {
-                                container.trigger('select_prev');
-                            }
-                            else if (e.keyCode == 39) {
-                                container.trigger('select_next');
-                            }
-                        }
+                var renderable = result.value.data;
+                if (result.value.type == 'boolean') renderable = "{&hellip;}";
 
-                    });
-                    //  TODO: selectable container
-                    //  something broken in selectable layer
-                    self.selectable();
-                    highlighter = function () {
-                        self.css({
-                            border : '2px solid orange'
-                        });
-                    };
-                    unhighlighter = function () {
-                        self.css({
-                            border : '2px solid rgba(0,0,0,0)'
-                        })
+                //  append html
+                self.append(renderable);
+                var generic_view = null;
+                $(window).on('keydown', function (e) {
+                    if (self.selected() && e.ctrlKey && e.which == 69) {
+                        e.preventDefault();
+                        if (generic_view) {
+                            generic_view.toggle();
+                        }
+                        else {
+                            generic_view = show_in_container(render_generic());
+                            container.trigger('select_next')
+                            generic_view.hammer().on('touch', function (e) {
+                                //  TODO: select the command line for this
+                                e.stopPropagation();
+                            });
+                        }
                     }
-                    self.on('select', function (e) {
-                        e.stopImmediatePropagation();
-                        highlight();
+                    if (self.selected()) {
+                        if (e.keyCode == 37) {
+                            e.stopImmediatePropagation();
+                            container.trigger('select_prev');
+                        }
+                        else if (e.keyCode == 39) {
+                            e.stopImmediatePropagation();
+                            container.trigger('select_next');
+                        }
+                    }
+
+                });
+                //  selectable container
+                self.selectable();
+                highlighter = function () {
+                    self.css({
+                        border : '2px solid orange'
                     });
-                    self.on('unselect', function (e) {
-                        e.stopImmediatePropagation();
-                        unhighlighter();
-                    });
+                };
+                unhighlighter = function () {
+                    self.css({
+                        border : '2px solid rgba(0,0,0,0)'
+                    })
                 }
+                self.on('select', function (e) {
+                    e.stopImmediatePropagation();
+                    highlight();
+                });
+                self.on('unselect', function (e) {
+                    e.stopImmediatePropagation();
+                    unhighlighter();
+                });
+                self.hammer().on('touch', function (e) {
+                    e.stopPropagation();
+                    self.trigger('select', {});
+                });
             }
             else {
                 //  TODO: render error...
