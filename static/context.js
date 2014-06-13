@@ -192,57 +192,9 @@ $(function () {
         };
         var source_ref = 'this';
         if (internal_reference) source_ref += '.' + internal_reference;
-        //  try and show the rendered version of a datatype, otherwise show the code version
-        evaluate_script(reference, source_ref + '.render ? ' + source_ref + '.render() : ' + source_ref + ';', function (response) {
-            console.log(response)
-            if (response.type == 'error') {
-                $(document.body).render(response);
-            }
-            else if (response.value.type == 'string') {
-                $(document.body).append(response.value.data);
-                $(window).on('keydown', function (e) {
-                    if (!editing && e.ctrlKey && e.which == 69) {
-                        editing = true;
-                        e.preventDefault();
-                        evaluate_script(reference, source_ref, function (response) {
-                            show_in_container(response.value);
-                        });
-                    }
-                });
-
-            }
-            else {
-                show_in_container(response.value);
-            }
+        evaluate_script(reference, 'this', function (result) {
+            $(document.body).render(result.value);
         });
-
-        $(window).on('keydown', function (e) {
-            if (e.ctrlKey && e.which == 69) {
-                e.preventDefault();
-            }
-        });
-
-
-        var editing = false;
-
-        function show_in_container(value) {
-            var container = $('<div>');
-            $(document.body).append(container);
-            $(container).render(value);
-            container.css({
-                position: 'fixed',
-                top : 0,
-                left : 0,
-                backgroundColor :'rgba(250,250,250, .95)',
-                padding : '1em',
-                boxShadow: "2px 2px 5px rgba(100, 100, 100, 0.5)",
-                border : '1px solid rgba(220, 220, 220, 0.5)'
-            });
-            container.behave({
-                draggable : {}
-            });
-         }
-
     };
 
     var references = {};

@@ -115,10 +115,12 @@ $.fn.render.file = function (item, after) {
         }
     }
 
-    self.on('select', function () {
+    self.on('select', function (e) {
+        e.stopImmediatePropagation();
         highlight();
     });
-    self.on('unselect', function () {
+    self.on('unselect', function (e) {
+        e.stopImmediatePropagation();
         highlight();
     })
     $(window).on('keydown', function (e) {

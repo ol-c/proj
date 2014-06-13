@@ -16,11 +16,13 @@
         var self = this;
         self.addClass('selectable');
         self.on('select', function (event) {
+            event.stopPropagation();
             var old = selected;
             selected = this;
             if (old !== undefined) $(old).trigger('unselect');
         });
         self.on('select_prev', function (event, data) {
+            event.stopPropagation();
             var selectable = $('.selectable');
             var index = selectable.index(this);
             if (index > 0) selectable.eq(index - 1).trigger('select', {
@@ -28,13 +30,12 @@
             });
         });
         self.on('select_next', function (event, data) {
+            event.stopPropagation();
             var selectable = $('.selectable');
             var index = selectable.index(this);
-            if (index < selectable.size() - 1) {
-                selectable.eq(index + 1).trigger('select', {
-                    from_direction : 'prev'
-                });
-            }
+            if (index < selectable.size() - 1) selectable.eq(index+1).trigger('select', {
+                from_direction : 'prev'
+            });
         });
     }
     $.fn.selected = function () {
