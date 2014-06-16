@@ -193,7 +193,10 @@ $(function () {
         var source_ref = 'this';
         if (internal_reference) source_ref += '.' + internal_reference;
         evaluate_script(reference, 'this', function (result) {
-            $(document.body).render(result.value);
+            if (result.type == 'success') {
+                $(document.body).render(result.value);
+            }
+            else $(document.body).render(result);
         });
     };
 
