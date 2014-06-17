@@ -80,7 +80,6 @@ $(window).on('keydown', function (e) {
                         }
                         else {
                             generic_view = show_in_container(render_generic());
-                            container.trigger('select_next')
                             generic_view.hammer().on('touch', function (e) {
                                 //  TODO: select the command line for this
                                 e.stopPropagation();
