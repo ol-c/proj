@@ -170,6 +170,13 @@ function resolve_references(object, callback) {
     if (todo == 0) callback(null, results);
 }
 
+function resolve_reference(reference, callback) {
+    perform_operation({
+        type : 'source reference',
+        reference : reference
+    }, callback);
+}
+
 
 function evaluate_script (reference, script, callback) {
     perform_operation({
@@ -222,6 +229,7 @@ $(function () {
                 for (var i=0; i<todo; i++) {
                     updates_to_do[i](data);
                 }
+                console.log(updates_to_do.length, todo, updates_to_do);
             }
         }
     };
@@ -235,3 +243,41 @@ $(function () {
     var scale = 1;
     var offset = [0,0]
 });
+
+
+function bind_css(element, name, value) {
+    if (value.type == 'string' || value.type == 'number') {
+        element.css(name, value.data);
+    }
+    else if (value.type == 'reference') {
+        var path = [].concat(value.data);
+        var reference = {
+            id : path.shift(),
+            internal : path.join('.')
+        };
+        console.log('reference', reference);
+        function update(value) {
+            bind_css(element, name, value);
+        }
+        watch(reference, function (response) {
+            if (response.value.type == 'reference') {
+                //  this short wires the references and keeps the resolved value to the original target
+                //  if the reference changes, we now no longer get the current value that this reference targeted
+                unwatch(reference, update);
+            }
+
+            update(response.value);
+        });
+
+        resolve_reference(reference, function (response) {
+            update(response);
+        });
+    }
+}
+
+function bind_attribute(name, value) {
+    if (value.type == 'string' || value.type == 'number') {
+        element.attr(name, value.data);
+    }
+}
+

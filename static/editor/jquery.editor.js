@@ -186,7 +186,6 @@
         });
         self.on('movecursor', function (event, index) {
             if (!self.selected()) self.trigger('select', {});
-            hide_cursor();
             var children = self.children();
             var l = children.size();
             if (index < 0) index = Math.max(0, l - index);
