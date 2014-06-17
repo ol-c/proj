@@ -26,7 +26,13 @@ function parseCookies (request) {
 
 if (cluster.isMaster) {
     var workers = [];
-    var hosts   = {};
+    var hosts   = {
+        'auth' : {
+            root : 'auth',
+            host : '127.0.0.1',
+            port : 8001
+        }
+    };
     control_root_object('ol-c', 'fordjason@gmail.com', function (err) {
         if (err) console.log(err);
         else {}
@@ -56,7 +62,7 @@ if (cluster.isMaster) {
         var environment = {
             root : root,
             host : '127.0.0.1',
-            port : 8000 + workers.length
+            port : 8001 + workers.length
         };
         worker = cluster.fork(environment);
         worker.host = environment;
@@ -87,6 +93,10 @@ if (cluster.isMaster) {
                     }
                     if (err) callback('error getting external host');
                     else if (host) respond(host);
+                    else if (message.requester === 'anonymous') {
+                        //  if no host and anonymous, return no host
+                        respond(null);
+                    }
                     else {
                         // claim control of this root since there is no other host
                         control_root_object(message.id, message.requester, function (err) {
@@ -118,7 +128,6 @@ if (cluster.isMaster) {
 }
 else {
     var app = express();
-//    app.use(express.favicon(__dirname + '/static/favicon.ico'));
     app.use(auth.middleware);
     app.use(function (req, res, next) {
         var subdomain = req.headers.host.split('.').shift();
@@ -129,9 +138,9 @@ else {
             next();
         }
     });
-    app.use(express.static('./static'));
+    app.use(express.static(__dirname + '/static'));
     app.use(function (request, response) {
-        response.end(fs.readFileSync('./static/index.html'));
+        response.end(fs.readFileSync(__dirname + '/static/index.html'));
     });
 
     var HTTPserver = http.createServer(app); 

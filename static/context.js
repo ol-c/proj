@@ -196,7 +196,12 @@ $(function () {
             if (result.type == 'success') {
                 $(document.body).render(result.value);
             }
-            else $(document.body).render(result);
+            else if (result.type == 'error' && result.data == "no host for reference") {
+                window.location.href = 'http://auth.' + window.location.host;
+            }
+            else {
+                $(document.body).render(result);
+            }
         });
     };
 
@@ -225,7 +230,7 @@ $(function () {
     };
     ws.onerror = function (event) {
         console.log('error', event);
-    }
+    };
 
     var scale = 1;
     var offset = [0,0]
