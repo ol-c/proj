@@ -248,7 +248,7 @@ $(window).on('keydown', function (e) {
                         //  this will see if a reference was changed, indicating a need to refresh the field
                         //  internal condition to make sure the value we are updating to is a container type (other types handle updates themselves)
                         else if (
-                       (updated_fields[field].internal || (updated_fields[field].internal === undefined && item.data[field].internal === undefined))
+                        ((updated_fields[field] && updated_fields[field].internal) || (updated_fields[field].internal === undefined && item.data[field].internal === undefined))
                         && item.data[field] && hash_reference(updated_fields[field]) !== hash_reference(item.data[field])) {
                             // TODO: after char
                             var old = rendered_fields[field];

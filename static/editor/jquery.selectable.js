@@ -30,7 +30,6 @@
             });
         });
         self.on('select_next', function (event, data) {
-            console.log('selecting next!')
             event.stopPropagation();
             var selectable = $('.selectable:visible');
             var index = selectable.index(this);
