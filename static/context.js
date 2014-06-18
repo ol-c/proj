@@ -255,7 +255,6 @@ function bind_css(element, name, value) {
             id : path.shift(),
             internal : path.join('.')
         };
-        console.log('reference', reference);
         function update(value) {
             bind_css(element, name, value);
         }
@@ -275,9 +274,63 @@ function bind_css(element, name, value) {
     }
 }
 
-function bind_attribute(name, value) {
+function bind_attribute(element, name, value) {
     if (value.type == 'string' || value.type == 'number') {
         element.attr(name, value.data);
     }
+    else if (value.type == 'reference') {
+        var path = [].concat(value.data);
+        var reference = {
+            id : path.shift(),
+            internal : path.join('.')
+        };
+        function update(value) {
+            bind_attribute(element, name, value);
+        }
+        watch(reference, function (response) {
+            if (response.value.type == 'reference') {
+                //  this short wires the references and keeps the resolved value to the original target
+                //  if the reference changes, we now no longer get the current value that this reference targeted
+                unwatch(reference, update);
+            }
+
+            update(response.value);
+        });
+
+        resolve_reference(reference, function (response) {
+            update(response);
+        });
+    }
 }
 
+function bind_html(element, value) {
+    console.log("binding html", element, value)
+    if (value.type == 'string' || value.type == 'number') {
+        element.empty().append(value.data);
+    }
+    else if (value.type == 'reference') {
+        var path = [].concat(value.data);
+        var reference = {
+            id : path.shift(),
+            internal : path.join('.')
+        };
+        function update(value) {
+            bind_html(element, value);
+        }
+        watch(reference, function (response) {
+            if (response.value.type == 'reference') {
+                //  this short wires the references and keeps the resolved value to the original target
+                //  if the reference changes, we now no longer get the current value that this reference targeted
+                unwatch(reference, update);
+            }
+
+            update(response.value);
+        });
+
+        resolve_reference(reference, function (response) {
+            console.log('resolve ref response', response)
+            update(response);
+        });
+    }
+
+}
