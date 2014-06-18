@@ -275,7 +275,12 @@ function bind_css(element, name, value) {
 }
 
 function bind_attribute(element, name, value) {
-    if (value.type == 'string' || value.type == 'number') {
+    if (name == 'style' && value.type != 'string') {
+        for (var field in value) {
+            bind_css(element, field, value[field]);
+        }
+    }
+    else if (value.type == 'string' || value.type == 'number') {
         element.attr(name, value.data);
     }
     else if (value.type == 'reference') {
