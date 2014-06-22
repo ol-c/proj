@@ -1,5 +1,11 @@
-$(window).on('keydown', function (e) {
-    if (e.ctrlKey && e.which == 69) {
+$(window).on('keydown keypress', function (e) {
+    blocked = {
+        "69" : true, // e
+        "87" : true, // w
+        "83" : true,  // s
+        "119" : true
+    };
+    if (e.ctrlKey && blocked[e.which + '']) {
         e.preventDefault();
     }
 });
@@ -46,7 +52,9 @@ $(window).on('keydown', function (e) {
 
         function show_in_container(value) {
             var container = $('<div>');
-            $(self).append(container);
+            //  Apply directly to body
+            //  TODO: relate position to position of self
+            $(document.body).append(container);
             container.append(value);
             container.css({
                 position: 'fixed',
@@ -64,68 +72,71 @@ $(window).on('keydown', function (e) {
             return container;
         }
         var editing = false;
-        evaluate_script(item.reference, "typeof this.render === 'function' ? this.render() : false", function (result) {
-            if (result.type == 'success') {
-                var renderable = result.value.data;
-                if (result.value.type == 'boolean') renderable = "{&hellip;}";
-
-                //  append html
-                self.append(renderable);
-                var generic_view = null;
-                $(window).on('keydown', function (e) {
-                    if (self.selected() && e.ctrlKey && e.which == 69) {
-                        e.preventDefault();
-                        if (generic_view) {
-                            generic_view.toggle();
-                        }
-                        else {
-                            generic_view = show_in_container(render_generic());
-                            generic_view.hammer().on('touch', function (e) {
-                                //  TODO: select the command line for this
-                                e.stopPropagation();
-                            });
-                        }
-                    }
-                    if (self.selected()) {
-                        if (e.keyCode == 37) {
-                            e.stopImmediatePropagation();
-                            container.trigger('select_prev');
-                        }
-                        else if (e.keyCode == 39) {
-                            e.stopImmediatePropagation();
-                            container.trigger('select_next');
-                        }
-                    }
-
-                });
-                //  selectable container
-                self.selectable();
-                highlighter = function () {
-                    self.css({
-                        border : '2px solid orange'
-                    });
-                };
-                unhighlighter = function () {
-                    self.css({
-                        border : '2px solid rgba(0,0,0,0)'
-                    })
-                }
-                self.on('select', function (e) {
-                    e.stopImmediatePropagation();
-                    highlight();
-                });
-                self.on('unselect', function (e) {
-                    e.stopImmediatePropagation();
-                    unhighlighter();
-                });
-                self.hammer().on('touch', function (e) {
-                    e.stopPropagation();
-                    self.trigger('select', {});
-                });
+        var source = "if (type(this.render) == 'function') return this.render();\n" +
+                     "else if (type(this.render) == 'reference') return resolve(this.render());\n" +
+                     "else return undefined;"
+        evaluate_script(item.reference, source, function (result) {
+            
+            if (result.type == 'error') {
+                self.render(result);
             }
             else {
-                //  TODO: render error...
+                var renderable = result.value.data;
+                if (result.value.type != 'string') renderable = "{&hellip;}";
+                //  append html
+                self.append(renderable);
             }
+            var generic_view = null;
+            $(window).on('keydown', function (e) {
+                if (self.selected() && e.ctrlKey && e.which == 69) {
+                    e.preventDefault();
+                    if (generic_view) {
+                        generic_view.toggle();
+                    }
+                    else {
+                        generic_view = show_in_container(render_generic());
+                        generic_view.hammer().on('touch', function (e) {
+                            //  TODO: select the command line for this
+                            e.stopPropagation();
+                        });
+                    }
+                }
+                if (self.selected()) {
+                    if (e.keyCode == 37) {
+                        e.stopImmediatePropagation();
+                        container.trigger('select_prev');
+                    }
+                    else if (e.keyCode == 39) {
+                        e.stopImmediatePropagation();
+                        container.trigger('select_next');
+                    }
+                }
+
+            });
+            //  selectable container
+            self.selectable();
+            highlighter = function () {
+                self.css({
+                    border : '2px solid orange'
+                });
+            };
+            unhighlighter = function () {
+                self.css({
+                    border : '2px solid rgba(0,0,0,0)'
+                })
+            }
+            self.on('select', function (e) {
+                e.stopImmediatePropagation();
+                highlight();
+            });
+            self.on('unselect', function (e) {
+                e.stopImmediatePropagation();
+                unhighlighter();
+            });
+            self.hammer().on('touch', function (e) {
+                e.stopPropagation();
+                self.trigger('select', {});
+            });
         });
 
         function render_generic() {
