@@ -316,7 +316,7 @@ function bind_html(element, value) {
     else if (value.type == 'reference') {
         var path = [].concat(value.data);
         var reference = {
-            id : path.shift(),
+            id : path.shift().name, //  TODO if id is ever incorrect type (not a string) we crash the server
             internal : path.join('.')
         };
         function update(value) {
@@ -325,7 +325,7 @@ function bind_html(element, value) {
         watch(reference, function (response) {
             if (response.value.type == 'reference') {
                 //  this short wires the references and keeps the resolved value to the original target
-                //  if the reference changes, we now no longer get the current value that this reference targeted
+                //  if the reference changes, we will no longer get the current value that this reference targeted
                 unwatch(reference, update);
             }
 
