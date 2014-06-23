@@ -72,9 +72,9 @@ $(window).on('keydown keypress', function (e) {
             return container;
         }
         var editing = false;
-        var source = "if (type(this.render) == 'function') return this.render();\n" +
-                     "else if (type(this.render) == 'reference') return resolve(this.render());\n" +
-                     "else return undefined;"
+        var source = "if      (type(this.render) == 'function' ) return this.render();\n" +
+                     "else if (type(this.render) == 'reference') return resolve(this.render);\n" +
+                     "else                                       return undefined;"
         evaluate_script(item.reference, source, function (result) {
             
             if (result.type == 'error') {

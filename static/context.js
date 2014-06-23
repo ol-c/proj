@@ -315,9 +315,18 @@ function bind_html(element, value) {
     }
     else if (value.type == 'reference') {
         var path = [].concat(value.data);
+        var id = path.shift().name;
+        var internal = '';
+        for (var i=0; i<path.length; i++) {
+            var part = path[i]
+            internal += '["' + part.name + '"]';
+            if (part.type == 'call') {
+                internal += '()' //  TODO: pass along source versions of arguments
+            }
+        }
         var reference = {
-            id : path.shift().name, //  TODO if id is ever incorrect type (not a string) we crash the server
-            internal : path.join('.')
+            id : id, //  TODO if id is ever incorrect type (not a string) server crashes
+            internal : internal
         };
         function update(value) {
             bind_html(element, value);
@@ -336,6 +345,9 @@ function bind_html(element, value) {
             console.log('resolve ref response', response)
             update(response);
         });
+    }
+    else {
+        console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', value)
     }
 
 }
