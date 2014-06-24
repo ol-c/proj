@@ -316,10 +316,11 @@ function bind_html(element, value) {
     else if (value.type == 'reference') {
         var path = [].concat(value.data);
         var id = path.shift().name;
-        var internal = '';
-        for (var i=0; i<path.length; i++) {
-            var part = path[i]
-            internal += '["' + part.name + '"]';
+        var internal = path[0].name || '';
+        //  TODO: use reference type for all references
+        for (var i=1; i<path.length; i++) {
+            var part = path[i];
+            internal += '.' + part.name;
             if (part.type == 'call') {
                 internal += '()' //  TODO: pass along source versions of arguments
             }
@@ -340,6 +341,8 @@ function bind_html(element, value) {
 
             update(response.value);
         });
+
+        console.log('reference to resolve', reference);
 
         resolve_reference(reference, function (response) {
             console.log('resolve ref response', response)
