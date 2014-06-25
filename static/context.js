@@ -299,32 +299,41 @@ function bind_attribute(element, name, value) {
     }
 }
 
-function bind_html(element, value) {
+function bind_html(element, value, replace) {
     if (value.type == 'string' || value.type == 'number') {
         var DOM_elements = $($.parseHTML(value.data, document, true));
-        element.append(DOM_elements);
+        if (replace) {
+            element.replaceWith(DOM_elements);
+        }
+        else {
+            element.append(DOM_elements);
+        }
         return DOM_elements;
     }
     else if (value.type == 'reference') {
         var path = [].concat(value.data);
         var id = path.shift().name;
-        var internal = path[0].name || '';
+        var internal = '';
         //  TODO: use reference type for all references
-        for (var i=1; i<path.length; i++) {
+        for (var i=0; i<path.length; i++) {
             var part = path[i];
-            internal += '.' + part.name;
+
             if (part.type == 'call') {
-                internal += '()' //  TODO: pass along source versions of arguments
+                internal += '()' //  TODO: pass along source versions of arguments, this really entails using a common function on back and front ends
+            }
+            else {
+                internal += '["' + part.name + '"]'
             }
         }
         var reference = {
             id : id, //  TODO if id is ever incorrect type (not a string) server crashes
             internal : internal
         };
-        var last_value;
+        console.log("reference we are resolving", reference)
+        var last_value = $('<div>loading...</div>');
+        element.append(last_value);
         function update(value) {
-            if (last_value) last_value.remove();
-            last_value = bind_html(element, value);
+            last_value = bind_html(last_value, value, true);
         }
         watch(reference, function (response) {
             if (response.value.type == 'reference') {
@@ -339,10 +348,12 @@ function bind_html(element, value) {
         resolve_reference(reference, function (response) {
             update(response);
         });
-        return null;
+        return last_value;
     }
     else {
-        element.append($("<pre>").text("Illegal value for render function to return: " + JSON.stringify(value, null, 4)));
+        var placeholder = $("<pre>").text("Illegal value for render function to return: " + JSON.stringify(value, null, 4));
+        element.append(placeholder);
+        return placeholder;
     }
 
 }

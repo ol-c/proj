@@ -76,7 +76,6 @@ $(window).on('keydown keypress', function (e) {
                      "else if (type(this.render) == 'reference') return resolve(this.render);\n" +
                      "else                                       return undefined;"
         evaluate_script(item.reference, source, function (result) {
-            console.log("result", result);
             if (result.type == 'error') {
                 self.render(result);
             }
