@@ -76,14 +76,22 @@ $(window).on('keydown keypress', function (e) {
                      "else if (type(this.render) == 'reference') return resolve(this.render);\n" +
                      "else                                       return undefined;"
         evaluate_script(item.reference, source, function (result) {
-            
+            console.log("result", result);
             if (result.type == 'error') {
                 self.render(result);
             }
             else {
-                var renderable = result.value.data;
-                if (result.value.type != 'string') renderable = "{&hellip;}";
-                //  append html
+                var renderable;
+                if (result.value.type == "string") {
+                    renderable = result.value.data;
+                }
+                else if (result.value.type == 'reference') {
+                    renderable = "loader...";
+
+                }
+                else {
+                    renderable = "{&hellip;}";
+                }
                 self.append(renderable);
             }
             var generic_view = null;
@@ -208,7 +216,7 @@ $(window).on('keydown keypress', function (e) {
             var content_body = $('<div>');
             function render_hashmap() {
                 var open = $('<span>{</span>');
-                command_line.command(item, user_context(item));
+                command_line.command(item);
                 open.append(command_line)
                 var close = $('<span>}</span>').append(after);
                 var keys = Object.keys(item.data);

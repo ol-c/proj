@@ -11,15 +11,6 @@ function hash_reference(reference) {
     return id + internal;
 }
 
-function user_context(item) {
-    var context = {
-        log : function (ref) {
-            console.log(ref);
-        }
-    };
-    return context;
-}
-
 function perform_operation(operation, cb) {
     var internal = '';
     if (operation.reference.internal) internal = '.' + operation.reference.internal;
@@ -309,9 +300,10 @@ function bind_attribute(element, name, value) {
 }
 
 function bind_html(element, value) {
-    console.log("binding html", element, value)
     if (value.type == 'string' || value.type == 'number') {
-        element.empty().append(value.data);
+        var DOM_elements = $($.parseHTML(value.data, document, true));
+        element.append(DOM_elements);
+        return DOM_elements;
     }
     else if (value.type == 'reference') {
         var path = [].concat(value.data);
@@ -329,8 +321,10 @@ function bind_html(element, value) {
             id : id, //  TODO if id is ever incorrect type (not a string) server crashes
             internal : internal
         };
+        var last_value;
         function update(value) {
-            bind_html(element, value);
+            if (last_value) last_value.remove();
+            last_value = bind_html(element, value);
         }
         watch(reference, function (response) {
             if (response.value.type == 'reference') {
@@ -342,15 +336,13 @@ function bind_html(element, value) {
             update(response.value);
         });
 
-        console.log('reference to resolve', reference);
-
         resolve_reference(reference, function (response) {
-            console.log('resolve ref response', response)
             update(response);
         });
+        return null;
     }
     else {
-        console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', value)
+        element.append($("<pre>").text("Illegal value for render function to return: " + JSON.stringify(value, null, 4)));
     }
 
 }

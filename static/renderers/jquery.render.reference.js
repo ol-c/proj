@@ -2,31 +2,31 @@ $.fn.render.reference = function (item, after)  {
     var self = this;
     var content = $('<span>');
     self.append(content);
-    function dot_reference(name) {
-        return '.' + name;
-    }
-    function function_reference(name) {
-        return '.' + name;
-    }
-    function bracket_reference(name) {
-        return '["' + name + '"]';
-    }
     function render(data) {
         content.empty();
         content.append('reference');
         for (var i=0; i<data.length; i++) {
-            var name = data[i];
-            if (name.match(/^\w(\w|\d)*$/)) {
-                content.append(dot_reference(name));
-            }
-            else if (name.match(/^\w(\w|\d)*(|\(.*)\)$/)) {
-                content.append(function_reference(name));
+            var name = data[i].name;
+            if (data[i].type == 'reference') {
+                if (name.match(/^\w(\w|\d)*$/)) {
+                    content.append('.' + name);
+                }
+                else {
+                    content.append('["' + name + '"]');
+                }
             }
             else {
-                content.append(bracket_reference(name));
+                var args = [];
+                for (var j=0; j<data[i].arguments.length; j++) {
+                    //  TODO: create source code from type
+                    var arg = JSON.stringify(data[i].arguments[j]);
+                    args.push(arg);
+                }
+                content.append('(', args.join(', ') ,')');
             }
         }
     }
+
     render(item.data);
     self.append(after);
 

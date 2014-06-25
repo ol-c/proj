@@ -1,4 +1,4 @@
-$.fn.command = function (item, environment) {
+$.fn.command = function (item) {
     var self = this;
     var command = $('<span>');
     self.append(command);
