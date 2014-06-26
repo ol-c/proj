@@ -182,14 +182,10 @@ var ws = new WebSocket('ws://' + window.location.host + '/');
 $(function () {
     ws.onopen = function () {
         var root_id = window.location.host.split('.').shift();
-        var internal_reference = window.location.pathname.slice(1)
-        internal_reference = decodeURIComponent(internal_reference);
-        var reference = {
-            id        : root_id,
-            internal  : internal_reference
-        };
+        var reference = [
+            {type : 'reference', name : root_id} //  TODO add internal references...
+        ];
         var source_ref = 'this';
-        if (internal_reference) source_ref += '.' + internal_reference;
         evaluate_script(reference, 'this', function (result) {
             if (result.type == 'success') {
                 $(document.body).render(result.value);
@@ -311,25 +307,7 @@ function bind_html(element, value, replace) {
         return DOM_elements;
     }
     else if (value.type == 'reference') {
-        var path = [].concat(value.data);
-        var id = path.shift().name;
-        var internal = '';
-        //  TODO: use reference type for all references
-        for (var i=0; i<path.length; i++) {
-            var part = path[i];
-
-            if (part.type == 'call') {
-                internal += '()' //  TODO: pass along source versions of arguments, this really entails using a common function on back and front ends
-            }
-            else {
-                internal += '["' + part.name + '"]'
-            }
-        }
-        var reference = {
-            id : id, //  TODO if id is ever incorrect type (not a string) server crashes
-            internal : internal
-        };
-        console.log("reference we are resolving", reference)
+        var reference = [].concat(value.data);
         var last_value = $('<div>loading...</div>');
         element.append(last_value);
         function update(value) {
@@ -341,7 +319,6 @@ function bind_html(element, value, replace) {
                 //  if the reference changes, we will no longer get the current value that this reference targeted
                 unwatch(reference, update);
             }
-
             update(response.value);
         });
 
