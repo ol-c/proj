@@ -11,7 +11,8 @@ $.fn.render.boolean = function (item, after) {
     this.on('change', throttle(100, function (data, index) {
         var state = 'false';
         if (index == 0) state = 'true';
-        evaluate_script({id : item.reference.id}, 'this.' + item.reference.internal + ' = ' + state + ';');
+        var path = reference_source('this', [].concat(item.reference).slice(1));
+        evaluate_script([item.reference[0]], path + ' = ' + state + ';');
     }));
 
     if (item.data) {

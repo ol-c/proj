@@ -90,8 +90,8 @@ $.fn.render.date = function (item, after) {
     second = get_chooser(range(0, 59));
     millisecond.numberroll(3, 3);
 
-    var ref = {id : item.reference.id};
-    var internal_ref = 'this.' + item.reference.internal;
+    var ref = [item.reference[0]];
+    var internal_ref = reference_source('this', item.reference.slice(1));
 
     var local_updates = {};
 

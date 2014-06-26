@@ -69,7 +69,8 @@ $.fn.render.function = function (item, after) {
         if (params.text().match(/^\s*(\w+(,\s*\w+)*|)\s*$/g)) {
             var src = 'function (' + params.text() + ') {' + body.text() + '}';
             local_updates[src] = true;
-            var source = 'this.' + item.reference.internal + ' = ' + src; 
+            var ref = reference_source('this', [].concat(item.reference).slice(1));
+            var source = ref + ' = ' + src; 
             evaluate_script([item.reference[0]], source);
         }
         else {

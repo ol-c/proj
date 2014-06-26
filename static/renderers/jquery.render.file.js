@@ -199,8 +199,8 @@ $.fn.render.file = function (item, after) {
                     console.log(err);
                 }
                 else {
-                    var script = 'this.' + item.reference.internal + ' = new File("' + filename + '")';
-                    evaluate_script({id : item.reference.id}, script, function (response) {
+                    var script = reference_source('this', item.reference.slice(1)) + ' = new File("' + filename + '")';
+                    evaluate_script([item.reference[0]], script, function (response) {
                         render();
                     });
                 }

@@ -2,6 +2,24 @@
 var responses = {};
 var updates = {};
 
+function reference_source(root, path) {
+    var source = root;
+
+    for (var i=0; i<path.length; i++) {
+        if (path[i].type == 'reference') {
+            source += '["' + path[i].name + '"]';
+        }
+        else if (path[i].type == 'call') {
+            source += '()'; //  TODO: arguments;
+        }
+        else {
+            throw new Error('invalid source reference');
+        }
+    }
+
+    return source;
+}
+
 function hash_reference(reference) {
     var hashed = 'reference';
     for (var i=0; i<reference.length; i++) {

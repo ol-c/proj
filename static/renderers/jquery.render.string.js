@@ -24,19 +24,12 @@ $.fn.render.string = function (item, after) {
     var local_updates = {};
     content.on('change', throttle(300, function () {
         if (edits.length) {
+            var ref = reference_source('this', [].concat(item.reference).slice(1));
+
             var edit_source = '';
-            var path = '';
-            for (var i=1; i<item.reference.length; i++) {
-                if (item.reference[i].type == 'reference') {
-                    path += '["' + item.reference[i].name + '"]';
-                }
-                else if (item.reference[i].type == 'call') path += '()'; //  TODO: arguments
-                else throw new Error('reference messed up');
-            }
             while (edits.length) {
-                edit_source += 'this' + path + ' = (' + edits.shift() + ')(this' + path + ');\n';
+                edit_source += ref + ' = (' + edits.shift() + ')(' + ref + ');\n';
             }
-            console.log(edit_source);
             local_updates[content.text()] = true;
             var ref = [].concat(item.reference);
             evaluate_script([ref.shift()], edit_source, function (res) {
