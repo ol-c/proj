@@ -70,7 +70,7 @@ $.fn.render.function = function (item, after) {
             var src = 'function (' + params.text() + ') {' + body.text() + '}';
             local_updates[src] = true;
             var source = 'this.' + item.reference.internal + ' = ' + src; 
-            evaluate_script({id : item.reference.id}, source);
+            evaluate_script([item.reference[0]], source);
         }
         else {
             console.log('ERROR saving function parameters improper form')

@@ -13,9 +13,63 @@ $(window).on('keydown keypress', function (e) {
 
 (function () {
 
+    var layout = d3.layout.force()
+        .size([512, 512])
+        .charge(-100)
+        .linkDistance(100)
+        .on('tick', tick);
+    var node_data = layout.nodes();
+    var link_data = layout.links();
+
+    function tick(e) {
+        var k = e.alpha * 10;
+        for (var i=0; i<link_data.length; i++) {
+            var link = link_data[i];
+            link.source.x += k;
+//            link.source.y -= k;
+            link.target.x -= k;
+//            link.target.y += k;
+        }
+
+        for (var i=0; i<node_data.length; i++) {
+            var data = node_data[i];
+            var x = Math.round(data.x);
+            var y = Math.round(data.y);
+            data.container.css({
+                transform : 'translate3d(' + x + 'px, ' + y + 'px, 0)'
+            });
+        }
+    }
+
+    function restart_layout() {
+        layout.start();
+    }
+
     var rendered = {};
 
+    var last_node = {x : 0, y : 0};
+
     $.fn.render.hashmap = function (item, after) {
+        //  set up node for force layout
+        var node = {
+            x : last_node.x + 100,
+            y : last_node.y,
+            container : $('<div>' + hash_reference(item.reference) + '</div>')
+        };
+        node.container.css({
+            background : 'red',
+            position : 'absolute',
+            top : 0,
+            left : 0
+        });
+        $('body').append(node.container);
+        node_data.push(node);
+        link_data.push({source : last_node, target : node});
+        last_node = node;
+        restart_layout();
+
+
+
         var container = $('<div>');
         //  transparent border so can highlight without trouble
         container.css({

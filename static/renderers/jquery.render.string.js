@@ -25,11 +25,23 @@ $.fn.render.string = function (item, after) {
     content.on('change', throttle(300, function () {
         if (edits.length) {
             var edit_source = '';
-            while (edits.length) {
-                edit_source += 'this.' + item.reference.internal + ' = (' + edits.shift() + ')(this.' + item.reference.internal + ');\n';
+            var path = '';
+            for (var i=1; i<item.reference.length; i++) {
+                if (item.reference[i].type == 'reference') {
+                    path += '["' + item.reference[i].name + '"]';
+                }
+                else if (item.reference[i].type == 'call') path += '()'; //  TODO: arguments
+                else throw new Error('reference messed up');
             }
+            while (edits.length) {
+                edit_source += 'this' + path + ' = (' + edits.shift() + ')(this' + path + ');\n';
+            }
+            console.log(edit_source);
             local_updates[content.text()] = true;
-            evaluate_script({id : item.reference.id}, edit_source);
+            var ref = [].concat(item.reference);
+            evaluate_script([ref.shift()], edit_source, function (res) {
+                //  TODO: highlight errors...
+            });
         }
     }, function (err, res) {
         // TODO: highlight unsaved changes and then highlight differently when saved and fade out highlight
