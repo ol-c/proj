@@ -3,12 +3,20 @@ var responses = {};
 var updates = {};
 
 function hash_reference(reference) {
-    var id = reference.id;
-    var internal = '';
-    if (reference.internal) {
-        internal = '.' + reference.internal;
+    var hashed = 'reference';
+    for (var i=0; i<reference.length; i++) {
+        var ref = reference[i];
+        if (ref.type == 'reference') {
+            hashed += '["' + ref.name + '"]';
+        }
+        else if (ref.type == 'call') {
+            hashed += '()'; //  TODO: add arguments
+        }
+        else {
+            throw new Error('error hashing reference...');
+        }
     }
-    return id + internal;
+    return hashed;
 }
 
 function perform_operation(operation, cb) {
