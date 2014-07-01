@@ -14,7 +14,6 @@ $(window).on('keydown keypress', function (e) {
 (function () {
 
     var layout = d3.layout.force()
-        .size([512, 512])
         .charge(-100)
         .linkDistance(100)
         .on('tick', tick);
@@ -22,13 +21,11 @@ $(window).on('keydown keypress', function (e) {
     var link_data = layout.links();
 
     function tick(e) {
-        var k = e.alpha * 10;
+        var k = e.alpha * 100;
         for (var i=0; i<link_data.length; i++) {
             var link = link_data[i];
-            link.source.x += k;
-//            link.source.y -= k;
-            link.target.x -= k;
-//            link.target.y += k;
+            link.source.x -= k;
+            link.target.x += k;
         }
 
         for (var i=0; i<node_data.length; i++) {
@@ -39,9 +36,19 @@ $(window).on('keydown keypress', function (e) {
                 transform : 'translate3d(' + x + 'px, ' + y + 'px, 0)'
             });
         }
+
+        links
+            .attr('x1', function (d) { return d.source.x })
+            .attr('y1', function (d) { return d.source.y })
+            .attr('x2', function (d) { return d.target.x })
+            .attr('y2', function (d) { return d.target.y });
     }
 
     function restart_layout() {
+        links = svg.selectAll('line').data(link_data);
+        links.enter().append('line').attr('stroke-width', 5).attr('stroke', 'Grey');
+
+        layout.size([window.innerWidth, window.innerHeight]);
         layout.start();
     }
 
@@ -49,26 +56,36 @@ $(window).on('keydown keypress', function (e) {
 
     var last_node = {x : 0, y : 0};
 
+
+    var svg;
+    var links;
+    $(function () {
+        svg = d3.select('body').append('svg')
+            .attr("width", "100%")//window.innerWidth)
+            .attr("height", "100%")//window.innerHeight);
+            .attr("style", "pointer-events:none;z-index:9999;position:fixed; top:0; left:0;");
+        links = svg.select('.link');
+    });
+
     $.fn.render.hashmap = function (item, after) {
         //  set up node for force layout
         var node = {
-            x : last_node.x + 100,
-            y : last_node.y,
-            container : $('<div>' + hash_reference(item.reference) + '</div>')
+            x : 1000,
+            y : 1000,
+            container : $('<div>X</div>')
         };
         node.container.css({
             background : 'red',
-            position : 'absolute',
+            position : 'fixed',
             top : 0,
             left : 0
         });
         $('body').append(node.container);
         node_data.push(node);
-        link_data.push({source : last_node, target : node});
-        last_node = node;
+        if (node_data.length > 1) {
+            link_data.push({source : node_data.length - 2, target : node_data.length - 1});
+        }
         restart_layout();
-
-
 
         var container = $('<div>');
         //  transparent border so can highlight without trouble

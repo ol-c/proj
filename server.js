@@ -44,7 +44,7 @@ if (cluster.isMaster) {
         //  can take control
         persist.exists(root, function (err, exists) {
             if (err) console.log('error seeing if root exists');
-            else if (exists) spawn_worker_for_root(root, callback);
+            else if (exists) spawn_worker_for_root(root, owner, callback);
             else {
                 var root_object = persist.create('hashmap', root);
                 if (root_object.owner == undefined) {
@@ -52,13 +52,13 @@ if (cluster.isMaster) {
                 }
                 persist.unload(root_object, function (err) {
                     if (err) callback('error unloading before spawning worker');
-                    else     spawn_worker_for_root(root, callback);
+                    else     spawn_worker_for_root(root, owner, callback);
                 });
             }
         });
     }
 
-    function spawn_worker_for_root(root, callback) {
+    function spawn_worker_for_root(root, owner, callback) {
         var environment = {
             root : root,
             host : '127.0.0.1',

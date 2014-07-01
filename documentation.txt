@@ -1,0 +1,41 @@
+datatypes:
+
+    implemented:
+        string
+        number
+        file
+        boolean
+        null
+        undefined
+        date
+        function
+        hashmap
+        error
+        file
+        promise
+
+    not implemented:
+        list
+        regular expression
+
+global objects:
+
+    implemented:
+        load
+        unload
+        resolve
+        File
+        Promise
+        html
+        type
+
+    not implemented:
+        local
+        remote
+        wait
+
+object special fields:
+
+    implemented
+        render
+        permissions
