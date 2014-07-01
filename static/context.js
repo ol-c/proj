@@ -325,7 +325,8 @@ function bind_html(element, value, replace) {
     if (value.type == 'string' || value.type == 'number') {
         var DOM_elements = $($.parseHTML(value.data, document, true));
         if (replace) {
-            element.replaceWith(DOM_elements);
+            element.first().replaceWith(DOM_elements);
+            element.remove();
         }
         else {
             element.append(DOM_elements);
