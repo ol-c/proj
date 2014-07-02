@@ -21,6 +21,7 @@ $(window).on('keydown keypress', function (e) {
     var drag = layout.drag();
     drag.on("dragstart", dragstart);
     layout
+        .gravity(0)
         .charge(-100)
         .linkDistance(100)
         .on('tick', tick);
@@ -30,29 +31,61 @@ $(window).on('keydown keypress', function (e) {
     function tick(e) {
         var k = e.alpha * 100;
         for (var i=0; i<link_data.length; i++) {
-            var link = link_data[i];
-            link.source.x -= k;
-            link.target.x += k;
+            var l = link_data[i];
+            l.source.x -= k;
+            l.target.x += k;
         }
 
-        for (var i=0; i<node_data.length; i++) {
-            var data = node_data[i];
-            if (data.rendered_version || data.dragged) {
-                var offset = data.container.offset();
-                data.x = offset.left;
-                data.y = offset.top;
- 
-            }
-            else {
-                var x = Math.round(data.x);
-                var y = Math.round(data.y);
-                data.container.css({
-                    transform : 'translate3d(' + x + 'px, ' + y + 'px, 0)'
-                });
-            }
+        function translate(d) {
+            var translate =  'translate(' + Math.round(d.x) + 'px, ' + Math.round(d.y) + 'px);';
+            return translate;
         }
 
-        links
+        var styles = {
+            position: 'fixed',
+            top : 0,
+            left : 0,
+            display : 'inline-block',
+            'background-color' :'rgba(255,255,255, .95)',
+            padding : '1em',
+            'box-shadow' : "0px 0px 32px rgba(200, 200, 200, 0.95)",
+            border : '1px solid rgba(220, 220, 220, 0.5)'
+        }
+
+       var extra_styles = ""
+       for (var style in styles) {
+           extra_styles += style + ':' + styles[style] + ';';
+       }
+
+        node
+            .filter(function (d) {
+                if (d.rendered_version) {
+                    var offset = d.container.offset();
+                    d.x = offset.left;
+                    d.y = offset.top;
+                    return false;
+                }
+                else {
+                    return true;
+                }
+             })
+            .attr('style', function (d) {
+                var trans = translate(d);
+                var transforms = [
+                    '-webkit-transform',
+                    '-o-transform',
+                    '-moz-transform',
+                    '-ms-transform'
+                ];
+                var t = '';
+                for (var i=0; i<transforms.length; i++) {
+                    t += transforms[i] + ':' + trans;
+                }
+                return t + extra_styles;
+            });
+        
+
+        link
             .attr('x1', function (d) { return d.source.x })
             .attr('y1', function (d) { return d.source.y })
             .attr('x2', function (d) { return d.target.x })
@@ -60,10 +93,21 @@ $(window).on('keydown keypress', function (e) {
     }
 
     function restart_layout() {
-        links = svg.selectAll('line').data(link_data);
-        links.enter().append('line').attr('stroke-width', 5).attr('stroke', 'Grey');
+        link = link.data(link_data);
+        link.enter()
+            .append('line')
+            .attr('class', 'link')
+            .attr('stroke-width', 5)
+            .attr('stroke', 'Grey');
 
-        //  TODO: reconcile adding nodes to node data here with the already rendered nodes
+        node = node.data(node_data);
+        node.enter()
+            .append('div').attr('id', function (d) {
+                return d.id;
+            })
+            .attr('class', 'node')
+            .on("dblclick", function () {})
+            .call(drag);
 
         layout.size([window.innerWidth, window.innerHeight]);
         layout.start();
@@ -75,36 +119,20 @@ $(window).on('keydown keypress', function (e) {
 
 
     var svg;
-    var links;
+    var link;
+    var node;
+
     $(function () {
         svg = d3.select('body').append('svg')
             .attr("width", "100%")//window.innerWidth)
             .attr("height", "100%")//window.innerHeight);
             .attr("style", "pointer-events:none;z-index:9999;position:fixed; top:0; left:0;");
-        links = svg.select('.link');
+
+        link = svg.selectAll('.link');
+        node = d3.select('body').selectAll('.node');
     });
 
     $.fn.render.hashmap = function (item, after) {
-        //  set up node for force layout
-        /*
-        var node = {
-            x : 1000,
-            y : 1000,
-            container : $('<div>X</div>')
-        };
-        node.container.css({
-            background : 'red',
-            position : 'fixed',
-            top : 0,
-            left : 0
-        });
-        $('body').append(node.container);
-        node_data.push(node);
-        if (node_data.length > 1) {
-            link_data.push({source : node_data.length - 2, target : node_data.length - 1});
-        }
-        restart_layout();
-*/
         var container = $('<div>');
         var rendered_node = {
             x : 0,
@@ -114,7 +142,6 @@ $(window).on('keydown keypress', function (e) {
             rendered_version : true
         };
         node_data.push(rendered_node);
-
 
         //  transparent border so can highlight without trouble
         container.css({
@@ -150,36 +177,11 @@ $(window).on('keydown keypress', function (e) {
         }
 
         function show_in_container(value) {
-            var container = $('<div>');
-            //  Apply directly to body
-            //  TODO: relate position to position of self
-            $(document.body).append(container);
-            container.append(value);
-            container.css({
-                position: 'fixed',
-                top : 0,
-                left : 0,
-                display : 'inline-block',
-                backgroundColor :'rgba(255,255,255, .95)',
-                padding : '1em',
-                boxShadow: "0px 0px 32px rgba(200, 200, 200, 0.95)",
-                border : '1px solid rgba(220, 220, 220, 0.5)'
-            });
-/*            container.behave({
-                draggable : {
-                    ondrag : function () {
-                        source_node.dragged = true;
-                        restart_layout();
-                    },
-                    onrelease : function () {
-                        source_node.dragged = false;
-                    }
-                }
-            });*/
+            var id = (Math.random() + '').slice(2);
             var source_node = {
                 x : 0,
                 y : 0,
-                container : container,
+                id : id,
                 dragged : false,
                 rendered_version : false
             };
@@ -188,6 +190,13 @@ $(window).on('keydown keypress', function (e) {
             link_data.push({source : rendered_node, target : source_node});
 
             restart_layout();
+
+            var container = $('#' + id);
+
+            container.append(value);
+
+            //container.css();
+
             return container;
         }
         var editing = false;

@@ -38,8 +38,8 @@ function hash_reference(reference) {
 }
 
 function perform_operation(operation, cb) {
-    var internal = '';
-    if (operation.reference.internal) internal = '.' + operation.reference.internal;
+//    var internal = '';
+//    if (operation.reference.internal) internal = '.' + operation.reference.internal;
     var token = Math.random() + '';
     operation.token = token;
     responses[token] = cb;
@@ -71,10 +71,13 @@ function serializable(value, reference, callback) {
             serializable.data = {};
             var id = meta.get(value).id;
             for (var field in value) {
-                serializable.data[field] = {
-                    id       : id,
-                    internal : field
-                };
+                serializable.data[field] = [{
+                    name : id,
+                    type : "reference"
+                }, {
+                    name : field,
+                    type : "reference"
+                }]
             }
         }
         else if (type == 'string' || type == 'boolean' || type == 'number') {
@@ -263,11 +266,7 @@ function bind_css(element, name, value) {
         element.css(name, value.data);
     }
     else if (value.type == 'reference') {
-        var path = [].concat(value.data);
-        var reference = {
-            id : path.shift(),
-            internal : path.join('.')
-        };
+        var reference = value.data;
         function update(value) {
             bind_css(element, name, value);
         }
@@ -277,10 +276,8 @@ function bind_css(element, name, value) {
                 //  if the reference changes, we now no longer get the current value that this reference targeted
                 unwatch(reference, update);
             }
-
             update(response.value);
         });
-
         resolve_reference(reference, function (response) {
             update(response);
         });
