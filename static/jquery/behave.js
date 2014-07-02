@@ -227,10 +227,12 @@ $.fn.behave = function (behaviors) {
                 last_drag = [e.gesture.deltaX, e.gesture.deltaY];
 
                 render(element, offset, scale, rotation);
+                if (options.ondrag) options.ondrag();
             });
 
             $(element).hammer().on('release', function () {
                 last_drag = [0, 0];
+                if (options.onrelease) options.onrelease();
             });
 
         },

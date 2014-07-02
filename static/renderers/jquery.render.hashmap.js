@@ -13,7 +13,14 @@ $(window).on('keydown keypress', function (e) {
 
 (function () {
 
-    var layout = d3.layout.force()
+    function dragstart(d) {
+        d.fixed = true;
+    }
+
+    var layout = d3.layout.force();
+    var drag = layout.drag();
+    drag.on("dragstart", dragstart);
+    layout
         .charge(-100)
         .linkDistance(100)
         .on('tick', tick);
@@ -30,11 +37,19 @@ $(window).on('keydown keypress', function (e) {
 
         for (var i=0; i<node_data.length; i++) {
             var data = node_data[i];
-            var x = Math.round(data.x);
-            var y = Math.round(data.y);
-            data.container.css({
-                transform : 'translate3d(' + x + 'px, ' + y + 'px, 0)'
-            });
+            if (data.rendered_version || data.dragged) {
+                var offset = data.container.offset();
+                data.x = offset.left;
+                data.y = offset.top;
+ 
+            }
+            else {
+                var x = Math.round(data.x);
+                var y = Math.round(data.y);
+                data.container.css({
+                    transform : 'translate3d(' + x + 'px, ' + y + 'px, 0)'
+                });
+            }
         }
 
         links
@@ -47,6 +62,8 @@ $(window).on('keydown keypress', function (e) {
     function restart_layout() {
         links = svg.selectAll('line').data(link_data);
         links.enter().append('line').attr('stroke-width', 5).attr('stroke', 'Grey');
+
+        //  TODO: reconcile adding nodes to node data here with the already rendered nodes
 
         layout.size([window.innerWidth, window.innerHeight]);
         layout.start();
@@ -69,6 +86,7 @@ $(window).on('keydown keypress', function (e) {
 
     $.fn.render.hashmap = function (item, after) {
         //  set up node for force layout
+        /*
         var node = {
             x : 1000,
             y : 1000,
@@ -86,8 +104,18 @@ $(window).on('keydown keypress', function (e) {
             link_data.push({source : node_data.length - 2, target : node_data.length - 1});
         }
         restart_layout();
-
+*/
         var container = $('<div>');
+        var rendered_node = {
+            x : 0,
+            y : 0,
+            container : container,
+            dragged : false,
+            rendered_version : true
+        };
+        node_data.push(rendered_node);
+
+
         //  transparent border so can highlight without trouble
         container.css({
             display : 'inline-block',
@@ -137,9 +165,29 @@ $(window).on('keydown keypress', function (e) {
                 boxShadow: "0px 0px 32px rgba(200, 200, 200, 0.95)",
                 border : '1px solid rgba(220, 220, 220, 0.5)'
             });
-            container.behave({
-                draggable : {}
-            });
+/*            container.behave({
+                draggable : {
+                    ondrag : function () {
+                        source_node.dragged = true;
+                        restart_layout();
+                    },
+                    onrelease : function () {
+                        source_node.dragged = false;
+                    }
+                }
+            });*/
+            var source_node = {
+                x : 0,
+                y : 0,
+                container : container,
+                dragged : false,
+                rendered_version : false
+            };
+            node_data.push(source_node);
+
+            link_data.push({source : rendered_node, target : source_node});
+
+            restart_layout();
             return container;
         }
         var editing = false;
@@ -177,6 +225,7 @@ $(window).on('keydown keypress', function (e) {
                             //  TODO: select the command line for this
                             e.stopPropagation();
                         });
+                        //  TODO: if source node already rendered somewhere else, use that
                     }
                 }
                 if (self.selected()) {
