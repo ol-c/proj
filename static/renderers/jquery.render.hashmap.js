@@ -13,8 +13,14 @@ $(window).on('keydown keypress', function (e) {
 
 (function () {
 
+    var root_source;
+
+    var last_fixed = null;
+
     function dragstart(d) {
+        if (last_fixed) last_fixed.fixed = false;
         d.fixed = true;
+        last_fixed = d;
     }
 
     var layout = d3.layout.force();
@@ -22,22 +28,48 @@ $(window).on('keydown keypress', function (e) {
     drag.on("dragstart", dragstart);
     layout
         .gravity(0)
-        .charge(-100)
-        .linkDistance(100)
+        .charge(function (d) {
+            //  rendered versions shouldn't push since they are constrained
+            if (d.rendered_version) return 0;
+            else return -500;
+        })
+        .linkDistance(function (d) {
+            return 100;
+        })
+        .linkStrength(function (d) {
+            return 1;
+        })
         .on('tick', tick);
     var node_data = layout.nodes();
     var link_data = layout.links();
 
     function tick(e) {
+
+
+
+
+        //  TODO: Attractive force toward last fixed node.
+
+
+
+
+
+
         var k = e.alpha * 100;
-        for (var i=0; i<link_data.length; i++) {
-            var l = link_data[i];
-            l.source.x -= k;
-            l.target.x += k;
-        }
+        link.each(function (l) {
+            if (l.target.fixed) {
+            }
+            else {
+                l.target.x += k;
+            }
+        });
 
         function translate(d) {
-            var translate =  'translate(' + Math.round(d.x) + 'px, ' + Math.round(d.y) + 'px);';
+            var x = Math.round(d.x);
+            var y = Math.round(d.y);
+            y -= d.container.outerHeight()/2;
+            x -= d.container.outerWidth() /2;
+            var translate =  'translate(' + x + 'px, ' + y + 'px);';
             return translate;
         }
 
@@ -57,12 +89,12 @@ $(window).on('keydown keypress', function (e) {
            extra_styles += style + ':' + styles[style] + ';';
        }
 
-        node
+       node
             .filter(function (d) {
                 if (d.rendered_version) {
                     var offset = d.container.offset();
-                    d.x = offset.left;
-                    d.y = offset.top;
+                    d.x = offset.left + d.container.outerWidth();
+                    d.y = offset.top + d.container.outerHeight() / 2;
                     return false;
                 }
                 else {
@@ -81,14 +113,14 @@ $(window).on('keydown keypress', function (e) {
                 for (var i=0; i<transforms.length; i++) {
                     t += transforms[i] + ':' + trans;
                 }
-                return t + extra_styles;
+                return extra_styles + t;
             });
         
 
         link
             .attr('x1', function (d) { return d.source.x })
             .attr('y1', function (d) { return d.source.y })
-            .attr('x2', function (d) { return d.target.x })
+            .attr('x2', function (d) { return d.target.x - d.target.container.outerWidth() / 2 })
             .attr('y2', function (d) { return d.target.y });
     }
 
@@ -98,7 +130,7 @@ $(window).on('keydown keypress', function (e) {
             .append('line')
             .attr('class', 'link')
             .attr('stroke-width', 5)
-            .attr('stroke', 'Grey');
+            .attr('stroke', 'rgba(128, 128, 128, 0.10)');
 
         node = node.data(node_data);
         node.enter()
@@ -187,11 +219,20 @@ $(window).on('keydown keypress', function (e) {
             };
             node_data.push(source_node);
 
-            link_data.push({source : rendered_node, target : source_node});
+            if (root_source) {
+                link_data.push({source : rendered_node, target : source_node});
+            }
+            else {
+                source_node.x = window.innerWidth/3;
+                source_node.y = window.innerHeight/2;
+                source_node.root = true;
+                root_source = source_node;
+            }
 
             restart_layout();
 
             var container = $('#' + id);
+            source_node.container = container;
 
             container.append(value);
 
@@ -394,8 +435,9 @@ $(window).on('keydown keypress', function (e) {
                         //  necessary since references to objects inside of objects are still absolute
                         //  this will see if a reference was changed, indicating a need to refresh the field
                         //  internal condition to make sure the value we are updating to is a container type (other types handle updates themselves)
+                        //  TODO: clean up cases
                         else if (
-                        ((updated_fields[field] && updated_fields[field].internal) || (updated_fields[field].internal === undefined && item.data[field].internal === undefined))
+                        (updated_fields[field] && (updated_fields[field].internal || updated_fields[field].internal === undefined && (item.data[field] && item.data[field].internal === undefined)))
                         && item.data[field] && hash_reference(updated_fields[field]) !== hash_reference(item.data[field])) {
                             // TODO: after char
                             var old = rendered_fields[field];
