@@ -4,7 +4,7 @@ $.fn.render = function (item, after) {
         'user-select' : 'none'
     });
     if ($.fn.render[item.type]) {
-        $.fn.render[item.type].call(this, item, after);
+        $.fn.render[item.type].apply(this, arguments);
     }
     else {
         var error_message = $('<span></span>');

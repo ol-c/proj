@@ -19,7 +19,7 @@ $(window).on('keydown keypress', function (e) {
 
     function dragstart(d) {
         if (last_fixed) last_fixed.fixed = false;
-        d.fixed = true;
+        d3.select(this).classed('fixed', d.fixed = true);
         last_fixed = d;
     }
 
@@ -27,11 +27,10 @@ $(window).on('keydown keypress', function (e) {
     var drag = layout.drag();
     drag.on("dragstart", dragstart);
     layout
-        .gravity(0)
+//        .gravity(0)
         .charge(function (d) {
             //  rendered versions shouldn't push since they are constrained
-            if (d.rendered_version) return 0;
-            else return -500;
+            return -500;
         })
         .linkDistance(function (d) {
             return 100;
@@ -44,24 +43,16 @@ $(window).on('keydown keypress', function (e) {
     var link_data = layout.links();
 
     function tick(e) {
+        //  TODO: Attractive force toward fixed nodes.
 
 
-
-
-        //  TODO: Attractive force toward last fixed node.
-
-
-
-
-
-
-        var k = e.alpha * 100;
         link.each(function (l) {
-            if (l.target.fixed) {
-            }
-            else {
-                l.target.x += k;
-            }
+            var k = 0;
+            k += e.alpha * (l.target.container.width() + l.source.container.width()) / 4;
+            l.target.x += k;
+            l.source.x -= k/l.source.children.length;
+            //  TODO: if going to move source, need to do it once for all children
+            //  TODO use this technique to coax children in a fan around parent
         });
 
         function translate(d) {
@@ -90,17 +81,6 @@ $(window).on('keydown keypress', function (e) {
        }
 
        node
-            .filter(function (d) {
-                if (d.rendered_version) {
-                    var offset = d.container.offset();
-                    d.x = offset.left + d.container.outerWidth();
-                    d.y = offset.top + d.container.outerHeight() / 2;
-                    return false;
-                }
-                else {
-                    return true;
-                }
-             })
             .attr('style', function (d) {
                 var trans = translate(d);
                 var transforms = [
@@ -118,8 +98,8 @@ $(window).on('keydown keypress', function (e) {
         
 
         link
-            .attr('x1', function (d) { return d.source.x })
-            .attr('y1', function (d) { return d.source.y })
+            .attr('x1', function (d) { return d.rendered_element.offset().left + d.rendered_element.width(); })
+            .attr('y1', function (d) { return d.rendered_element.offset().top + d.rendered_element.height() / 2; })
             .attr('x2', function (d) { return d.target.x - d.target.container.outerWidth() / 2 })
             .attr('y2', function (d) { return d.target.y });
     }
@@ -164,16 +144,20 @@ $(window).on('keydown keypress', function (e) {
         node = d3.select('body').selectAll('.node');
     });
 
-    $.fn.render.hashmap = function (item, after) {
+
+
+
+
+
+
+
+
+
+
+
+
+    $.fn.render.hashmap = function (item, after, parent_source) {
         var container = $('<div>');
-        var rendered_node = {
-            x : 0,
-            y : 0,
-            container : container,
-            dragged : false,
-            rendered_version : true
-        };
-        node_data.push(rendered_node);
 
         //  transparent border so can highlight without trouble
         container.css({
@@ -208,19 +192,26 @@ $(window).on('keydown keypress', function (e) {
             }
         }
 
+        var source_node =  {
+            x : 0,
+            y : 0,
+            id : (Math.random() + '').slice(2),
+            rendered_version : false,
+            children : []
+        };
+
         function show_in_container(value) {
-            var id = (Math.random() + '').slice(2);
-            var source_node = {
-                x : 0,
-                y : 0,
-                id : id,
-                dragged : false,
-                rendered_version : false
-            };
             node_data.push(source_node);
 
             if (root_source) {
-                link_data.push({source : rendered_node, target : source_node});
+                if (parent_source) {
+                    var offset = self.offset();
+                    source_node.x = offset.left + self.outerWidth() + 256;
+                    source_node.y = offset.top + self.outerHeight() / 2
+                    console.log('initialized', source_node)
+                    parent_source.children.push(source_node);
+                    link_data.push({source : parent_source, target : source_node, rendered_element : self});
+                }
             }
             else {
                 source_node.x = window.innerWidth/3;
@@ -231,12 +222,10 @@ $(window).on('keydown keypress', function (e) {
 
             restart_layout();
 
-            var container = $('#' + id);
+            var container = $('#' + source_node.id);
             source_node.container = container;
 
             container.append(value);
-
-            //container.css();
 
             return container;
         }
@@ -264,7 +253,7 @@ $(window).on('keydown keypress', function (e) {
             }
             var generic_view = null;
             $(window).on('keydown', function (e) {
-                if (self.selected() && e.ctrlKey && e.which == 69) {
+                if (self.selected() && e.ctrlKey && e.keyCode == 39) {
                     e.preventDefault();
                     if (generic_view) {
                         generic_view.toggle();
@@ -278,7 +267,7 @@ $(window).on('keydown keypress', function (e) {
                         //  TODO: if source node already rendered somewhere else, use that
                     }
                 }
-                if (self.selected()) {
+                else if (self.selected()) {
                     if (e.keyCode == 37) {
                         e.stopImmediatePropagation();
                         container.trigger('select_prev');
@@ -373,7 +362,10 @@ $(window).on('keydown keypress', function (e) {
                     type : 'source reference',
                     reference : reference
                 }, function (item) {
-                    value.render(item, after);
+                    if (item.type == 'hashmap') {
+                        value.render(item, after, source_node);
+                    }
+                    else value.render(item, after);
                 });
                 
                 rendered_fields[key] = row;
