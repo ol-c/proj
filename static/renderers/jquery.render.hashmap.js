@@ -27,13 +27,15 @@ $(window).on('keydown keypress', function (e) {
     var drag = layout.drag();
     drag.on("dragstart", dragstart);
     layout
-//        .gravity(0)
+        .gravity(0.01)
         .charge(function (d) {
             //  rendered versions shouldn't push since they are constrained
-            return -500;
+            return -1000;
         })
         .linkDistance(function (d) {
-            return 100;
+            var sw = d.source.container.width();
+            var sh = d.source.container.height();
+            return Math.sqrt(sw*sw + sh*sh)/2;
         })
         .linkStrength(function (d) {
             return 1;
@@ -44,13 +46,62 @@ $(window).on('keydown keypress', function (e) {
 
     function tick(e) {
         //  TODO: Attractive force toward fixed nodes.
+        function recommended_offset(link) {
+
+            var siblings = link.source.children;
+
+            var sibling_index = 0;
+            var sibling_heights = [];
+            var sibling_y = 0;
+
+            for (var i=0; i<siblings.length; i++) {
+                sibling_heights.push(link.target.container.height());
+                if (siblings[i] == link.target) {
+                    sibling_index = i;
+                }
+            }
+
+            var total_height = 0;
+
+            for (var i=0; i<siblings.length; i++) {
+                if (siblings[i].source_visible) {
+                    if (i == sibling_index) {
+                        sibling_y = total_height + sibling_heights[sibling_index]/2;
+                    }
+                    total_height += sibling_heights[i];
+                }
+            }
+
+            var dy = sibling_y - total_height/2;
+            var dx = link.source.container.width() / 2 + link.target.container.width() / 2;
+
+
+            return {
+                dx : dx,
+                dy : dy
+            };
+        }
 
 
         link.each(function (l) {
-            var k = 0;
-            k += e.alpha * (l.target.container.width() + l.source.container.width()) / 4;
-            l.target.x += k;
-            l.source.x -= k/l.source.children.length;
+           
+            //  adjust source and target to fit the reccomended dimensions
+            var r = recommended_offset(l);
+
+            var rendered_children = [];
+
+            for (var i=0; i<l.source.children.length; i++) {
+                if (l.source.children[i].source_visible) {
+                    rendered_children.push(l.source.children[i]);
+                }
+            }
+
+            var k = e.alpha;
+
+            l.target.x += r.dx/2 * k;
+            l.target.y += r.dy/2 * k;
+            l.source.x -= r.dx/rendered_children.length/2 * k;
+            l.source.y -= r.dy/rendered_children.length/2 * k;
             //  TODO: if going to move source, need to do it once for all children
             //  TODO use this technique to coax children in a fan around parent
         });
@@ -75,13 +126,21 @@ $(window).on('keydown keypress', function (e) {
             border : '1px solid rgba(220, 220, 220, 0.5)'
         }
 
-       var extra_styles = ""
-       for (var style in styles) {
-           extra_styles += style + ':' + styles[style] + ';';
-       }
+        var extra_styles = ""
+        for (var style in styles) {
+            extra_styles += style + ':' + styles[style] + ';';
+        }
 
-       node
-            .attr('style', function (d) {
+        node
+           .each(function (d) {
+               if (d.root && !d.fixed) {
+                   //  push root toward left of screen
+                   var k = e.alpha;
+                   d.x -= k * (d.x - d.container.width()/2 - window.innerWidth / 16);
+                   d.y -= k * (d.y - window.innerHeight / 2);
+               }
+           })
+           .attr('style', function (d) {
                 var trans = translate(d);
                 var transforms = [
                     '-webkit-transform',
@@ -98,10 +157,36 @@ $(window).on('keydown keypress', function (e) {
         
 
         link
-            .attr('x1', function (d) { return d.rendered_element.offset().left + d.rendered_element.width(); })
-            .attr('y1', function (d) { return d.rendered_element.offset().top + d.rendered_element.height() / 2; })
-            .attr('x2', function (d) { return d.target.x - d.target.container.outerWidth() / 2 })
-            .attr('y2', function (d) { return d.target.y });
+            .attr('x1', function (d) { return d.rendered_element.offset().left + d.rendered_element.width()/2; })
+            .attr('y1', function (d) { return d.rendered_element.offset().top + d.rendered_element.height()/2; })
+            .attr('x2', function (d) { return d.target.x })
+            .attr('y2', function (d) { return d.target.y })
+            .attr('style', function (d) {
+                var sw = d.rendered_element.outerWidth();
+                var sh = d.rendered_element.outerHeight();
+                var offset = d.rendered_element.offset();
+                var sx = offset.left;
+                var sy = offset.top;
+
+                var tw = d.target.container.outerWidth();
+                var th = d.target.container.outerHeight();
+
+                var tx = d.target.x - tw/2;
+                var ty = d.target.y - th/2;
+
+                d.source_mask
+                    .attr('x', sx)
+                    .attr('y', sy)
+                    .attr('width', sw)
+                    .attr('height', sh)
+
+                d.target_mask
+                    .attr('x', tx)
+                    .attr('y', ty)
+                    .attr('width', tw)
+                    .attr('height', th)
+                return 'clip-path : rectangle(' + [0, 0, 10, 10].join(',') + ')';
+            })
     }
 
     function restart_layout() {
@@ -110,7 +195,26 @@ $(window).on('keydown keypress', function (e) {
             .append('line')
             .attr('class', 'link')
             .attr('stroke-width', 5)
-            .attr('stroke', 'rgba(128, 128, 128, 0.10)');
+            .attr('stroke', 'rgba(128, 128, 128, 0.30)')
+            .attr('mask', function (d) {
+                var mask = defs.append('mask');
+                var id = (Math.random() + '').slice(2);
+                mask.attr('id', id + '-mask');
+
+                var background = mask.append('rect')
+                    .attr('x', 0)
+                    .attr('y', 0)
+                    .attr('width', '100%')
+                    .attr('height', '100%')
+                    .attr('fill', 'white')
+                 
+                var source_mask = mask.append('rect')
+                var target_mask = mask.append('rect')
+                d.source_mask = source_mask;
+                d.target_mask = target_mask;
+
+                return 'url(#' + id + '-mask)';
+            });
 
         node = node.data(node_data);
         node.enter()
@@ -118,10 +222,12 @@ $(window).on('keydown keypress', function (e) {
                 return d.id;
             })
             .attr('class', 'node')
-            .on("dblclick", function () {})
+            .on("dblclick", function (d) {
+
+            })
             .call(drag);
 
-        layout.size([window.innerWidth, window.innerHeight]);
+        layout.size([window.innerWidth * 2, window.innerHeight]);
         layout.start();
     }
 
@@ -129,16 +235,23 @@ $(window).on('keydown keypress', function (e) {
 
     var last_node = {x : 0, y : 0};
 
+    $(window).on('resize', function () {
+        restart_layout();
+    });
+
 
     var svg;
     var link;
     var node;
+    var defs;
 
     $(function () {
         svg = d3.select('body').append('svg')
             .attr("width", "100%")//window.innerWidth)
             .attr("height", "100%")//window.innerHeight);
             .attr("style", "pointer-events:none;z-index:9999;position:fixed; top:0; left:0;");
+
+        defs = svg.append('defs');
 
         link = svg.selectAll('.link');
         node = d3.select('body').selectAll('.node');
@@ -200,16 +313,22 @@ $(window).on('keydown keypress', function (e) {
             children : []
         };
 
+        if (parent_source) {
+            parent_source.children.push(source_node);
+        }
+        else {
+            source_node.root = true;
+        }
+
         function show_in_container(value) {
             node_data.push(source_node);
 
             if (root_source) {
                 if (parent_source) {
                     var offset = self.offset();
+                    source_node.source_visible = true;
                     source_node.x = offset.left + self.outerWidth() + 256;
                     source_node.y = offset.top + self.outerHeight() / 2
-                    console.log('initialized', source_node)
-                    parent_source.children.push(source_node);
                     link_data.push({source : parent_source, target : source_node, rendered_element : self});
                 }
             }

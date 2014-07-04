@@ -263,6 +263,7 @@ $(function () {
 
 function bind_css(element, name, value) {
     if (value.type == 'string' || value.type == 'number') {
+        element.css(name, ''); //  reset before setting again so behavior is consistent between reload
         element.css(name, value.data);
     }
     else if (value.type == 'reference') {
