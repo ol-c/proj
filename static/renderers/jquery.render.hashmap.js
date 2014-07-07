@@ -40,7 +40,7 @@ $(window).on('keydown keypress', function (e) {
             var tw = d.target.container.outerWidth();
             var th = d.target.container.outerHeight();
 
-            return Math.sqrt(sw*sw + sh*sh)/2 + tw/2;//Math.sqrt(tw*tw + th*th)/2;
+            return (sw + tw)/2;//Math.sqrt(sw*sw + sh*sh)/2 + tw/2;//Math.sqrt(tw*tw + th*th)/2;
         })
         .linkStrength(function (d) {
             return 3;
@@ -243,6 +243,7 @@ $(window).on('keydown keypress', function (e) {
         node = node.data(node_data);
         node.enter()
             .append('svg:foreignObject')
+            .attr('pointer-events', 'all')
             .attr('width', '100%')
             .attr('height', '100%')
             .append('xhtml:div')
@@ -278,6 +279,7 @@ $(window).on('keydown keypress', function (e) {
 
     $(function () {
         svg = d3.select('body').append('svg')
+            .attr("pointer-events", "none")
             .attr("width", "100%")
             .attr("height", "100%")
             .attr("style", "z-index:1;position:fixed; top:0; left:0;");

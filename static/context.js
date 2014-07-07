@@ -317,6 +317,21 @@ function bind_attribute(element, name, value) {
             update(response);
         });
     }
+    else if (name == 'behave') {
+        for (var field in value) {
+            //  TODO: handle more than assumption that this is a function
+            if (value[field].type == 'function') {
+                console.log('applying function')
+                console.log(value[field].data);
+                var fn;
+                eval('fn = ' + value[field].data);
+                element.on(field, fn);
+            }
+            else {
+                throw new Error('only functions may be inside behave object');
+            }
+        }
+    }
 }
 
 function bind_html(element, value, replace) {

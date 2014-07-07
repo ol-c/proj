@@ -43,11 +43,15 @@ $.fn.render.function = function (item, after) {
         })
         var open = $('<span>').append([declare, begin_params, params]);
 
+        var placeholder = $('<span>placeholder</span>');
+
         fun.append([open, params, end_params_begin_body]);
         var body = $('<span>');
         body.text(pb.body);
         body.editor({
-            highlighting : 'javascript'
+            multiline : true,
+            highlighting : 'javascript',
+            placeholder : placeholder
         });
         var end_body = $('<span>}</span>');
         end_body.css({
