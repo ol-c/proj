@@ -56,15 +56,16 @@ $(window).on('keydown keypress', function (e) {
             var siblings = [];
 
             for (var i=0; i<link.source.children.length; i++) {
-                if (link.source.children[i].source_visible) {
-                    siblings.push(link.source.children[i]);
+                var sibling = link.source.children[i];
+                if (sibling.source_visible) {
+                    siblings.push(sibling);
                 }
             }
 
             var sibling_index = 0;
             var sibling_heights = [];
             var sibling_y = 0;
-            var sibling_spacing = 32;
+            var sibling_spacing = 0;
 
             for (var i=0; i<siblings.length; i++) {
                 sibling_heights.push(siblings[i].container.outerHeight() + sibling_spacing);
@@ -88,15 +89,20 @@ $(window).on('keydown keypress', function (e) {
             var tw = link.target.container.outerWidth();
             var th = link.target.container.outerHeight();
 
+            var dx = (sw + tw)/2;//Math.sqrt(sw*sw + sh*sh)/2 + Math.sqrt(tw*tw + th*th)/2;
+            var dy = sibling_y - total_height/2;
+
             return {
-                dx : Math.sqrt(sw*sw + sh*sh)/2 + Math.sqrt(tw*tw + th*th)/2,
-                dy : sibling_y - total_height/2
+                dx : dx,
+                dy : dy
             };
         }
 
 
         link.each(function (l) {
-           
+            //  fixed targets don't need adjustment
+            if (l.target.fixed) return;
+
             //  adjust source and target to fit the reccomended dimensions
             var r = recommended_offset(l);
 
@@ -132,11 +138,10 @@ $(window).on('keydown keypress', function (e) {
             top : 0,
             left : 0,
             margin : 0,
-            display : 'inline-block',
             'background-color' :'rgba(255,255,255, .95)',
             padding : '1em',
             'box-shadow' : "0px 0px 32px rgba(200, 200, 200, 0.95)",
-            border : '1px solid rgba(220, 220, 220, 0.5)'
+            border : '1px solid rgba(220, 220, 220, 0.5)',
         }
 
         var extra_styles = ""
@@ -167,7 +172,8 @@ $(window).on('keydown keypress', function (e) {
                 }
                 //  TODO: apply these styles to the div inside of this foreign object
                 //  Want this inside of svg document so we can respect layering
-                $('#'+ d.id).attr('style', extra_styles + t);
+                var s = extra_styles + t + 'display:' + (d.visible ? "inline-block" : "none");
+                $('#'+ d.id).attr('style', s);
                 return '';//extra_styles + t;
             });
         
@@ -239,7 +245,7 @@ $(window).on('keydown keypress', function (e) {
             .append('svg:foreignObject')
             .attr('width', '100%')
             .attr('height', '100%')
-            .append('xhtml:body')
+            .append('xhtml:div')
             .attr('id', function (d) {
                 return d.id
             })
@@ -296,6 +302,7 @@ $(window).on('keydown keypress', function (e) {
 
     $.fn.render.hashmap = function (item, after, parent_source) {
         var container = $('<div>');
+        var command_line = $('<span>');
 
         //  transparent border so can highlight without trouble
         container.css({
@@ -416,22 +423,39 @@ $(window).on('keydown keypress', function (e) {
                 self.append(renderable);
             }
             var generic_view = null;
+            var collapsed = true;
             $(window).on('keydown', function (e) {
-                if (self.selected() && e.ctrlKey && e.keyCode == 39) {
+                if (self.selected() && e.keyCode == 13) {
                     e.preventDefault();
                     if (generic_view) {
-                        generic_view.toggle();
+                        if (collapsed) {
+                            source_node.visible = true;
+                        }
+                        else {
+                            source_node.visible = false;
+                        }
+                        collapsed = !collapsed;
+                        restart_layout();
                     }
                     else {
+                        source_node.visible = true;
                         generic_view = show_in_container(render_generic());
                         generic_view.hammer().on('touch', function (e) {
                             //  TODO: select the command line for this
+                            command_line.trigger('select', {});
                             e.stopPropagation();
                         });
+                        collapsed = false;
+                        //command_line.trigger('select', {});
                         restart_layout();
                         //  TODO: if source node already rendered somewhere else, use that
                     }
                 }
+                else if (self.selected() && e.ctrlKey && e.keyCode == 39) {
+                    e.preventDefault();
+                    command_line.trigger('select', {})
+                }
+                //  TODO: if child selected and ctrl+left is pressed then jump to the rendered version
                 else if (self.selected()) {
                     if (e.keyCode == 37) {
                         e.stopImmediatePropagation();
@@ -474,8 +498,6 @@ $(window).on('keydown keypress', function (e) {
             var container = $("<div>");
             var highlight;
             var unhighlight;
-            var command_line;
-            command_line = $('<span>');
             
             container.css({
                 display : 'inline-block',
@@ -537,7 +559,6 @@ $(window).on('keydown keypress', function (e) {
 
                 return row;
             }
-
 
             var content_body = $('<div>');
             function render_hashmap() {

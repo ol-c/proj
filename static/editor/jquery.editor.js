@@ -62,6 +62,11 @@
         }
 
         var self = this;
+
+        self.hammer().on('touch', function (e) {
+            e.stopImmediatePropagation();
+        });
+
         if (self.settings.editable) self.selectable();
         self.css({
             borderBottom : normal_bottom_border,
@@ -487,7 +492,7 @@
 
     $(window).on('keypress', function (e) {
         if (editing && current_editor && current_editor.selected()) {
-            if (e.which == 13) return;
+            if (e.which == 13) return true;
             e.preventDefault();
             var char = String.fromCharCode(e.which);
             var c = create_char(char);
