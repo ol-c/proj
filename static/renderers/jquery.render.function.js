@@ -43,21 +43,25 @@ $.fn.render.function = function (item, after) {
         })
         var open = $('<span>').append([declare, begin_params, params]);
 
-        var placeholder = $('<span>placeholder</span>');
-
         fun.append([open, params, end_params_begin_body]);
         var body = $('<span>');
         body.text(pb.body);
         body.editor({
             multiline : true,
-            highlighting : 'javascript',
-            placeholder : placeholder
+            highlighting : 'javascript'
         });
         var end_body = $('<span>}</span>');
         end_body.css({
             color : '#888888'
         });
-        fun.append([body, end_body, after]);
+
+        var placeholder = $('<span>');
+        placeholder.text('placeholder');
+        placeholder.selectable();
+
+        //  TODO: add node to graph for body text
+
+        fun.append([placeholder, end_body, after]);
         $(this).append(fun);
 
     var local_updates = {};

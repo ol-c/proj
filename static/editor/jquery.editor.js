@@ -87,6 +87,10 @@
         }
 
         var collapsed = false;
+        self.on('expand', function (event, data) {
+            
+        });
+
         self.on('collapse', function (event, data) {
             if (collapsed) {
                 

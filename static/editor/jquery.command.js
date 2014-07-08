@@ -19,8 +19,14 @@ $.fn.command = function (item) {
         command.trigger('append', history[history_index])
         output.empty();
     });
-    self.on('select', function () {
+    var selecting_self = false;
+
+    self.on('select', function (e) {
+        e.stopImmediatePropagation();
+        if (selecting_self) return;
+        selecting_self = true;
         command.trigger('select', {});
+        selecting_self = false;
     })
     command.on('down', function () {
         history_index = Math.min(history.length-1, history_index + 1);
