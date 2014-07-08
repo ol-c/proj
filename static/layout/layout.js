@@ -15,6 +15,27 @@ var layout = {};
     var node_data = force_layout.nodes();
     var link_data = force_layout.links();
 
+    force_layout
+        .friction(0.8)
+        .gravity(0.0001)
+        .charge(function (d) {
+            //  rendered versions shouldn't push since they are constrained
+            return -10000;
+        })
+        .linkDistance(function (d) {
+            var sw = d.source.container.outerWidth();
+            var sh = d.source.container.outerHeight();
+
+            var tw = d.target.container.outerWidth();
+            var th = d.target.container.outerHeight();
+
+            return (sw + tw)/2;//Math.sqrt(sw*sw + sh*sh)/2 + tw/2;//Math.sqrt(tw*tw + th*th)/2;
+        })
+        .linkStrength(function (d) {
+            return 2;
+        })
+        .on('tick', tick);
+
 
     layout.add_node = function (node) {
         node_data.push(node);
@@ -59,26 +80,6 @@ var layout = {};
     }
 
     drag.on("dragstart", dragstart);
-    force_layout
-        .friction(0.8)
-        .gravity(0.001)
-        .charge(function (d) {
-            //  rendered versions shouldn't push since they are constrained
-            return -1000;
-        })
-        .linkDistance(function (d) {
-            var sw = d.source.container.outerWidth();
-            var sh = d.source.container.outerHeight();
-
-            var tw = d.target.container.outerWidth();
-            var th = d.target.container.outerHeight();
-
-            return (sw + tw)/2;//Math.sqrt(sw*sw + sh*sh)/2 + tw/2;//Math.sqrt(tw*tw + th*th)/2;
-        })
-        .linkStrength(function (d) {
-            return 3;
-        })
-        .on('tick', tick);
 
     function tick(e) {
         //  TODO: Attractive force toward fixed nodes.
@@ -173,6 +174,7 @@ var layout = {};
             padding : '1em',
             'box-shadow' : "0px 0px 32px rgba(200, 200, 200, 0.95)",
             border : '1px solid rgba(220, 220, 220, 0.5)',
+            'font-size' : '12px'
         }
 
         var extra_styles = ""

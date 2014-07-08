@@ -1,10 +1,20 @@
-$.fn.render.function = function (item, after) {
+$.fn.render.function = function (item, after, parent) {
+    var node = new node_generator(parent);
+
+    node.container().css({
+        verticalAlign : 'top'
+    });
+
+    node.render(function () {
+        return body;
+    });
+
         var self = this;
         var fun = $('<span>');
         fun.css({
             margin : 0,
-            padding : 0
-        })
+            padding : 0,
+        });
         var declare = $('<span>function</span>');
         var begin_params = $('<span> (</span>');
         var end_params_begin_body = $('<span>) {</span>');
@@ -55,18 +65,42 @@ $.fn.render.function = function (item, after) {
             color : '#888888'
         });
 
-        var placeholder = $('<span>');
-        placeholder.text('placeholder');
-        placeholder.selectable();
-
         //  TODO: add node to graph for body text
 
-        fun.append([placeholder, end_body, after]);
-        $(this).append(fun);
+        var comment = node.container();
+
+        comment.css({
+            color : 'slategrey',
+            fontStyle : 'italic',
+//            fontFamily : 'serif'
+        });
+
+        fun.append(['<br>    ', comment, '<br>', end_body, after]);
+        update_comment();
+
+        function update_comment() {
+            var text = body.text();
+            var comments = text.match(/^\s*\/\/(.*)\n|^\s*\/\*((.|\n)*)\*\//m);
+            var t = '';
+            if (comments) {
+                    console.log(comments)
+                if (comments[1]) {
+                    t = comments[1].trim();
+                }
+                else if (comments[2]) {
+                    t = comments[2].trim();
+                }
+            }
+            if (t == '') t = text.split('\n').length + ' lines'
+            comment.text(t);
+        }
+
+        self.append(fun);
 
     var local_updates = {};
 
     var throttled_set = throttle(100, function () {
+        update_comment();
         try {
             eval('function __tmp__ (' + params.text() + ') {' + body.text() + '}');
         }
