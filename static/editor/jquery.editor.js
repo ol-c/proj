@@ -511,13 +511,6 @@
     function create_char(c) {
         var character = $('<span>');
         character.text(c);
-        if (c == '\n') {
-            character.css({
-                background : '#AAAAAA',
-                width : '1em',
-                marginRight : '-1em'
-            });
-        }
         var this_editor = current_editor;
         character.hammer().on('touch', function (e) {
             if (this_editor.settings.editable) {

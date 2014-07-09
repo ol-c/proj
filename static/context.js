@@ -62,7 +62,7 @@ function get_type(val) {
 }
 
 //  shared code with persist
-function serializable(value, reference, callback) {
+function serializable_from_instance(value, reference) {
         var type = get_type(value);
         var serializable = {};
         serializable.type = type;
@@ -93,12 +93,12 @@ function serializable(value, reference, callback) {
             serializable.data = value.toString();
         }
         else if (value == undefined) {
-            callback(null, {
+            return {
                 type : 'undefined'
-            });
-            return;
+            }
         }
-        callback(null, serializable);
+        console.log(serializable, value);
+        return serializable;
 }
 
 function watch(reference, on_change) {
@@ -321,8 +321,6 @@ function bind_attribute(element, name, value) {
         for (var field in value) {
             //  TODO: handle more than assumption that this is a function
             if (value[field].type == 'function') {
-                console.log('applying function')
-                console.log(value[field].data);
                 var fn;
                 eval('fn = ' + value[field].data);
                 element.on(field, fn);
