@@ -150,10 +150,15 @@ var layout = {};
 
             l.target.x += r.dx/2 * k;
             l.target.y += r.dy/2 * k;
-            l.source.x -= r.dx/rendered_children.length/2 * k;
-            l.source.y -= r.dy/rendered_children.length/2 * k;
-            //  TODO: if going to move source, need to do it once for all children
-            //  TODO use this technique to coax children in a fan around parent
+            if (l.source.fixed) {
+                
+            }
+            else {
+                l.source.x -= r.dx/rendered_children.length/2 * k;
+                l.source.y -= r.dy/rendered_children.length/2 * k;
+                //  TODO: if going to move source, need to do it once for all children
+                //  TODO use this technique to coax children in a fan around parent
+            }
         });
 
         function translate(d) {

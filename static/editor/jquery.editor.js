@@ -1,4 +1,8 @@
 (function () {
+    //  used to find last position of cursor for moving up and down
+    var start_x;
+    var start_y;
+
     var current_editor = null;
     var last_highlight = null;
     var cursor = $('<span>');
@@ -193,6 +197,7 @@
                 }
             }
         });
+
         self.on('movecursor', function (event, index) {
             if (!self.selected()) self.trigger('select', {});
             var children = self.children();
@@ -204,6 +209,125 @@
             }
             else {
                 children.eq(index).before(cursor);
+            }
+        });
+
+        //  used to establish where to start
+        //  between up and down seeks
+        self.on('select', function () {
+            start_x = -Infinity;
+        });
+
+        self.on('up', function () {
+            var current = cursor.prev();
+            var current_text = current.text();
+
+            var hidden = !cursor.is(':visible');
+
+            if (hidden) cursor.show().text('x');
+            var offset = cursor.offset();
+            if (hidden) cursor.hide().text('');
+
+
+            if (current.size() == 0) {
+                self.trigger('select_prev');
+                return;
+            }
+
+            start_x = Math.max(offset.left, start_x);
+            start_y = offset.top;
+
+            var above_line_found = false;
+            var column_found = false;
+
+            while (current.size() == 1) {
+                current_text = current.text();
+                if (current_text == '\n') current.text('X');
+                offset = current.offset();
+                if (current_text == '\n') current.text('\n');
+                if (!above_line_found && offset.top < start_y) {
+                    above_line_found = true;
+                }
+                
+                if (above_line_found && offset.left <= start_x) {
+                    column_found = true;
+                }
+                
+                if (above_line_found && column_found) {
+                    break;
+                }
+
+                current = current.prev();
+            }
+
+            if (current && above_line_found) {
+                // move cursor to prev
+                var index = self.children().index(current);
+                self.trigger('movecursor', index);
+            }
+            else {
+                self.trigger('movecursor', 0);
+            }
+        });
+
+        self.on('down', function () {
+            var current = cursor.next();
+            var current_text = current.text();
+
+            var hidden = !cursor.is(':visible');
+
+            if (hidden) cursor.show();
+            var offset = cursor.offset();
+            if (hidden) cursor.hide();
+
+            if (current.size() == 0) {
+                self.trigger('select_next');
+                return;
+            }
+
+            start_x = Math.max(offset.left, start_x);
+            start_y = offset.top;
+
+            var below_line_found = false;
+            var column_found = false;
+
+            while (current.size() == 1) {
+                current_text = current.text();
+                if (current_text == '\n') {
+                    if (below_line_found) {
+                        break;
+                    }
+                    below_line_found = true;
+                    current.text('X');
+                }
+                offset = current.offset();
+                if (current_text == '\n') {
+                    current.text('\n');
+                    current = current.next();
+                    continue;
+                }
+                if (!below_line_found && offset.top > start_y) {
+                    below_line_found = true;
+                }
+                
+                if (below_line_found && offset.left >= start_x) {
+                    column_found = true;
+                }
+                
+                if (below_line_found && column_found) {
+                    break;
+                }
+
+                if (current_text)
+                current = current.next();
+            }
+
+            if (current && below_line_found) {
+                var index = self.children().index(current);
+                self.trigger('movecursor', index);
+            }
+            else {
+                self.trigger('movecursor', Infinity);
             }
         });
 
@@ -387,6 +511,13 @@
     function create_char(c) {
         var character = $('<span>');
         character.text(c);
+        if (c == '\n') {
+            character.css({
+                background : '#AAAAAA',
+                width : '1em',
+                marginRight : '-1em'
+            });
+        }
         var this_editor = current_editor;
         character.hammer().on('touch', function (e) {
             if (this_editor.settings.editable) {
@@ -402,6 +533,7 @@
     }
 
     function jump_to_previous(editor) {
+        start_x = -Infinity;
         if (cursor.prev().size() > 0) {
             cursor.prev().before(cursor);
         }
@@ -410,6 +542,7 @@
     }
 
     function jump_to_next(editor) {
+        start_x = -Infinity;
         if (cursor.next().size() > 0) {
             cursor.next().after(cursor);
         }
