@@ -9,13 +9,12 @@ datatypes:
         undefined
         date
         function
-        hashmap
         error
         file
         promise
+        container // only hashmap for now, but that can implement all kinds
 
     not implemented:
-        list
         regular expression
 
 global objects:
@@ -28,10 +27,10 @@ global objects:
         Promise
         html
         type
-
-    not implemented:
         local
         remote
+
+    not implemented:
         wait
 
 object special fields:

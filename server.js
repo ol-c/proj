@@ -46,7 +46,7 @@ if (cluster.isMaster) {
             if (err) console.log('error seeing if root exists');
             else if (exists) spawn_worker_for_root(root, owner, callback);
             else {
-                var root_object = persist.create('hashmap', root);
+                var root_object = persist.create(root);
                 if (root_object.owner == undefined) {
                     root_object.owner = owner;
                 }
@@ -166,6 +166,7 @@ else {
 
     //  set agent so we know what agent to attach to executing functions
     persist.set_agent(process.env.root);
+    persist.set_root(process.env.root);
 
     //  load root object
     persist.load(process.env.root, function (err, res) {

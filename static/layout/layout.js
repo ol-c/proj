@@ -176,7 +176,7 @@ var layout = {};
             left : 0,
             margin : 0,
             'background-color' :'rgba(255,255,255, .95)',
-            padding : '1em',
+            padding : '4ch',
             'box-shadow' : "0px 0px 32px rgba(200, 200, 200, 0.95)",
             border : '1px solid rgba(220, 220, 220, 0.5)',
             'font-size' : '12px'

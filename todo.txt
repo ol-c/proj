@@ -10,5 +10,5 @@ X special "render" field
 X     ctrl + e to get into edit mode for object
 X special "permissions" field
 X associate proper agent for each function so authorize can
-      check permissions
+X   check permissions
   special set, list ETC operations for hashmaps
