@@ -12,7 +12,7 @@ datatypes:
         error
         file
         promise
-        container // only hashmap for now, but that can implement all kinds
+        container
 
     not implemented:
         regular expression
