@@ -1,40 +1,40 @@
 datatypes:
 
     implemented:
-        string
-        number
-        file
-        boolean
-        null
-        undefined
-        date
-        function
-        error
-        file
-        promise
-        container
+        String
+        Number
+        File
+        Boolean
+        Null
+        Undefined
+        Date
+        Function
+        Error
+        File
+        Promise
+        Container
 
     not implemented:
-        regular expression
+        RegExp
 
 global objects:
 
     implemented:
-        load
-        unload
-        resolve
-        File
-        Promise
-        html
-        type
-        local
-        remote
+        load    //  loads a module into the current context
+        unload  //  explicitly unloads a module
+        resolve //  resolve a reference
+        File    //  get a promise for a remote file
+        Promise //  Promise object
+        html    //  helps generate live html
+        type    //  get the type of an object, must be one of the above datatypes
+        local   //  reference to the root object of the current scope
+        remote  //  reference to any object within ol-c
 
     not implemented:
-        wait
+        wait    //  creates a delay before the execution of a function
 
 object special fields:
 
     implemented
-        render
-        permissions
+        render       //  returns a string or a promise for a string for the front end to evaluate
+        permissions  //  sets the access rules for an object

@@ -12,3 +12,4 @@ X special "permissions" field
 X associate proper agent for each function so authorize can
 X   check permissions
   special set, list ETC operations for hashmaps
+  testing suite
