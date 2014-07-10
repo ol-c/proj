@@ -17,7 +17,6 @@ datatypes:
     not implemented:
         List
         Set
-        Map
         RegExp
 
 global objects:

@@ -11,5 +11,9 @@ X     ctrl + e to get into edit mode for object
 X special "permissions" field
 X associate proper agent for each function so authorize can
 X   check permissions
-  collection operations
+  List and Set operations
   testing suite
+  delay function
+  how to expose loadable modules
+  generic container renderers
+
