@@ -12,9 +12,12 @@ datatypes:
         Error
         File
         Promise
-        Container
+        Hashmap
 
     not implemented:
+        List
+        Set
+        Map
         RegExp
 
 global objects:
@@ -31,7 +34,7 @@ global objects:
         remote  //  reference to any object within ol-c
 
     not implemented:
-        wait    //  creates a delay before the execution of a function
+        delay   //  creates a delay before the execution of a function
 
 object special fields:
 

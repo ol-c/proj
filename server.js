@@ -46,7 +46,7 @@ if (cluster.isMaster) {
             if (err) console.log('error seeing if root exists');
             else if (exists) spawn_worker_for_root(root, owner, callback);
             else {
-                var root_object = persist.create(root);
+                var root_object = persist.create('hashmap', root);
                 if (root_object.owner == undefined) {
                     root_object.owner = owner;
                 }
