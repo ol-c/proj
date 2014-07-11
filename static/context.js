@@ -97,24 +97,33 @@ function serializable_from_instance(value, reference) {
                 type : 'undefined'
             }
         }
-        console.log(serializable, value);
         return serializable;
 }
 
 function watch(reference, on_change) {
-    //  TODO: perform on_change function when an update is passed
-    var hashed_reference = hash_reference(reference);
-    if (updates[hashed_reference] == undefined) {
-        perform_operation({
-            type : 'watch',
-            reference : reference
-        },
-        function (response) {
+    //  perform operation to flatten the reference,
+    //  that means have one object id leading to one 
+    //  field within that object since that is the
+    //  only uniquely identifying reference
 
-        });
-        updates[hashed_reference] = [];
-    }
-    updates[hashed_reference].push(on_change);
+    perform_operation({
+        type : 'watch',
+        reference : reference
+    },
+    function (response) {
+        if (response.type !== 'success') {
+            console.log(reference, response);
+            throw new Error('error watching reference logged above');
+        }
+        else {
+            console.log('WATCH RESPONSE!!!!!', response)
+            var hashed_flat_ref = hash_reference(response.flattened)
+            if (updates[hashed_flat_ref] == undefined) {
+                updates[hashed_flat_ref] = [];
+            }
+            updates[hashed_flat_ref].push(on_change);
+        }
+    });
 }
 
 function unwatch(reference, fn) {
@@ -351,6 +360,9 @@ function bind_html(element, value, replace) {
         function update(value) {
             last_value = bind_html(last_value, value, true);
         }
+        //  only watch changes on the given field on the given object
+        //  the reference's last item is the field, and the second to
+        //  last is the object
         watch(reference, function (response) {
             if (response.value.type == 'reference') {
                 //  this short wires the references and keeps the resolved value to the original target

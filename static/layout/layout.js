@@ -282,6 +282,7 @@ var layout = {};
         node.enter()
             .append('svg:foreignObject')
             .attr('pointer-events', 'all')
+            .attr('position', 'fixed')
             .attr('width', '100%')
             .attr('height', '100%')
             .append('xhtml:div')

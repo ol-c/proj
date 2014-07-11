@@ -43,7 +43,7 @@ if (cluster.isMaster) {
         //  create it here and unload it so worker
         //  can take control
         persist.exists(root, function (err, exists) {
-            if (err) console.log('error seeing if root exists');
+            if (err) callback('error checking if root object exists');
             else if (exists) spawn_worker_for_root(root, owner, callback);
             else {
                 var root_object = persist.create('hashmap', root);
