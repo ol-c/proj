@@ -116,7 +116,6 @@ function watch(reference, on_change) {
             throw new Error('error watching reference logged above');
         }
         else {
-            console.log('WATCH RESPONSE!!!!!', response)
             var hashed_flat_ref = hash_reference(response.flattened)
             if (updates[hashed_flat_ref] == undefined) {
                 updates[hashed_flat_ref] = [];
