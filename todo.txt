@@ -12,6 +12,7 @@ X special "permissions" field
 X associate proper agent for each function so authorize can
 X   check permissions
   List and Set operations
+  write all updates into the root file for persist
   testing suite
   delay function
   how to expose loadable modules
