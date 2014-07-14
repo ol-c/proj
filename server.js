@@ -46,6 +46,7 @@ if (cluster.isMaster) {
             if (err) callback('error checking if root object exists');
             else if (exists) spawn_worker_for_root(root, owner, callback);
             else {
+                persist.set_root(root);
                 var root_object = persist.create('hashmap', root);
                 if (root_object.owner == undefined) {
                     root_object.owner = owner;
@@ -127,6 +128,11 @@ if (cluster.isMaster) {
     }
 }
 else {
+
+    //  set agent so we know what agent to attach to executing functions
+    persist.set_agent(process.env.root);
+    persist.set_root(process.env.root);
+
     var app = express();
     app.use(auth.middleware);
     app.use(function (req, res, next) {
@@ -163,10 +169,6 @@ else {
             'id'    : id
         });
     });
-
-    //  set agent so we know what agent to attach to executing functions
-    persist.set_agent(process.env.root);
-    persist.set_root(process.env.root);
 
     //  load root object
     persist.load(process.env.root, function (err, res) {
