@@ -7,7 +7,9 @@ $.fn.command = function (item) {
     command.editor({
         multiline : false,
         highlighting : 'javascript',
-        placeholder : $('<span> &gt; </span> ').css('color', '#888888')
+        placeholder : $('<span> &gt; </span> ').css('color', '#888888'),
+        block_up : true,
+        block_down : true
     });
     command.on('up', function () {
         history_index = Math.max(0, history_index - 1);

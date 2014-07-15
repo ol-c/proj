@@ -53,7 +53,9 @@
             multiline : true,
             highlighting : 'none',
             placeholder : '',
-            editable : true
+            editable : true,
+            block_down : false,
+            block_up   : false
         };
 
         if (options) {
@@ -219,6 +221,8 @@
         });
 
         self.on('up', function () {
+            if (current_editor.settings.block_up) return;
+
             var current = cursor.prev();
             var current_text = current.text();
 
@@ -271,6 +275,9 @@
         });
 
         self.on('down', function () {
+
+            if (current_editor.settings.block_down) return;
+
             var current = cursor.next();
             var current_text = current.text();
 
