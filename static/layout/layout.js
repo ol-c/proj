@@ -171,7 +171,8 @@ var layout = {};
         }
 
         var styles = {
-            position: 'fixed',
+//            position: 'absolute',
+            'z-index' : 'inherit',
             top : 0,
             left : 0,
             margin : 0,
@@ -215,25 +216,27 @@ var layout = {};
                 return '';//extra_styles + t;
             });
         
+        var scroll_left = $(window).scrollLeft();
+        var scroll_top  = $(window).scrollTop();
 
         link
-            .attr('x1', function (d) { return d.rendered_element.offset().left + d.rendered_element.outerWidth()/2; })
-            .attr('y1', function (d) { return d.rendered_element.offset().top + d.rendered_element.outerHeight()/2; })
+            .attr('x1', function (d) { return d.rendered_element.offset().left - scroll_left + d.rendered_element.outerWidth()/2; })
+            .attr('y1', function (d) { return d.rendered_element.offset().top - scroll_top + d.rendered_element.outerHeight()/2; })
             .attr('x2', function (d) { return Math.round(d.target.x); })
             .attr('y2', function (d) { return Math.round(d.target.y); })
             .attr('style', function (d) {
                 var sw = d.rendered_element.outerWidth();
                 var sh = d.rendered_element.outerHeight();
                 var offset = d.rendered_element.offset();
-                var sx = offset.left;
-                var sy = offset.top;
+                var sx = offset.left - scroll_left;
+                var sy = offset.top  - scroll_top;
 
                 var tw = d.target.container.outerWidth();
                 var th = d.target.container.outerHeight();
 
                 var tx = d.target.x - tw/2;
                 var ty = d.target.y - th/2;
-/*
+
                 d.source_mask
                     .attr('x', sx)
                     .attr('y', sy)
@@ -245,7 +248,7 @@ var layout = {};
                     .attr('y', ty)
                     .attr('width', tw)
                     .attr('height', th)
-*/
+
                 return "";
             })
     }
@@ -254,6 +257,10 @@ var layout = {};
         link = link.data(link_data);
         link.enter()
             .append('line')
+            .attr('id', function (d) {
+                d.id = (Math.random() + '').slice(2);
+                return d.id;
+            })
             .attr('class', 'link')
             .attr('stroke-width', 5)
             .attr('stroke', 'rgba(128, 128, 128, 0.30)')
@@ -276,15 +283,22 @@ var layout = {};
                 d.target_mask = target_mask;
 
                 return 'url(#' + id + ')';
+            })
+            .each(function (d) {
+                //  append link to the source node's g element
+                $('#group-' + d.source.id).append($('#' + d.id));
             });
 
         node = node.data(node_data);
         node.enter()
+            .append('svg:g')
+            .attr('id', function (d) {
+                return 'group-' + d.id;
+            })
             .append('svg:foreignObject')
             .attr('pointer-events', 'all')
-            .attr('position', 'fixed')
-            .attr('width', '100%')
-            .attr('height', '100%')
+            //.attr('width', '100%')
+            //.attr('height', '100%')
             .append('xhtml:div')
             .attr('id', function (d) {
                 return d.id
@@ -298,6 +312,8 @@ var layout = {};
     }
 
     function restart_layout() {
+        svg.attr('width', window.innerWidth);
+        svg.attr('height', window.innerHeight);
         force_layout.size([window.innerWidth * 20, window.innerHeight]);
         force_layout.start();
     }
@@ -309,8 +325,8 @@ var layout = {};
     $(function () {
         svg = d3.select('body').append('svg')
             .attr("pointer-events", "none")
-            .attr("width", "100%")
-            .attr("height", "100%")
+            .attr("width", window.innerWidth)
+            .attr("height", window.innerHeihgt)
             .attr("style", "z-index:1;position:fixed; top:0; left:0;");
 
         defs = svg.append('defs');

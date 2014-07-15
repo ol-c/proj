@@ -16,7 +16,6 @@ datatypes:
 
     not implemented:
         List
-        Set
         RegExp
 
 global objects:

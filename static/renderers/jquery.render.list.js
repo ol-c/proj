@@ -1,8 +1,6 @@
 (function () {
     var rendered = {};
 
-    console.log('rendering list');
-
     $.fn.render.list = function (item, after, parent_source) {
 
         var command_line = $('<span>');

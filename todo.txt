@@ -12,10 +12,10 @@ X special "permissions" field
 X associate proper agent for each function so authorize can
 X   check permissions
 X write all updates into the root file for persist
-  List and Set operations
+  layer svg components properly
+  List  operations
   do not add owner to persistant object
   testing suite
   delay function
   how to expose loadable modules
-  generic container renderers
-
+  generic List renderer
