@@ -80,15 +80,11 @@ $.fn.render.function = function (item, after, parent) {
 
         function update_comment() {
             var text = body.text();
-            var comments = text.match(/^\s*\/\/(.*)\n|^\s*\/\*((.|\n)*)\*\//m);
+            var comments = text.match(/^\s*\/\/([^\n]*)|^\s*\/\*((.|\n)*)\*\//m);
             var t = '';
             if (comments) {
-                    console.log(comments)
-                if (comments[1]) {
-                    t = comments[1].trim();
-                }
-                else if (comments[2]) {
-                    t = comments[2].trim();
+                for (var i=1; i<comments.length; i++) {
+                    if (comments[i]) t = comments[i].trim();
                 }
             }
             if (t == '') t = text.split('\n').length + ' lines'
