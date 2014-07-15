@@ -11,7 +11,7 @@ X     ctrl + e to get into edit mode for object
 X special "permissions" field
 X associate proper agent for each function so authorize can
 X   check permissions
-  write all updates into the root file for persist
+X write all updates into the root file for persist
   List and Set operations
   testing suite
   delay function
