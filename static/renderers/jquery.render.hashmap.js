@@ -26,7 +26,8 @@
                     renderable = "loader...";
                 }
                 else {
-                    renderable = "{&hellip;}";
+                    renderable = $('<span>');
+                    renderable.text('hashmap');
                 }
                 self.append(renderable);
             }
