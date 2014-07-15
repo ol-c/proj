@@ -18,7 +18,7 @@ $.fn.command = function (item) {
             history.push(command.text());
         }
         command.trigger('empty');
-        command.trigger('append', history[history_index])
+        command.trigger('append', history[history_index] | '')
         output.empty();
     });
     var selecting_self = false;
@@ -34,7 +34,7 @@ $.fn.command = function (item) {
         history_index = Math.min(history.length-1, history_index + 1);
         if (history.length == 0) history.push(command.text());
         command.trigger('empty');
-        command.trigger('append', history[history_index]);
+        command.trigger('append', history[history_index] | '');
         output.empty();
     });
     var history_index = 0;
