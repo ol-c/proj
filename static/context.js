@@ -112,7 +112,6 @@ function watch(reference, on_change) {
     },
     function (response) {
         if (response.type !== 'success') {
-            //console.log(reference, response);
             throw new Error('error watching reference logged above');
         }
         else {

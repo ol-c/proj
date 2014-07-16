@@ -11,9 +11,7 @@
 
 
         //  TODO: use generic list render function
-        var source = "if (type(this.render) == 'function' ) return this.render();\n" +
-                     "else if (type(this.render) == 'reference') return resolve(this.render);\n" +
-                     "else return undefined;";
+        var source = "return undefined"; //  TODO: dont need to go back to server...
 
         evaluate_script(item.reference, source, function (result) {
             if (result.type == 'error') {

@@ -12,7 +12,7 @@ X special "permissions" field
 X associate proper agent for each function so authorize can
 X   check permissions
 X write all updates into the root file for persist
-  layer svg components properly
+X layer svg components properly //  trouble rooted in incompatible svg and html rendering pipelines
   List  operations
   do not add owner to persistant object
   testing suite
