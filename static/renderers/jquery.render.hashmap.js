@@ -87,7 +87,7 @@
                     marginLeft : (-key_width) + 'ch'
                 });
                 row.css({
-                    paddingLeft : (4 + key_width) +'ch',
+                    paddingLeft : (key_width) +'ch',
                     paddingTop : '0.5em',
                     paddingBottom : '0.5em'
                 });
@@ -106,27 +106,17 @@
 
             var content_body = $('<div>');
             function render_hashmap() {
-                var open = $('<span>{</span>');
                 command_line.command(item);
-                open.append(command_line)
-                var close = $('<span>}</span>').append(after);
                 var keys = Object.keys(item.data);
                 keys.reverse();
 
                 for (var i=0; i<keys.length; i++) {
                     var key = keys[i];
-                    var terminate = undefined;
-                    if (i < keys.length - 1) {
-                        terminate = $('<span>,</span>');
-                        terminate.css({
-                            color : '#888888'
-                        });
-                    }
-                    var row = render_field(key, item.data[key], terminate);
+                    var row = render_field(key, item.data[key]);
                     content_body.append(row);
                 }
                 var r = $('<span>');
-                r.append([open, content_body, close]);
+                r.append([content_body, '<hr><br>', command_line]);
                 container.append(r);
             }
             render_hashmap();
@@ -138,15 +128,8 @@
                     var field;
                     for (field in updated_fields) {
                         if (rendered_fields[field] === undefined) {
-                            var after;
-                            if (Object.keys(rendered_fields).length) {
-                                after = $('<span>,</span>');
-                                after.css({
-                                    color : '#888888'
-                                });
-                            }
-                            var r = render_field(field, updated_fields[field], after);
-                            content_body.prepend(r);
+                            var r = render_field(field, updated_fields[field]);
+                            content_body.append(r);
                         }
                     }
                     for (field in rendered_fields) {

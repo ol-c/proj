@@ -244,7 +244,6 @@ $(function () {
         var data = JSON.parse(data_string);
         //console.log(data);
         var response = responses[data.token];
-        console.log(data);
         if (response) response(data);
         if (data.type == 'update') {
             var hashed_reference = hash_reference(data.reference);
