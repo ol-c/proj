@@ -5,7 +5,7 @@ var layout = {};
 
     var last_fixed = null;
 
-    var svg;
+    var overlay;
     var link;
     var node;
     var defs;
@@ -17,22 +17,18 @@ var layout = {};
 
     force_layout
         .friction(0.8)
-        .gravity(0.0001)
+        .gravity(0.00000001)
         .charge(function (d) {
             //  rendered versions shouldn't push since they are constrained
-            return -10000;
+            return -1000;
         })
         .linkDistance(function (d) {
-            var sw = d.source.container.outerWidth();
-            var sh = d.source.container.outerHeight();
-
-            var tw = d.target.container.outerWidth();
-            var th = d.target.container.outerHeight();
-
-            return (sw + tw)/2;//Math.sqrt(sw*sw + sh*sh)/2 + tw/2;//Math.sqrt(tw*tw + th*th)/2;
+            //  perfect length for recommended offset;
+            var o = recommended_offset(d);
+            return Math.sqrt(o.dx*o.dx + o.dy*o.dy);
         })
         .linkStrength(function (d) {
-            return 2;
+            return 3;
         })
         .on('tick', tick);
 
@@ -83,52 +79,6 @@ var layout = {};
 
     function tick(e) {
         //  TODO: Attractive force toward fixed nodes.
-        function recommended_offset(link) {
-
-            var siblings = [];
-
-            for (var i=0; i<link.source.children.length; i++) {
-                var sibling = link.source.children[i];
-                if (sibling.source_visible) {
-                    siblings.push(sibling);
-                }
-            }
-
-            var sibling_index = 0;
-            var sibling_heights = [];
-            var sibling_y = 0;
-            var sibling_spacing = 0;
-
-            for (var i=0; i<siblings.length; i++) {
-                sibling_heights.push(siblings[i].container.outerHeight() + sibling_spacing);
-                if (siblings[i] == link.target) {
-                    sibling_index = i;
-                }
-            }
-
-            var total_height = 0;
-
-            for (var i=0; i<siblings.length; i++) {
-                total_height += sibling_heights[i];
-                if (i == sibling_index) {
-                    sibling_y = total_height - sibling_heights[i]/2;
-                }
-            }
-
-            var sw = link.source.container.outerWidth();
-            var sh = link.source.container.outerHeight();
-
-            var tw = link.target.container.outerWidth();
-            var th = link.target.container.outerHeight();
-
-            var dx = (sw + tw)/2;//Math.sqrt(sw*sw + sh*sh)/2 + Math.sqrt(tw*tw + th*th)/2;
-            var dy = sibling_y - total_height/2;
-
-            return {
-                dx : dx,
-                dy : dy
-            };
-        }
 
 
         link.each(function (l) {
@@ -165,13 +115,13 @@ var layout = {};
             var x = Math.round(d.x);
             var y = Math.round(d.y);
             y -= d.container.outerHeight()/2;
-            x -= d.container.outerWidth() /2;
+            //x -= d.container.outerWidth() /2;
             var translate =  'translate(' + x + 'px, ' + y + 'px);';
             return translate;
         }
 
         var styles = {
-//            position: 'absolute',
+            position: 'absolute',
             'z-index' : 'inherit',
             top : 0,
             left : 0,
@@ -193,7 +143,7 @@ var layout = {};
                if (d.root && !d.fixed) {
                    //  push root toward left of screen
                    var k = e.alpha;
-                   d.x -= k * (d.x - d.container.outerWidth()/2 - window.innerWidth / 16);
+                   d.x -= k * (d.x - window.innerWidth / 16);
                    d.y -= k * (d.y - window.innerHeight / 2);
                }
            })
@@ -220,11 +170,11 @@ var layout = {};
         var scroll_top  = $(window).scrollTop();
 
         link
-            .attr('x1', function (d) { return d.rendered_element.offset().left - scroll_left + d.rendered_element.outerWidth()/2; })
+            .attr('x1', function (d) { return d.rendered_element.offset().left - scroll_left + d.rendered_element.outerWidth(); })
             .attr('y1', function (d) { return d.rendered_element.offset().top - scroll_top + d.rendered_element.outerHeight()/2; })
-            .attr('x2', function (d) { return Math.round(d.target.x); })
+            .attr('x2', function (d) { return Math.round(d.target.x + d.target.container.width()/2); })
             .attr('y2', function (d) { return Math.round(d.target.y); })
-            .attr('style', function (d) {
+            .each(function (d) {
                 var sw = d.rendered_element.outerWidth();
                 var sh = d.rendered_element.outerHeight();
                 var offset = d.rendered_element.offset();
@@ -234,29 +184,88 @@ var layout = {};
                 var tw = d.target.container.outerWidth();
                 var th = d.target.container.outerHeight();
 
-                var tx = d.target.x - tw/2;
+                var tx = d.target.x;
                 var ty = d.target.y - th/2;
-
+/*
                 d.source_mask
                     .attr('x', sx)
                     .attr('y', sy)
                     .attr('width', sw)
                     .attr('height', sh)
-
+*/
                 d.target_mask
                     .attr('x', tx)
                     .attr('y', ty)
                     .attr('width', tw)
                     .attr('height', th)
-
-                return "";
             })
     }
 
     function initialize_links_and_nodes() {
+
+        node = node.data(node_data);
+        var node_parent = node.enter().append('div');
+
+        node_parent
+            .style('position', 'absolute')
+            .style('left', '0')
+            .style('top', '0')
+            .style('width', '100%')
+            .style('height', '100%')
+            .style('pointer-events', 'none')
+            .append('div')
+            .attr('id', function (d) {
+                console.log(d);
+                return d.id
+            })
+            .attr('class', 'node')
+            .on("dblclick", function (d) {
+                console.log('double clicked...')
+            })
+            .call(drag);
+
+        node_parent
+            .append('svg')
+            .attr('width', window.innerWidth)
+            .attr('height', window.innerHeight)
+            .attr('xmlns', 'http://www.w3.org/2000/svg')
+            .style('pointer-events', 'none')
+            .style('position', 'absolute')
+            .style('top', '0')
+            .style('left', '0')
+            .attr('id', function (d) {
+                return 'svg-' + d.id;
+            });
+
+
         link = link.data(link_data);
         link.enter()
-            .append('line')
+            .append('svg:line')
+            .attr('stroke-linecap', 'round')
+            .attr('mask', function (d) {
+                var defs = d3.select('#svg-' + d.target.id).append('defs');
+                //  create a mask for the link 
+                var id = (Math.random() + '').slice(2);
+                var mask = defs.append('mask');
+                
+
+                rect = mask
+                    .attr('id', id)
+                    .append('rect')
+
+                rect
+                    .attr('width', '100%')
+                    .attr('height', '100%')
+                    .attr('fill', 'white');
+                    
+                d.source_mask = mask.append('rect');
+                d.target_mask = mask.append('rect');
+
+                d.source_mask.attr('fill', 'black');
+                d.target_mask.attr('fill', 'black');
+
+                return 'url(#' + id + ')';
+            })
             .attr('id', function (d) {
                 d.id = (Math.random() + '').slice(2);
                 return d.id;
@@ -264,56 +273,13 @@ var layout = {};
             .attr('class', 'link')
             .attr('stroke-width', 5)
             .attr('stroke', 'rgba(128, 128, 128, 0.30)')
-            .attr('mask', function (d) {
-                //  create a mask for the link 
-                var id = (Math.random() + '').slice(2);
-
-                var mask = defs.append('mask');
-                mask
-                    .attr('id', id)
-                    .append('rect')
-                    .attr('width', '100%')
-                    .attr('height', '100%')
-                    .attr('fill', 'white');
-                    
-                var target_mask = mask.append('rect');
-                var source_mask = mask.append('rect');
-
-                d.source_mask = source_mask;
-                d.target_mask = target_mask;
-
-                return 'url(#' + id + ')';
-            })
             .each(function (d) {
                 //  append link to the source node's g element
-                $('#group-' + d.source.id).append($('#' + d.id));
-            });
-
-        node = node.data(node_data);
-        node.enter()
-            .append('svg:g')
-            .attr('id', function (d) {
-                return 'group-' + d.id;
+                $('#svg-' + d.target.id).append($('#' + d.id));
             })
-            .append('svg:foreignObject')
-            .attr('pointer-events', 'all')
-            //.attr('width', '100%')
-            //.attr('height', '100%')
-            .append('xhtml:div')
-            .attr('id', function (d) {
-                return d.id
-            })
-            .attr('class', 'node')
-            .attr('xmlns', "http://www.w3.org/1999/xhtml")
-            .on("dblclick", function (d) {
-
-            })
-            .call(drag);
-    }
+                }
 
     function restart_layout() {
-        svg.attr('width', window.innerWidth);
-        svg.attr('height', window.innerHeight);
         force_layout.size([window.innerWidth * 20, window.innerHeight]);
         force_layout.start();
     }
@@ -323,17 +289,64 @@ var layout = {};
     });
 
     $(function () {
-        svg = d3.select('body').append('svg')
+        overlay = d3.select('body').append('div')
             .attr("pointer-events", "none")
-            .attr("width", window.innerWidth)
-            .attr("height", window.innerHeihgt)
-            .attr("style", "z-index:1;position:fixed; top:0; left:0;");
+            .attr("style", 'z-index:1;position:fixed; top:0; left:0; width:0; height:0;');
 
-        defs = svg.append('defs');
+        defs = overlay.append('svg').style('width', 0).style('height', 0).append('defs');
 
-        link = svg.selectAll('.link');
-        node = svg.selectAll('.node');
+        link = overlay.selectAll('.link');
+        node = overlay.selectAll('.node');
     });
+
+
+    function recommended_offset(link) {
+
+        var siblings = [];
+
+        for (var i=0; i<link.source.children.length; i++) {
+            var sibling = link.source.children[i];
+            if (sibling.source_visible) {
+                siblings.push(sibling);
+            }
+        }
+
+        var sibling_index = 0;
+        var sibling_heights = [];
+        var sibling_y = 0;
+        var sibling_spacing = 0;
+
+        for (var i=0; i<siblings.length; i++) {
+            sibling_heights.push(siblings[i].container.outerHeight() + sibling_spacing);
+            if (siblings[i] == link.target) {
+                sibling_index = i;
+            }
+        }
+
+        var total_height = 0;
+
+        for (var i=0; i<siblings.length; i++) {
+            total_height += sibling_heights[i];
+            if (i == sibling_index) {
+                sibling_y = total_height - sibling_heights[i]/2;
+            }
+        }
+
+        var sw = link.source.container.outerWidth();
+        var sh = link.source.container.outerHeight();
+
+        var tw = link.target.container.outerWidth();
+        var th = link.target.container.outerHeight();
+
+        var dx = sw;
+        var dy = sibling_y - total_height/2;
+
+        return {
+            dx : dx,
+            dy : dy
+        };
+    }
+
 
 
 

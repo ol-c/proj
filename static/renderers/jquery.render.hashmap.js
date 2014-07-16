@@ -116,7 +116,10 @@
                     content_body.append(row);
                 }
                 var r = $('<span>');
-                r.append([content_body, '<hr><br>', command_line]);
+                content_body.css({
+                    marginTop : '1em'
+                })
+                r.append([command_line, content_body]);
                 container.append(r);
             }
             render_hashmap();
@@ -129,7 +132,7 @@
                     for (field in updated_fields) {
                         if (rendered_fields[field] === undefined) {
                             var r = render_field(field, updated_fields[field]);
-                            content_body.append(r);
+                            content_body.prepend(r);
                         }
                     }
                     for (field in rendered_fields) {

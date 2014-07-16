@@ -10,39 +10,20 @@
         var self = node.container();
 
 
-        //  TODO: use generic list render function
-        var source = "return undefined"; //  TODO: dont need to go back to server...
-
-        evaluate_script(item.reference, source, function (result) {
-            if (result.type == 'error') {
-                self.render(result);
-            }
-            else {
-                var renderable;
-                if (result.value.type == "string") {
-                    renderable = result.value.data;
-                }
-                else if (result.value.type == 'reference') {
-                    renderable = "loader...";
-                }
-                else {
-                    renderable = $('<span>');
-                    renderable.text('list');
-                }
-                self.append(renderable);
-            }
-        });
-
+        renderable = $('<span>');
+        renderable.text('list');
+        self.append(renderable);
 
         node.render(render_generic);
-
 
         function render_generic() {
             var container = $("<div>");
             
             container.css({
                 display : 'inline-block',
-                verticalAlign : 'top'
+                verticalAlign : 'top',
+                whiteSpace : 'pre',
+                fontFamily : 'monospace'
             });
 
             container.on('select', function () {
@@ -55,6 +36,83 @@
                 var rendered_indicator = $('<div>').append("{&#8634;}");
                 return container;
             }
+
+            container.append(command_line);
+            command_line.command(item);
+
+            var rendered_fields = {};
+
+            function render_item(key, reference, after) {
+                //  TODO: show loader
+                var field = $('<span>').text('[' + key + ']');
+                var divider = $('<span> </span>');
+                divider.css({
+                    color : '#888888'
+                });
+                var value = $('<span>');
+                var row = $('<div>');
+                row.append([field, divider, value, after]);
+                $(field).add(divider).add(value).css({
+                    padding : 0,
+                    borderSpacing : 0,
+                });
+                var key_width = 5 + key.length;
+                field.css({
+                    color : 'slategrey',
+                    marginLeft : (-key_width) + 'ch'
+                });
+                row.css({
+                    paddingLeft : (key_width) +'ch',
+                    paddingTop : '0.5em',
+                    paddingBottom : '0.5em'
+                });
+
+                perform_operation({
+                    type : 'source reference',
+                    reference : reference
+                }, function (item) {
+                    value.render(item, after, node.node());
+                });
+                
+                rendered_fields[key] = row;
+
+                return row;
+            }
+
+            var content_body = $('<div>');
+            function render_hashmap() {
+                var id = item.reference[0].name;
+
+                for (var i=0; i<item.data.length; i++) {
+                    var key = i+'';
+                    var reference = [
+                        {name : id    , type : 'reference'},
+                        {name : '' + i, type : 'reference'}
+                    ];
+                    var row = render_item(key, reference);
+                    content_body.append(row);
+                }
+                var r = $('<span>');
+                content_body.css({
+                    marginTop : '1em'
+                })
+                r.append([command_line, content_body]);
+                container.append(r);
+            }
+            render_hashmap();
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             function watch_fn(update) {
                 if (update.value.type == 'list') {
