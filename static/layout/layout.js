@@ -98,11 +98,17 @@ var layout = {};
 
             var k = e.alpha;
 
+            if (l.target.fixed) {}
+            else {
                 l.target.x += r.dx/2 * k;
                 l.target.y += r.dy/2 * k;
+            }
 
+            if (l.source.fixed) {}
+            else {
                 l.source.x -= r.dx/rendered_children.length/2 * k;
                 l.source.y -= r.dy/rendered_children.length/2 * k;
+            }
         });
 
         function translate(d) {

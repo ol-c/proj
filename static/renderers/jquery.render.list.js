@@ -153,15 +153,20 @@
                     }
                     else {
                         //  TODO: optimize...
-                        content_body.empty();
-                        item = update.value;
-                        render_list();
+                        if (update.value.data.length !== item.data.length) {
+                            content_body.empty();
+                            item = update.value;
+                            render_list();
+                        }
+                        else {
+                            //  if length did not change, then an internal reference has
+                            //  changed and the rendered version of it will handle that
+                        }
                     }
                 }
                 else {
                     //  this should never be called, as a persistant type
-                    //  cannot change its own type... hmmm, or should it
-                    //  be able to?!
+                    //  cannot change its own type
                     self.empty();
                     self.render(update.value, after);
                     unwatch(item.reference, watch_fn);
