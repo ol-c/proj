@@ -121,9 +121,38 @@
                             content_body.children().last().remove();
                         }
                     }
+                    else if (update.value.operation == 'shift') {
+                        if (item.data.length) {
+                            item.data.length -= 1;
+                            content_body.children().first().remove();
+                            //  TODO: update indices
+                        }
+                    }
+                    else if (update.value.operation == 'unshift') {
+                        var args = update.value.arguments;
+                        for (var i=args.length-1; i>=0; i--) {
+                            var reference = item.reference.concat([{
+                                type : 'reference',
+                                name : i + ''
+                            }]);
+                            var new_render = render_item(i + '', reference);
+                            content_body.prepend(new_render);
+                            item.data.length += 1;
+                        }
+                        //  TODO: old update indices
+                    }
+                    else if (update.value.operation == 'reverse') {
+                        var reversed = content_body.children().get().reverse();
+                        content_body.append(reversed);
+                        //  TODO: update indices;
+                    }
+                    else if (update.value.operation == 'sort') {
+                        //  TODO: pass representation of sort operation
+                        content_body.empty();
+                        render_list();
+                    }
                     else {
                         //  TODO: optimize...
-                        console.log(update);
                         content_body.empty();
                         item = update.value;
                         render_list();
