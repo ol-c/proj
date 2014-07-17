@@ -16,8 +16,11 @@ X layer svg components properly //  trouble rooted in incompatible svg and html 
 X List  operations
 X persist list operations
 X send List operations to watching
-  generic List renderer
+X self is a serializable reference to current object
+X generic List renderer
+  reference renderer
   do not add owner to persistant object
+  respect self, root and remote reference beginnings (rather than resolving everything to actual ids)
   testing suite
   delay function
   how to expose loadable modules

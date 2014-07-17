@@ -52,11 +52,7 @@
             });
 
             var hashed_ref = hash_reference(item.reference);
-
-            if (rendered[hashed_ref]) {
-                var rendered_indicator = $('<div>').append("{&#8634;}");
-                return container;
-            }
+            //  TODO: draw unique arcs between renderings of same things
 
             rendered[hashed_ref] = command_line;
 
@@ -70,7 +66,7 @@
             function render_field(key, reference, after) {
                 //  TODO: show loader
                 var field = $('<span>').text('"' + key.replace('"', '\\"') + '"');
-                var divider = $('<span> : </span>');
+                var divider = $('<span> &rarr; </span>');
                 divider.css({
                     color : '#888888'
                 });

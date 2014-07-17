@@ -80,7 +80,7 @@
             }
 
             var content_body = $('<div>');
-            function render_hashmap() {
+            function render_list() {
                 var id = item.reference[0].name;
 
                 for (var i=0; i<item.data.length; i++) {
@@ -99,24 +99,14 @@
                 r.append([command_line, content_body]);
                 container.append(r);
             }
-            render_hashmap();
-
-
-
-
-
-
-
-
-
-
-
-
-
+            render_list();
 
             function watch_fn(update) {
                 if (update.value.type == 'list') {
-                    //  update renderer if need to...
+                    //  TODO: optimize...
+                    content_body.empty();
+                    item = update.value;
+                    render_list();
                 }
                 else {
                     //  this should never be called, as a persistant type

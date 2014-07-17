@@ -28,8 +28,9 @@ global objects:
         Promise //  Promise object
         html    //  helps generate live html
         type    //  get the type of an object, must be one of the above datatypes
-        local   //  reference to the root object of the current scope
+        root    //  reference to the root object of the current scope
         remote  //  reference to any object within ol-c
+        self    //  
 
     not implemented:
         delay   //  creates a delay before the execution of a function
