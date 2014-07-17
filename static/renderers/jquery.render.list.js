@@ -103,10 +103,31 @@
 
             function watch_fn(update) {
                 if (update.value.type == 'list') {
-                    //  TODO: optimize...
-                    content_body.empty();
-                    item = update.value;
-                    render_list();
+                    if (update.value.operation == 'push') {
+                        var args = update.value.arguments;
+                        for (var i=0; i<args.length; i++) {
+                            var reference = item.reference.concat([{
+                                type : 'reference',
+                                name : i + item.data.length
+                            }]);
+                            var new_render = render_item(item.data.length, reference);
+                            content_body.append(new_render);
+                            item.data.length += 1;
+                        }
+                    }
+                    else if (update.value.operation == 'pop') {
+                        if (item.data.length) {
+                            item.data.length -= 1;
+                            content_body.children().last().remove();
+                        }
+                    }
+                    else {
+                        //  TODO: optimize...
+                        console.log(update);
+                        content_body.empty();
+                        item = update.value;
+                        render_list();
+                    }
                 }
                 else {
                     //  this should never be called, as a persistant type
