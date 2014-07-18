@@ -44,6 +44,8 @@
 
             var key_class = (Math.random() + '').slice(2);
 
+            var renderings = [];
+
             function render_item(key, reference, after) {
                 //  TODO: show loader
                 var field = $('<span>');
@@ -72,12 +74,18 @@
                     paddingBottom : '0.5em'
                 });
 
-                perform_operation({
-                    type : 'source reference',
+
+                var render_data = value.render({
+                    type : 'loader',
                     reference : reference
-                }, function (item) {
-                    value.render(item, after, node.node());
-                });
+                }, after, node.node());
+
+                //  render item is always executed in order
+                //  so we can just push a placehoder into the
+                //  renderings list
+                //  (to handle ordering changes between async)
+               
+                renderings.push(render_data);
                 
                 rendered_fields[key] = row;
 
@@ -161,7 +169,10 @@
                         update_keys()
                     }
                     else if (update.value.operation == 'sort') {
-                        //  TODO: pass representation of sort operation
+                        //  TODO: optimize by passing a
+                        //        representation of sort
+                        //        operation and following suit
+                        //        with already rendered versions
                         content_body.empty();
                         render_list();
                     }

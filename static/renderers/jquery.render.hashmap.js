@@ -64,7 +64,6 @@
             var rendered_fields = {};
 
             function render_field(key, reference, after) {
-                //  TODO: show loader
                 var field = $('<span>').text('"' + key.replace('"', '\\"') + '"');
                 var divider = $('<span> &rarr; </span>');
                 divider.css({
@@ -88,12 +87,7 @@
                     paddingBottom : '0.5em'
                 });
 
-                perform_operation({
-                    type : 'source reference',
-                    reference : reference
-                }, function (item) {
-                    value.render(item, after, node.node());
-                });
+                value.render({type : 'loader', reference : reference}, after, node.node())
                 
                 rendered_fields[key] = row;
 
