@@ -116,10 +116,10 @@ function watch(reference, on_change) {
         }
         else {
             var hashed_flat_ref = hash_reference(response.flattened)
-            //console.log('FLATTENED', response.flattened);
             if (updates[hashed_flat_ref] == undefined) {
                 updates[hashed_flat_ref] = [];
             }
+            if (on_change == undefined) console.log(hashed_flat_ref);
             updates[hashed_flat_ref].push(on_change);
         }
     });
@@ -247,8 +247,7 @@ $(function () {
         if (response) response(data);
         if (data.type == 'update') {
             var hashed_reference = hash_reference(data.reference);
-            var updates_to_do = updates[hashed_reference];
-            //console.log(updates);
+            var updates_to_do = [].concat(updates[hashed_reference]);
             if (updates_to_do) {
                 var todo = updates_to_do.length;
                 for (var i=0; i<todo; i++) {
