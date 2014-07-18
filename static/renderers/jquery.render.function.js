@@ -86,7 +86,8 @@ $.fn.render.function = function (item, after, parent) {
                 if (comments[i]) t = comments[i].trim();
             }
         }
-        if (t == '') t = text.split('\n').length + ' lines'
+        var num_lines = text.split('\n').length;
+        if (t == '') t = num_lines + ' line' + (num_lines > 1 ? 's' : '');
         comment.text(t);
     }
 

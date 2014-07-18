@@ -100,7 +100,7 @@ function serializable_from_instance(value, reference) {
         return serializable;
 }
 
-function watch(reference, on_change) {
+function watch(reference, fn) {
     //  perform operation to flatten the reference,
     //  that means have one object id leading to one 
     //  field within that object since that is the
@@ -119,13 +119,13 @@ function watch(reference, on_change) {
             if (updates[hashed_flat_ref] == undefined) {
                 updates[hashed_flat_ref] = [];
             }
-            if (on_change == undefined) console.log(hashed_flat_ref);
-            updates[hashed_flat_ref].push(on_change);
+            updates[hashed_flat_ref].push(fn);
         }
     });
 }
 
 function unwatch(reference, fn) {
+    //  stop watching a reference with a function
     var hashed_reference = hash_reference(reference);
     var these_updates = updates[hashed_reference];
     if (these_updates == undefined) {
@@ -137,6 +137,7 @@ function unwatch(reference, fn) {
             i -= 1;
         }
     }
+    // TODO: if this empties the updates, send unwatch to server
 }
 
 //  Shared with Persist...

@@ -166,8 +166,8 @@
                         render_list();
                     }
                     else {
-                        //  TODO: optimize...
                         if (update.value.data.length !== item.data.length) {
+                            //  TODO: optimize...
                             content_body.empty();
                             item = update.value;
                             render_list();
