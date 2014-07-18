@@ -42,9 +42,14 @@
 
             var rendered_fields = {};
 
+            var key_class = (Math.random() + '').slice(2);
+
             function render_item(key, reference, after) {
                 //  TODO: show loader
-                var field = $('<span>').text('[' + key + ']');
+                var field = $('<span>');
+                var key_holder = $('<span>').text('[' + key + ']');
+                key_holder.addClass(key_class);
+                field.append(key_holder);
                 var divider = $('<span> </span>');
                 divider.css({
                     color : '#888888'
@@ -101,6 +106,12 @@
             }
             render_list();
 
+            function update_keys() {
+                $('.' + key_class).each(function (i, el) {
+                    $(el).text('[' + i + ']');
+                });
+            }
+
             function watch_fn(update) {
                 if (update.value.type == 'list') {
                     if (update.value.operation == 'push') {
@@ -125,7 +136,7 @@
                         if (item.data.length) {
                             item.data.length -= 1;
                             content_body.children().first().remove();
-                            //  TODO: update indices
+                            update_keys();
                         }
                     }
                     else if (update.value.operation == 'unshift') {
@@ -139,12 +150,12 @@
                             content_body.prepend(new_render);
                             item.data.length += 1;
                         }
-                        //  TODO: old update indices
+                        update_keys();
                     }
                     else if (update.value.operation == 'reverse') {
                         var reversed = content_body.children().get().reverse();
                         content_body.append(reversed);
-                        //  TODO: update indices;
+                        update_keys()
                     }
                     else if (update.value.operation == 'sort') {
                         //  TODO: pass representation of sort operation
