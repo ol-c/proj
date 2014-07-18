@@ -247,10 +247,18 @@ $(function () {
         if (response) response(data);
         if (data.type == 'update') {
             var hashed_reference = hash_reference(data.reference);
-            var updates_to_do = [].concat(updates[hashed_reference]);
+            //  need original version to check against
+            //  in case some watch functions have been removed
+            //  so we do not execute them
+            var original = updates[hashed_reference];
+            var updates_to_do = [].concat(original);
             while (updates_to_do.length) {
-                //  TODO: can savely ignore recently unwatched functions
-                updates_to_do.shift()(data);
+                var watching = updates_to_do.shift();
+                for (var i=0; i<original.length; i++) {
+                    if (watching === original[i]) {
+                        watching(data);
+                    }
+                }
             }
         }
     };
