@@ -19,11 +19,13 @@ X send List operations to watching
 X self is a serializable reference to current object
 X generic List renderer
 X reference renderer
-  persistant meta operations on persistant objects
-      owner
-      type
+X persistant meta operations on persistant objects
+X     owner
+X     type
   utility to rebind watching functions to a different reference
       useful for lists when indices change
+      ... may be useful in future, for now, it is helpful enough
+          to notify watchers of references in an object that a container change occurred
   respect self, root and remote reference beginnings (rather than resolving everything to actual ids)
   testing suite
   delay function

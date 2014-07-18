@@ -133,6 +133,7 @@
                         }
                     }
                     else if (update.value.operation == 'shift') {
+                        //  TODO rebind watching references
                         if (item.data.length) {
                             item.data.length -= 1;
                             content_body.children().first().remove();
@@ -140,6 +141,7 @@
                         }
                     }
                     else if (update.value.operation == 'unshift') {
+                        //  TODO: rebind watching references
                         var args = update.value.arguments;
                         for (var i=args.length-1; i>=0; i--) {
                             var reference = item.reference.concat([{
@@ -153,6 +155,7 @@
                         update_keys();
                     }
                     else if (update.value.operation == 'reverse') {
+                        //  TODO: rebind watching references
                         var reversed = content_body.children().get().reverse();
                         content_body.append(reversed);
                         update_keys()

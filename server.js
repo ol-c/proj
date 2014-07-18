@@ -48,8 +48,8 @@ if (cluster.isMaster) {
             else {
                 persist.set_root(root);
                 var root_object = persist.create('hashmap', root);
-                if (root_object.owner == undefined) {
-                    root_object.owner = owner;
+                if (persist.get_owner(root_object) == undefined) {
+                    persist.set_owner(root_object, owner);
                 }
                 persist.unload(root_object, function (err) {
                     if (err) callback('error unloading before spawning worker');
@@ -172,12 +172,8 @@ else {
 
     //  load root object
     persist.load(process.env.root, function (err, res) {
-        if (err) console.log('error loading root object');
-        else {
-            persist.freeze(res, 'owner');
-            persist.set_owner(res.owner);
-            initialize();
-        }
+        if (err) throw new Error('Could not load root object');
+        else     initialize();
     });
 
     //  create resolver so persist can connect
