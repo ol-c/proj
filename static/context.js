@@ -248,11 +248,9 @@ $(function () {
         if (data.type == 'update') {
             var hashed_reference = hash_reference(data.reference);
             var updates_to_do = [].concat(updates[hashed_reference]);
-            if (updates_to_do) {
-                var todo = updates_to_do.length;
-                for (var i=0; i<todo; i++) {
-                    updates_to_do[i](data);
-                }
+            while (updates_to_do.length) {
+                //  TODO: can savely ignore recently unwatched functions
+                updates_to_do.shift()(data);
             }
         }
     };
