@@ -26,9 +26,9 @@ X utility to rebind watching functions to a different reference
 X     useful for lists when indices change
 X     ... may be useful in future, for now, it is helpful enough
 X         to notify watchers of references in an object that a container change occurred
-  pass back function to change watching renderer from each function
+X pass back function to change watching renderer from each function
   respect self, root and remote reference beginnings (rather than resolving everything to actual ids)
-  testing suite
   delay function
-  how to expose loadable modules
   how to expose promises
+  testing suite
+  how to expose loadable modules
