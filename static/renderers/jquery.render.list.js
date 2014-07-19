@@ -128,6 +128,7 @@
 
         function watch_fn(update) {
             if (update.value.type == 'list') {
+                console.log(update.value)
                 if (update.value.operation == 'push') {
                     var args = update.value.arguments;
                     for (var i=0; i<args.length; i++) {
