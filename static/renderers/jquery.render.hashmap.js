@@ -2,6 +2,7 @@
     var rendered = {};
 
     $.fn.render.hashmap = function (item, after, parent_source) {
+        var reference = item.reference;
 
         var command_line = $('<span>');
         var node = new node_generator(parent_source);
@@ -36,6 +37,8 @@
 
         node.render(render_generic);
 
+        var rendered_fields = {};
+        var content_body = $('<div>');
 
         function render_generic() {
             var container = $("<div>");
@@ -61,40 +64,7 @@
                 fontFamily : 'monospace',
             });
 
-            var rendered_fields = {};
 
-            function render_field(key, reference, after) {
-                var field = $('<span>').text('"' + key.replace('"', '\\"') + '"');
-                var divider = $('<span> &rarr; </span>');
-                divider.css({
-                    color : '#888888'
-                });
-                var value = $('<span>');
-                var row = $('<div>');
-                row.append([field, divider, value, after]);
-                $(field).add(divider).add(value).css({
-                    padding : 0,
-                    borderSpacing : 0,
-                });
-                var key_width = 5 + key.length;
-                field.css({
-                    color : 'limegreen',
-                    marginLeft : (-key_width) + 'ch'
-                });
-                row.css({
-                    paddingLeft : (key_width) +'ch',
-                    paddingTop : '0.5em',
-                    paddingBottom : '0.5em'
-                });
-
-                value.render({type : 'loader', reference : reference}, after, node.node())
-                
-                rendered_fields[key] = row;
-
-                return row;
-            }
-
-            var content_body = $('<div>');
             function render_hashmap() {
                 command_line.command(item);
                 var keys = Object.keys(item.data);
@@ -114,49 +84,90 @@
             }
             render_hashmap();
 
-
-            function watch_fn(update) {
-                if (update.value.type == 'hashmap') {
-                    var updated_fields = update.value.data;
-                    var field;
-                    for (field in updated_fields) {
-                        if (rendered_fields[field] === undefined) {
-                            var r = render_field(field, updated_fields[field]);
-                            content_body.prepend(r);
-                        }
-                    }
-                    for (field in rendered_fields) {
-                        if (updated_fields[field] === undefined) {
-                            rendered_fields[field].remove();
-                            delete rendered_fields[field];
-                        }
-                        //  necessary since references to objects inside of objects are still absolute
-                        //  this will see if a reference was changed, indicating a need to refresh the field
-                        //  internal condition to make sure the value we are updating to is a container type (other types handle updates themselves)
-                        //  TODO: clean up cases
-                        else if (
-                        (updated_fields[field] && (updated_fields[field].internal || updated_fields[field].internal === undefined && (item.data[field] && item.data[field].internal === undefined)))
-                        && item.data[field] && hash_reference(updated_fields[field]) !== hash_reference(item.data[field])) {
-                            // TODO: after char
-                            var old = rendered_fields[field];
-                            delete rendered_fields[field];
-                            old.before(render_field(field, updated_fields[field]));
-                            old.remove();
-                        }
-                    }
-                    item.data = updated_fields;
-                }
-                else {
-                    //  this should never be called, as a persistant type
-                    //  cannot change its own type... hmmm, or should it
-                    //  be able to?!
-                    self.empty();
-                    self.render(update.value, after);
-                    unwatch(item.reference, watch_fn);
-                }
-            }
-            watch(item.reference, watch_fn);
+            watch(reference, watch_fn);
             return container;
+        }
+
+        function render_field(key, reference, after) {
+            var field = $('<span>').text('"' + key.replace('"', '\\"') + '"');
+            var divider = $('<span> &rarr; </span>');
+            divider.css({
+                color : '#888888'
+            });
+            var value = $('<span>');
+            var row = $('<div>');
+            row.append([field, divider, value, after]);
+            $(field).add(divider).add(value).css({
+                padding : 0,
+                borderSpacing : 0,
+            });
+            var key_width = 5 + key.length;
+            field.css({
+                color : 'limegreen',
+                marginLeft : (-key_width) + 'ch'
+            });
+            row.css({
+                paddingLeft : (key_width) +'ch',
+                paddingTop : '0.5em',
+                paddingBottom : '0.5em'
+            });
+
+            value.render({type : 'loader', reference : reference}, after, node.node())
+            
+            rendered_fields[key] = row;
+
+            return row;
+        }
+
+
+        function watch_fn(update) {
+            if (update.value.type == 'hashmap') {
+                var updated_fields = update.value.data;
+                var field;
+                for (field in updated_fields) {
+                    if (rendered_fields[field] === undefined) {
+                        var r = render_field(field, updated_fields[field]);
+                        content_body.prepend(r);
+                    }
+                }
+                for (field in rendered_fields) {
+                    if (updated_fields[field] === undefined) {
+                        rendered_fields[field].remove();
+                        delete rendered_fields[field];
+                    }
+                    //  necessary since references to objects inside of objects are still absolute
+                    //  this will see if a reference was changed, indicating a need to refresh the field
+                    //  internal condition to make sure the value we are updating to is a container type (other types handle updates themselves)
+                    //  TODO: clean up cases
+                    else if (
+                    (updated_fields[field] && (updated_fields[field].internal || updated_fields[field].internal === undefined && (item.data[field] && item.data[field].internal === undefined)))
+                    && item.data[field] && hash_reference(updated_fields[field]) !== hash_reference(item.data[field])) {
+                        // TODO: after char
+                        var old = rendered_fields[field];
+                        delete rendered_fields[field];
+                        old.before(render_field(field, updated_fields[field]));
+                        old.remove();
+                    }
+                }
+                item.data = updated_fields;
+            }
+            else {
+                //  this should never be called, as a persistant type
+                //  cannot change its own type... hmmm, or should it
+                //  be able to?!
+                self.empty();
+                self.render(update.value, after);
+                unwatch(reference, watch_fn);
+            }
+        }
+
+
+        return {
+            change_reference : function (new_reference) {
+                unwatch(reference, watch_fn);
+                reference = new_reference;
+                watch(reference, watch_fn);
+            }
         }
     };
 

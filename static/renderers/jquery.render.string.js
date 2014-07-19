@@ -1,5 +1,6 @@
 $.fn.render.string = function (item, after) {
     var self = this;
+    var reference = item.reference;
 
     var string = $('<span>');
     string.css({
@@ -8,6 +9,7 @@ $.fn.render.string = function (item, after) {
         borderSpacing : 0,
         padding : 0
     });
+
     var open = $('<span>"</span>');
     string.append(open);
     var content = $('<span>');
@@ -24,14 +26,14 @@ $.fn.render.string = function (item, after) {
     var local_updates = {};
     content.on('change', throttle(300, function () {
         if (edits.length) {
-            var ref = reference_source('this', [].concat(item.reference).slice(1));
+            var ref = reference_source('this', [].concat(reference).slice(1));
 
             var edit_source = '';
             while (edits.length) {
                 edit_source += ref + ' = (' + edits.shift() + ')(' + ref + ');\n';
             }
             local_updates[content.text()] = true;
-            var ref = [].concat(item.reference);
+            var ref = [].concat(reference);
             evaluate_script([ref.shift()], edit_source, function (res) {
                 //  TODO: highlight errors...
             });
@@ -60,9 +62,17 @@ $.fn.render.string = function (item, after) {
         else {
             self.empty();
             self.render(update.value, after);
-            unwatch(item.reference, watch_fn);
+            unwatch(reference, watch_fn);
         }
     }
 
-    watch(item.reference, watch_fn);
+    watch(reference, watch_fn);
+
+    return {
+        change_reference : function (new_reference) {
+            unwatch(reference, watch_fn);
+            reference = new_reference;
+            watch(reference, watch_fn);
+        }
+    }
 }

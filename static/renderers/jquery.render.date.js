@@ -1,4 +1,4 @@
-$.fn.render.date = function (item, after) {
+$.fn.render.date = function (item, after, parent_node) {
     var months = [
         'January',
         'February',
@@ -23,6 +23,8 @@ $.fn.render.date = function (item, after) {
         "Saturday"
     ];
     var self = this;
+
+    var reference = item.reference;
 
     var date = new Date(item.data);
 
@@ -90,9 +92,6 @@ $.fn.render.date = function (item, after) {
     second = get_chooser(range(0, 59));
     millisecond.numberroll(3, 3);
 
-    var ref = [item.reference[0]];
-    var internal_ref = reference_source('this', item.reference.slice(1));
-
     var local_updates = {};
 
     function throttled_mod(mod_function) {
@@ -104,9 +103,10 @@ $.fn.render.date = function (item, after) {
             weekday.text(weekdays[date.getDay()]);
             //  update remote
             //  update date and set reference so we get an update
-            var script = internal_ref + '.' + mod_function + '(' + value + ');\n'
-                       + internal_ref + ' = new Date(' + internal_ref + ');'; 
-            evaluate_script(ref, script);
+            var ref_src = reference_source('this', reference.slice(1));
+            var script = ref_src + '.' + mod_function + '(' + value + ');\n'
+                       + ref_src + ' = new Date(' + ref_src + ');'; 
+            evaluate_script([reference[0]], script);
         });
     }
 
@@ -143,9 +143,17 @@ $.fn.render.date = function (item, after) {
         else {
             self.empty();
             self.render(up.value, after),
-            unwatch(item.reference, watch_fn);
+            unwatch(reference, watch_fn);
         }
     }
 
-    watch(item.reference, watch_fn);
+    watch(reference, watch_fn);
+
+    return {
+        change_reference : function (new_reference) {
+            unwatch(reference, watch_fn);
+            reference = new_reference;
+            watch(reference, watch_fn);
+        }
+    }
 };

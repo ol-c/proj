@@ -1,5 +1,6 @@
-$.fn.render.number = function (item, after) {
+$.fn.render.number = function (item, after, parent_node) {
     var self = this;
+    var reference = item.reference;
     var number = $('<span>');
     number.css({
         color : 'limegreen'
@@ -13,7 +14,7 @@ $.fn.render.number = function (item, after) {
 
     //  Ignore the first update for a state that we sent here (only want to update when there is new information)
     var edits = [];
-    number.on('useredit', function (event, data) {
+    number.on('useredit', function (event, data, parent_node) {
         edits.push(data);
     });
 
@@ -42,11 +43,18 @@ $.fn.render.number = function (item, after) {
         }
         else {
             self.empty();
-            self.render(update.value, after);
-            unwatch(item.reference, watch_fn);
+            self.render(update.value, after, parent_node);
+            unwatch(reference, watch_fn);
         }
     }
 
-    watch(item.reference, watch_fn);
+    watch(reference, watch_fn);
 
+    return {
+        change_reference : function (new_reference) {
+            unwatch(reference, watch_fn);
+            reference = new_reference;
+            watch(reference, watch_fn);
+        }
+    }
 };

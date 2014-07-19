@@ -1,5 +1,7 @@
-$.fn.render.file = function (item, after) {
+$.fn.render.file = function (item, after, parent_node) {
     var self = this;
+
+    var reference = item.reference;
 
     var download = item.data.url;
     if (download && download.substring(0, 7) == 'http://') {
@@ -199,8 +201,8 @@ $.fn.render.file = function (item, after) {
                     console.log(err);
                 }
                 else {
-                    var script = reference_source('this', item.reference.slice(1)) + ' = new File("' + filename + '")';
-                    evaluate_script([item.reference[0]], script, function (response) {
+                    var script = reference_source('this', reference.slice(1)) + ' = new File("' + filename + '")';
+                    evaluate_script([reference[0]], script, function (response) {
                         render();
                     });
                 }
@@ -365,10 +367,17 @@ $.fn.render.file = function (item, after) {
 
     function watch_fn(update) {
         self.empty();
-        self.render(update.value, after);
+        self.render(update.value, after, parent_node);
         unwatch(item.reference, watch_fn);
     }
 
     watch(item.reference, watch_fn);
 
+    return {
+        change_reference : function (new_reference) {
+            unwatch(reference, watch_fn);
+            reference = new_reference;
+            watch(reference, watch_fn);
+        }
+    }
 };

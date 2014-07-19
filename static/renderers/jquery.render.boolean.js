@@ -1,6 +1,8 @@
 $.fn.render.boolean = function (item, after) {
     var self = this;
 
+    var reference = item.reference;
+
     var val = $('<span></span>');
     var t = $('<span>true</span>');
     var f = $('<span>false</span>');
@@ -11,8 +13,8 @@ $.fn.render.boolean = function (item, after) {
     this.on('change', throttle(100, function (data, index) {
         var state = 'false';
         if (index == 0) state = 'true';
-        var path = reference_source('this', [].concat(item.reference).slice(1));
-        evaluate_script([item.reference[0]], path + ' = ' + state + ';');
+        var path = reference_source('this', [].concat(reference).slice(1));
+        evaluate_script([reference[0]], path + ' = ' + state + ';');
     }));
 
     if (item.data) {
@@ -21,6 +23,7 @@ $.fn.render.boolean = function (item, after) {
     else {
         self.trigger('update', 1);
     }
+
 
     function watch_fn(update) {
         if (update.value.type == 'boolean') {
@@ -31,9 +34,18 @@ $.fn.render.boolean = function (item, after) {
         else {
             self.empty();
             self.render(update.value, after);
-            unwach(item.reference, watch_fn);
+            unwatch(reference, watch_fn);
         }
     }
 
-    watch(item.reference, watch_fn);
+    watch(reference, watch_fn);
+
+
+    return {
+        change_reference : function (new_reference) {
+            unwatch(reference, watch_fn);
+            reference = new_reference;
+            watch(reference, watch_fn);
+        }
+    }
 };

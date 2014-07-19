@@ -1,5 +1,6 @@
 $.fn.render.function = function (item, after, parent) {
     var node = new node_generator(parent);
+    var reference = item.reference;
 
     node.container().css({
         verticalAlign : 'top'
@@ -106,7 +107,7 @@ $.fn.render.function = function (item, after, parent) {
         if (params.text().match(/^\s*(\w+(,\s*\w+)*|)\s*$/g)) {
             var src = 'function (' + params.text() + ') {' + body.text() + '}';
             local_updates[src] = true;
-            var ref = reference_source('this', [].concat(item.reference).slice(1));
+            var ref = reference_source('this', reference.slice(1));
             var source = ref + ' = ' + src; 
             evaluate_script([item.reference[0]], source);
         }
@@ -137,9 +138,17 @@ $.fn.render.function = function (item, after, parent) {
         else {
             self.empty();
             self.render(update.value, after);
-            unwatch(item.reference, watch_fn);
+            unwatch(reference, watch_fn);
         }
     }
 
-    watch(item.reference, watch_fn);
+    watch(reference, watch_fn);
+
+    return {
+        change_reference : function (new_reference) {
+            unwatch(reference, watch_fn);
+            reference = new_reference;
+            watch(reference, watch_fn);
+        }
+    }
 };

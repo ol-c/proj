@@ -2,6 +2,13 @@
     var rendered = {};
 
     $.fn.render.list = function (item, after, parent_source) {
+        var reference = item.reference;
+
+        var rendered_fields = {};
+        var renderings = [];
+        var key_class = (Math.random() + '').slice(2);
+        var content_body = $('<div>');
+        var container = $("<div>");
 
         var command_line = $('<span>');
         var node = new node_generator(parent_source);
@@ -17,7 +24,6 @@
         node.render(render_generic);
 
         function render_generic() {
-            var container = $("<div>");
             
             container.css({
                 display : 'inline-block',
@@ -30,7 +36,7 @@
                 command_line.select();
             });
 
-            var hashed_ref = hash_reference(item.reference);
+            var hashed_ref = hash_reference(reference);
 
             if (rendered[hashed_ref]) {
                 var rendered_indicator = $('<div>').append("{&#8634;}");
@@ -39,166 +45,187 @@
 
             container.append(command_line);
             command_line.command(item);
-
-            var rendered_fields = {};
-
-            var key_class = (Math.random() + '').slice(2);
-
-            var renderings = [];
-
-            function render_item(key, reference, after) {
-                //  TODO: show loader
-                var field = $('<span>');
-                var key_holder = $('<span>').text('[' + key + ']');
-                key_holder.addClass(key_class);
-                field.append(key_holder);
-                var divider = $('<span> </span>');
-                divider.css({
-                    color : '#888888'
-                });
-                var value = $('<span>');
-                var row = $('<div>');
-                row.append([field, divider, value, after]);
-                $(field).add(divider).add(value).css({
-                    padding : 0,
-                    borderSpacing : 0,
-                });
-                var key_width = 5 + key.length;
-                field.css({
-                    color : 'slategrey',
-                    marginLeft : (-key_width) + 'ch'
-                });
-                row.css({
-                    paddingLeft : (key_width) +'ch',
-                    paddingTop : '0.5em',
-                    paddingBottom : '0.5em'
-                });
-
-
-                var render_data = value.render({
-                    type : 'loader',
-                    reference : reference
-                }, after, node.node());
-
-                //  render item is always executed in order
-                //  so we can just push a placehoder into the
-                //  renderings list
-                //  (to handle ordering changes between async)
-               
-                renderings.push(render_data);
-                
-                rendered_fields[key] = row;
-
-                return row;
-            }
-
-            var content_body = $('<div>');
-            function render_list() {
-                var id = item.reference[0].name;
-
-                for (var i=0; i<item.data.length; i++) {
-                    var key = i+'';
-                    var reference = [
-                        {name : id    , type : 'reference'},
-                        {name : '' + i, type : 'reference'}
-                    ];
-                    var row = render_item(key, reference);
-                    content_body.append(row);
-                }
-                var r = $('<span>');
-                content_body.css({
-                    marginTop : '1em'
-                })
-                r.append([command_line, content_body]);
-                container.append(r);
-            }
             render_list();
 
-            function update_keys() {
-                $('.' + key_class).each(function (i, el) {
-                    $(el).text('[' + i + ']');
-                });
-            }
+            watch(reference, watch_fn);
+            return container;
+        }
 
-            function watch_fn(update) {
-                if (update.value.type == 'list') {
-                    if (update.value.operation == 'push') {
-                        var args = update.value.arguments;
-                        for (var i=0; i<args.length; i++) {
-                            var reference = item.reference.concat([{
-                                type : 'reference',
-                                name : i + item.data.length
-                            }]);
-                            var new_render = render_item(item.data.length, reference);
-                            content_body.append(new_render);
-                            item.data.length += 1;
-                        }
+        function update_keys() {
+            $('.' + key_class).each(function (i, el) {
+                $(el).text('[' + i + ']');
+            });
+        }
+
+        function render_list() {
+            var id = reference[0].name;
+
+            for (var i=0; i<item.data.length; i++) {
+                var key = i+'';
+                var ref = [
+                    {name : id    , type : 'reference'},
+                    {name : '' + i, type : 'reference'}
+                ];
+                var row = render_item(key, ref);
+                content_body.append(row);
+            }
+            var r = $('<span>');
+            content_body.css({
+                marginTop : '1em'
+            })
+            r.append([command_line, content_body]);
+            container.append(r);
+        }
+
+        function render_item(key, item_reference, after, prepend) {
+            //  TODO: show loader
+            var field = $('<span>');
+            var key_holder = $('<span>').text('[' + key + ']');
+            key_holder.addClass(key_class);
+            field.append(key_holder);
+            var divider = $('<span> </span>');
+            divider.css({
+                color : '#888888'
+            });
+            var value = $('<span>');
+            var row = $('<div>');
+            row.append([field, divider, value, after]);
+            $(field).add(divider).add(value).css({
+                padding : 0,
+                borderSpacing : 0,
+            });
+            var key_width = 5 + key.length;
+            field.css({
+                color : 'slategrey',
+                marginLeft : (-key_width) + 'ch'
+            });
+            row.css({
+                paddingLeft : (key_width) +'ch',
+                paddingTop : '0.5em',
+                paddingBottom : '0.5em'
+            });
+
+
+            var render_data = value.render({
+                type : 'loader',
+                reference : item_reference
+            }, after, node.node());
+
+            //  render item is always executed in order
+            //  so we can just push a placehoder into the
+            //  renderings list
+            //  (to handle ordering changes between async)
+           
+            if (prepend) renderings.unshift(render_data);
+            else         renderings.push(render_data);
+            
+            rendered_fields[key] = row;
+
+            return row;
+        }
+
+
+
+        function watch_fn(update) {
+            if (update.value.type == 'list') {
+                if (update.value.operation == 'push') {
+                    var args = update.value.arguments;
+                    for (var i=0; i<args.length; i++) {
+                        var ref = reference.concat([{
+                            type : 'reference',
+                            name : i + item.data.length
+                        }]);
+                        var new_render = render_item(item.data.length, ref);
+                        content_body.append(new_render);
+                        item.data.length += 1;
                     }
-                    else if (update.value.operation == 'pop') {
-                        if (item.data.length) {
-                            item.data.length -= 1;
-                            content_body.children().last().remove();
-                        }
+                }
+                else if (update.value.operation == 'pop') {
+                    if (item.data.length) {
+                        item.data.length -= 1;
+                        content_body.children().last().remove();
                     }
-                    else if (update.value.operation == 'shift') {
-                        //  TODO rebind watching references
-                        if (item.data.length) {
-                            item.data.length -= 1;
-                            content_body.children().first().remove();
-                            update_keys();
-                        }
-                    }
-                    else if (update.value.operation == 'unshift') {
-                        //  TODO: rebind watching references
-                        var args = update.value.arguments;
-                        for (var i=args.length-1; i>=0; i--) {
-                            var reference = item.reference.concat([{
-                                type : 'reference',
-                                name : i + ''
-                            }]);
-                            var new_render = render_item(i + '', reference);
-                            content_body.prepend(new_render);
-                            item.data.length += 1;
-                        }
+                }
+                else if (update.value.operation == 'shift') {
+                    //  TODO rebind watching references
+                    if (item.data.length) {
+                        item.data.length -= 1;
+                        content_body.children().first().remove();
+                        renderings.shift()
                         update_keys();
+                        for (var i=0; i<renderings.length; i++) {
+                            renderings[i].change_reference([reference[0]].concat([
+                                {type : 'reference', name : i + '' }
+                            ]));
+                        }
                     }
-                    else if (update.value.operation == 'reverse') {
-                        //  TODO: rebind watching references
-                        var reversed = content_body.children().get().reverse();
-                        content_body.append(reversed);
-                        update_keys()
+                }
+                else if (update.value.operation == 'unshift') {
+                    //  TODO: rebind watching references
+                    var args = update.value.arguments;
+                    for (var i=args.length-1; i>=0; i--) {
+                        var ref = reference.concat([{
+                            type : 'reference',
+                            name : i + ''
+                        }]);
+                        var new_render = render_item(i + '', ref, undefined, true);
+                        content_body.prepend(new_render);
+                        item.data.length += 1;
                     }
-                    else if (update.value.operation == 'sort') {
-                        //  TODO: optimize by passing a
-                        //        representation of sort
-                        //        operation and following suit
-                        //        with already rendered versions
+                    for (var i=args.length; i<renderings.length; i++) {
+                        renderings[i].change_reference([reference[0]].concat([
+                            {type : 'reference', name : i + '' }
+                        ]));
+                    }
+
+                    update_keys();
+                }
+                else if (update.value.operation == 'reverse') {
+                    //  TODO: rebind watching references
+                    var reversed = content_body.children().get().reverse();
+                    content_body.append(reversed);
+                    update_keys()
+                    renderings.reverse();
+                    for (var i=0; i<renderings.length; i++) {
+                        renderings[i].change_reference([reference[0]].concat([
+                            {type : 'reference', name : i + '' }
+                        ]));
+                    }
+                }
+                else if (update.value.operation == 'sort') {
+                    //  TODO: optimize by passing a
+                    //        representation of sort
+                    //        operation and following suit
+                    //        with already rendered versions
+                    content_body.empty();
+                    render_list();
+                }
+                else {
+                    if (update.value.data.length !== item.data.length) {
+                        //  TODO: optimize...
                         content_body.empty();
+                        item = update.value;
                         render_list();
                     }
                     else {
-                        if (update.value.data.length !== item.data.length) {
-                            //  TODO: optimize...
-                            content_body.empty();
-                            item = update.value;
-                            render_list();
-                        }
-                        else {
-                            //  if length did not change, then an internal reference has
-                            //  changed and the rendered version of it will handle that
-                        }
+                        //  if length did not change, then an internal reference has
+                        //  changed and the rendered version of it will handle that
                     }
                 }
-                else {
-                    //  this should never be called, as a persistant type
-                    //  cannot change its own type
-                    self.empty();
-                    self.render(update.value, after);
-                    unwatch(item.reference, watch_fn);
-                }
             }
-            watch(item.reference, watch_fn);
-            return container;
+            else {
+                self.empty();
+                self.render(update.value, after);
+                unwatch(reference, watch_fn);
+            }
+        }
+        
+        return {
+            change_reference : function (new_reference) {
+                unwatch(reference, watch_fn);
+                reference = new_reference;
+                watch(reference, watch_fn);
+            }
         }
     };
 

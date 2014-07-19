@@ -4,13 +4,10 @@ $.fn.render = function (item, after) {
         'user-select' : 'none'
     });
     if ($.fn.render[item.type]) {
-        $.fn.render[item.type].apply(this, arguments);
+        return $.fn.render[item.type].apply(this, arguments);
     }
     else {
-        var error_message = $('<span></span>');
-        error_message.text('Error: ' + item);
-        error_message.css({color : 'red'});
-        $(this).append([error_message, after]);
+        throw new Error('requested bad renderer', item);
     }
 }
 
