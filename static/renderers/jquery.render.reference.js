@@ -6,6 +6,7 @@ $.fn.render.reference = function (item, after, parent_source)  {
 
     self.append(node.container());
 
+     var reference = item.reference;
 
 
     var content = $('<span>');
@@ -63,10 +64,19 @@ $.fn.render.reference = function (item, after, parent_source)  {
         }
         else {
             self.empty();
-            self.render(update.value, after);
-            unwatch(item.reference, watch_fn);
+            self.render(update.value, after, parent_source);
+            unwatch(reference, watch_fn);
         }
     }
 
-    watch(item.reference, watch_fn);
+    watch(reference, watch_fn);
+
+    return {
+        change_reference : function (new_reference) {
+            unwatch(reference, watch_fn);
+            reference = new_reference;
+            watch(reference, watch_fn);
+        }
+    }
+
 };
