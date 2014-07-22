@@ -346,16 +346,13 @@ function bind_attribute(element, name, value) {
     }
 }
 
-function bind_html(element, value, replace) {
-    if (value.type == 'string' || value.type == 'number') {
-        var DOM_elements = $($.parseHTML(value.data, document, true));
-        if (replace) {
-            element.first().replaceWith(DOM_elements);
-            element.remove();
+function bind_html(element, value, last_value) {
+    if (value.type == 'string' || value.type == 'number' || value.type == 'undefined') {
+        var DOM_elements = $($.parseHTML(value.data + '', document, true));
+        if (last_value) {
+            last_value.remove();
         }
-        else {
-            element.append(DOM_elements);
-        }
+        element.append(DOM_elements);
         return DOM_elements;
     }
     else if (value.type == 'reference') {
@@ -363,7 +360,7 @@ function bind_html(element, value, replace) {
         var last_value = $('<div>loading...</div>');
         element.append(last_value);
         function update(value) {
-            last_value = bind_html(last_value, value, true);
+            last_value = bind_html(element, value, last_value);
         }
         //  only watch changes on the given field on the given object
         //  the reference's last item is the field, and the second to
