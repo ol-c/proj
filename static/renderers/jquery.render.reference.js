@@ -1,10 +1,9 @@
 $.fn.render.reference = function (item, after, parent_source)  {
 
-    var node = new node_generator(parent_source);
-    var self = node.container();
+    var self = this;
     this.append(self);
 
-    self.append(node.container());
+//    self.append(node.container());
 
      var reference = item.reference;
 
@@ -12,17 +11,41 @@ $.fn.render.reference = function (item, after, parent_source)  {
     var content = $('<span>');
     self.append(content);
 
+    function render_referenced(reference, node) {
+        return function () {
+            //  resolve reference
+            var container = $('<div>').css({
+                display : 'inline-block'
+            });
+
+            resolve_reference(reference, function (item) {
+                var insert = $('<div>').css({
+                    display : 'inline-block'
+                });
+                insert.render(item, after, node.node());
+                container.append(insert);
+            });
+
+            return container;
+        };
+    }
+
     function render(data) {
         content.empty();
         content.append('reference');
         for (var i=0; i<data.length; i++) {
+            var node = new node_generator(parent_source);
+
+            node.render(render_referenced(data.slice(0, i+1), node));
+            var container = node.container();
+
             var name = data[i].name;
             if (data[i].type == 'reference') {
                 if (name.match(/^\w(\w|\d)*$/)) {
-                    content.append('.' + name);
+                    container.text('.' + name);
                 }
                 else {
-                    content.append('["' + name + '"]');
+                    container.text('["' + name + '"]');
                 }
             }
             else {
@@ -32,30 +55,13 @@ $.fn.render.reference = function (item, after, parent_source)  {
                     var arg = JSON.stringify(data[i].arguments[j]);
                     args.push(arg);
                 }
-                content.append('(', args.join(', ') ,')');
+                container.append('(', args.join(', ') ,')');
             }
+            content.append(container);
         }
     }
 
     render(item.data);
-
-    node.render(function () {
-        //  TODO: resolve reference
-        var container = $('<div>').css({
-            display : 'inline-block'
-        });
-
-        resolve_reference(item.data, function (item) {
-            var insert = $('<div>').css({
-                display : 'inline-block'
-            });
-            insert.render(item, after, node.node());
-            container.append(insert);
-        });
-
-        return container
-    });
-
 
 
     function watch_fn(update) {
