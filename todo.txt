@@ -30,14 +30,14 @@ X pass back function to change watching renderer from each function
 X queue watch updates and send as group (guaranteed order and better network performance)
 X respect self, root and remote reference beginnings (rather than resolving everything to actual ids)
 X reference renderer
-  delay function
-      returns a promise that will resolve after a specified time
-  how to expose promises
+  expose promises
       when calling "then" you must provide a persistant object
       to be the calling context of the functions
           the generic renderer for an persistant object should
           show all promises taken out for that object
-  how to expose loadable modules
+  delay function
+      returns a promise that will resolve after a specified time
+  expose modules
       modules are loaded as soon as they are used and can
       have a generic renderer that can be seen when inspecting
       a reference to the module. This renderer should be used for
