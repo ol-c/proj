@@ -105,23 +105,25 @@ function watch(reference, fn) {
     //  that means have one object id leading to one 
     //  field within that object since that is the
     //  only uniquely identifying reference
-
-    perform_operation({
-        type : 'watch',
-        reference : reference
-    },
-    function (response) {
-        if (response.type !== 'success') {
-            throw new Error('error watching reference logged above');
-        }
-        else {
-            var hashed_flat_ref = hash_reference(response.flattened)
-            if (updates[hashed_flat_ref] == undefined) {
-                updates[hashed_flat_ref] = [];
+    if (reference) {
+        perform_operation({
+            type : 'watch',
+            reference : reference
+        },
+        function (response) {
+            if (response.type !== 'success') {
+                console.log(reference);
+                throw new Error('error watching reference logged above');
             }
-            updates[hashed_flat_ref].push(fn);
-        }
-    });
+            else {
+                var hashed_flat_ref = hash_reference(response.flattened)
+                if (updates[hashed_flat_ref] == undefined) {
+                    updates[hashed_flat_ref] = [];
+                }
+                updates[hashed_flat_ref].push(fn);
+            }
+        });
+    }
 }
 
 function unwatch(reference, fn) {

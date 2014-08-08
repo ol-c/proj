@@ -130,7 +130,9 @@ var layout = {};
             padding : '4ch',
             'box-shadow' : "0px 0px 32px rgba(200, 200, 200, 0.95)",
             border : '1px solid rgba(220, 220, 220, 0.5)',
-            'font-size' : '12px'
+            'font-size' : '12px',
+            'font-family' : 'monospace',
+            'white-space' : 'pre'
         }
 
         var extra_styles = ""

@@ -5,6 +5,9 @@ var node_generator;
 
     node_generator = function (parent_source) {
         var container = $('<div>');
+        container.css({
+            verticalAlign : 'top'
+        });
 
         var gen = this;
 
@@ -24,12 +27,12 @@ var node_generator;
         self.selectable();
         var highlighter = function () {
             self.css({
-                border : '2px solid orange'
+                background : 'orange'
             });
         };
         var unhighlighter = function () {
             self.css({
-                border : '2px solid rgba(0,0,0,0)'
+                background : 'none'
             })
         }
         self.on('select', function (e) {
@@ -68,7 +71,7 @@ var node_generator;
                     rendered = renderer();
                     generic_view = gen.generate_node(rendered);
                     generic_view.hammer().on('touch', function (e) {
-                        //  TODO: select the command line for this
+                        //  TODO: select the first selectable child for this
                         e.stopPropagation();
                     });
                     collapsed = false;
@@ -111,10 +114,9 @@ var node_generator;
             unhighlighter = fn;
         };
 
-        //  transparent border so can highlight without trouble
         container.css({
             display : 'inline-block',
-            border : '2px solid rgba(0,0,0,0)'
+            background : 'none'
         });
 
         var self = container;
