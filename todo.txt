@@ -30,20 +30,21 @@ X pass back function to change watching renderer from each function
 X queue watch updates and send as group (guaranteed order and better network performance)
 X respect self, root and remote reference beginnings (rather than resolving everything to actual ids)
 X reference renderer
-  expose promises
-      when calling "then" you can provide:
-          a function in a container
-              this will be executed in the container's context
-          a reference to a function to be executed
-          you cannot provide a newly defined function
-              if you could, scoped variables would
-              be hard to manage     
+X expose promises
+X     when calling "then" you can provide:
+X         a function in a container
+X             this will be executed in the container's context
+X         a reference to a function to be executed
+X         you cannot provide a newly defined function
+X             if you could, scoped variables would
+X             be hard to manage
       the generic renderer for a persistant object should
-      show all promises taken out for that object
-          - resolved ones and future ones on delay should render
-          on a timeline
-          - unresolved ones not waiting on a delay should be
-          available near the timeline
+          show all promises taken out for that object
+              - resolved ones and future ones on delay should render
+              on a timeline
+              - unresolved ones not waiting on a delay should be
+              available near the timeline
+          show the state of the promise
 
   delay function
       returns a promise that will resolve after a specified time
