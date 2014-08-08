@@ -31,10 +31,20 @@ X queue watch updates and send as group (guaranteed order and better network per
 X respect self, root and remote reference beginnings (rather than resolving everything to actual ids)
 X reference renderer
   expose promises
-      when calling "then" you must provide a persistant object
-      to be the calling context of the functions
-          the generic renderer for an persistant object should
-          show all promises taken out for that object
+      when calling "then" you can provide:
+          a function in a container
+              this will be executed in the container's context
+          a reference to a function to be executed
+          you cannot provide a newly defined function
+              if you could, scoped variables would
+              be hard to manage     
+      the generic renderer for a persistant object should
+      show all promises taken out for that object
+          - resolved ones and future ones on delay should render
+          on a timeline
+          - unresolved ones not waiting on a delay should be
+          available near the timeline
+
   delay function
       returns a promise that will resolve after a specified time
   expose modules
