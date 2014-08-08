@@ -15,8 +15,8 @@ $.fn.render.promise = function (item, after, parent_source)  {
 
     var fulfill = $('<td>');
     var reject = $('<td>');
-    fulfill.text('fulfill:');
-    reject.text('reject:');
+    fulfill.text('on fulfill:');
+    reject.text('on reject:');
     fulfill.css({
         color : 'limegreen'
     });
