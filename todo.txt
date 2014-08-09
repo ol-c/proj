@@ -38,12 +38,12 @@ X         a reference to a function to be executed
 X         you cannot provide a newly defined function
 X             if you could, scoped variables would
 X             be hard to manage
-      the generic renderer for a persistant object should
-          show all promises taken out for that object
-              - resolved ones and future ones on delay should render
-              on a timeline
-              - unresolved ones not waiting on a delay should be
-              available near the timeline
+X     the generic renderer for a persistant object should
+X         show all promises taken out for that object
+X             - resolved ones and future ones on delay should render
+X             on a timeline
+X             - unresolved ones not waiting on a delay should be
+X             available near the timeline
           show the state of the promise
 
   delay function
