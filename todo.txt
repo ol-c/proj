@@ -44,16 +44,19 @@ X             - resolved ones and future ones on delay should render
 X             on a timeline
 X             - unresolved ones not waiting on a delay should be
 X             available near the timeline
-          show the state of the promise
-
-  delay function
-      returns a promise that will resolve after a specified time
+X         show the state of the promise
+X delay function
+X     returns a promise that will resolve after a specified time
+X     or at a specified time
   expose modules
       modules are loaded as soon as they are used and can
       have a generic renderer that can be seen when inspecting
       a reference to the module. This renderer should be used for
       module administration (ex: redis-cli/viewer)
       modules are exposed via: module.MODULE_NAME
+          need way to restrict require to pull only from specified directory
+  differenct arcs for references to already rendered versions
+  nodes rendering, layering, and hiding as they should.
   testing suite
       website that allows users to write tests against the api
       and submit them to the testing framework.
