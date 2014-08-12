@@ -48,13 +48,14 @@ X         show the state of the promise
 X delay function
 X     returns a promise that will resolve after a specified time
 X     or at a specified time
-  expose modules
-      modules are loaded as soon as they are used and can
-      have a generic renderer that can be seen when inspecting
-      a reference to the module. This renderer should be used for
-      module administration (ex: redis-cli/viewer)
-      modules are exposed via: module.MODULE_NAME
-          need way to restrict require to pull only from specified directory
+X expose modules
+X     modules are loaded as soon as they are used and can
+X     have a generic renderer that can be seen when inspecting
+X     a reference to the module. This renderer should be used for
+X     module administration (ex: redis-cli/viewer)
+X     modules are exposed via: module.MODULE_NAME
+X         need way to restrict require to pull only from specified directory
+  make module references persistant
   differenct arcs for references to already rendered versions
   nodes rendering, layering, and hiding as they should.
   testing suite
