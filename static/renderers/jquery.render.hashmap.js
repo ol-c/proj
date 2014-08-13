@@ -14,26 +14,42 @@
                      "else if (type(this.render) == 'reference') return resolve(this.render);\n" +
                      "else return undefined;";
 
-        evaluate_script(item.reference, source, function (result) {
-            if (result.type == 'error') {
-                self.render(result);
-            }
-            else {
-                var renderable;
-                if (result.value.type == "string") {
-                    renderable = result.value.data;
-                }
-                else if (result.value.type == 'reference') {
-                    renderable = "loader...";
+        var renderable;
+        function render_specific() {
+            evaluate_script(item.reference, source, function (result) {
+                self.empty();
+                if (result.type == 'error') {
+                    var renderable = $('<div>');
+                    renderable.render(result);
                 }
                 else {
-                    renderable = $('<span>');
-                    renderable.text('hashmap');
+                    if (result.value.type == "string") {
+                        renderable = $(document.createDocumentFragment()).append(result.value.data);
+                    }
+                    else if (result.value.type == 'reference') {
+                        renderable = $("<div>loader...</div>");
+                    }
+                    else {
+                        renderable = $('<span>');
+                        renderable.text('hashmap');
+                    }
                 }
                 self.append(renderable);
-            }
-        });
+            });
+        }
 
+        render_specific();
+
+        //  watch render field and rerender when needed
+        watch([
+            reference[0], {
+                type : 'reference',
+                name : 'render'
+            }],
+            function () {
+                render_specific();
+            }
+        );
 
         node.render(render_generic);
 
@@ -118,7 +134,6 @@
 
             return row;
         }
-
 
         function watch_fn(update) {
             if (update.value.type == 'hashmap') {

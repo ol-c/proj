@@ -55,8 +55,10 @@ X     a reference to the module. This renderer should be used for
 X     module administration (ex: redis-cli/viewer)
 X     modules are exposed via: module.MODULE_NAME
 X         need way to restrict require to pull only from specified directory
-  make module references persistant
-  differenct arcs for references to already rendered versions
+X make module references persistant
+  performance profiling
+  expose history
+  different arcs for references to already rendered versions
   nodes rendering, layering, and hiding as they should.
   testing suite
       website that allows users to write tests against the api

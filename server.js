@@ -1,12 +1,18 @@
-var cluster      = require('cluster');
-var express      = require('express');
-var http         = require('http');
-var net          = require('net');
-var ws           = require('ws');
-var files        = require('files');
-var persist      = require('persist');
-var fs           = require('fs');
-var auth         = require('auth');
+
+//  performance profiling
+//require('look').start(8080);
+
+
+
+var cluster = require('cluster');
+var express = require('express');
+var http    = require('http');
+var net     = require('net');
+var ws      = require('ws');
+var files   = require('files');
+var persist = require('persist');
+var fs      = require('fs');
+var auth    = require('auth');
 
 var special_subdomains = {
     files : files.server

@@ -11,7 +11,6 @@
         var self = node.container();
 
         renderable = $('<span>');
-        console.log(item);
         renderable.text('module.' + item.data.name);
         self.append(renderable);
 
