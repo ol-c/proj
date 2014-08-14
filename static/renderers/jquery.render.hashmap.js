@@ -25,7 +25,6 @@
                 }
                 if (result.type == 'error') {
                     var renderable = $('<div>');
-                    console.log(result);
                     render_data = renderable.render(result);
                 }
                 else {

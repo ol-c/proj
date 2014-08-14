@@ -56,6 +56,9 @@ X     module administration (ex: redis-cli/viewer)
 X     modules are exposed via: module.MODULE_NAME
 X         need way to restrict require to pull only from specified directory
 X make module references persistant
+  persist delay function
+     do this by making an optional argument to promise for a
+     time to fulfill the promise if not yet fulfilled
   performance profiling
   expose history
   different arcs for references to already rendered versions

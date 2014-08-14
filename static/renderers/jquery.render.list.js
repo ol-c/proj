@@ -16,7 +16,6 @@
 
         var self = node.container();
 
-
         renderable = $('<span>');
         renderable.text('list');
         self.append(renderable);
@@ -24,7 +23,8 @@
         node.render(render_generic);
 
         function render_generic() {
-            
+            rendered = true;
+
             container.css({
                 display : 'inline-block',
                 verticalAlign : 'top',
@@ -47,7 +47,6 @@
             command_line.command(item);
             render_list();
 
-            watch(reference, watch_fn);
             return container;
         }
 
@@ -124,6 +123,7 @@
             return row;
         }
 
+        var rendered = false;
 
 
         function watch_fn(update) {
@@ -131,32 +131,39 @@
                 if (update.value.operation == 'push') {
                     var args = update.value.arguments;
                     for (var i=0; i<args.length; i++) {
-                        var ref = reference.concat([{
-                            type : 'reference',
-                            name : i + item.data.length
-                        }]);
-                        var new_render = render_item(item.data.length, ref);
-                        content_body.append(new_render);
+                        if (rendered) {
+                            var ref = reference.concat([{
+                                type : 'reference',
+                                name : i + item.data.length
+                            }]);
+       
+                            var new_render = render_item(item.data.length, ref);
+                            content_body.append(new_render);
+                        }
                         item.data.length += 1;
                     }
                 }
                 else if (update.value.operation == 'pop') {
                     if (item.data.length) {
                         item.data.length -= 1;
-                        content_body.children().last().remove();
+                        if (rendered) {
+                            content_body.children().last().remove();
+                        }
                     }
                 }
                 else if (update.value.operation == 'shift') {
                     //  TODO rebind watching references
                     if (item.data.length) {
                         item.data.length -= 1;
-                        content_body.children().first().remove();
-                        renderings.shift()
-                        update_keys();
-                        for (var i=0; i<renderings.length; i++) {
-                            renderings[i].change_reference([reference[0]].concat([
-                                {type : 'reference', name : i + '' }
-                            ]));
+                        if (rendered) {
+                            content_body.children().first().remove();
+                            renderings.shift()
+                            update_keys();
+                            for (var i=0; i<renderings.length; i++) {
+                                renderings[i].change_reference([reference[0]].concat([
+                                    {type : 'reference', name : i + '' }
+                                ]));
+                            }
                         }
                     }
                 }
@@ -164,32 +171,38 @@
                     //  TODO: rebind watching references
                     var args = update.value.arguments;
                     for (var i=args.length-1; i>=0; i--) {
-                        var ref = reference.concat([{
-                            type : 'reference',
-                            name : i + ''
-                        }]);
-                        var new_render = render_item(i + '', ref, undefined, true);
-                        content_body.prepend(new_render);
+                        if (rendered) {
+                            var ref = reference.concat([{
+                                type : 'reference',
+                                name : i + ''
+                            }]);
+                            var new_render = render_item(i + '', ref, undefined, true);
+                            content_body.prepend(new_render);
+                        }
                         item.data.length += 1;
                     }
                     for (var i=args.length; i<renderings.length; i++) {
-                        renderings[i].change_reference([reference[0]].concat([
-                            {type : 'reference', name : i + '' }
-                        ]));
+                        if (rendered) {
+                            renderings[i].change_reference([reference[0]].concat([
+                                {type : 'reference', name : i + '' }
+                            ]));
+                        }
                     }
 
                     update_keys();
                 }
                 else if (update.value.operation == 'reverse') {
                     //  TODO: rebind watching references
-                    var reversed = content_body.children().get().reverse();
-                    content_body.append(reversed);
-                    update_keys()
-                    renderings.reverse();
-                    for (var i=0; i<renderings.length; i++) {
-                        renderings[i].change_reference([reference[0]].concat([
-                            {type : 'reference', name : i + '' }
-                        ]));
+                    if (rendered) {
+                        var reversed = content_body.children().get().reverse();
+                        content_body.append(reversed);
+                        update_keys()
+                        renderings.reverse();
+                        for (var i=0; i<renderings.length; i++) {
+                            renderings[i].change_reference([reference[0]].concat([
+                                {type : 'reference', name : i + '' }
+                            ]));
+                        }
                     }
                 }
                 else if (update.value.operation == 'sort') {
@@ -197,15 +210,19 @@
                     //        representation of sort
                     //        operation and following suit
                     //        with already rendered versions
-                    content_body.empty();
-                    render_list();
+                    if (rendered) {
+                        content_body.empty();
+                        render_list();
+                    }
                 }
                 else {
                     if (update.value.data.length !== item.data.length) {
                         //  TODO: optimize...
-                        content_body.empty();
                         item = update.value;
-                        render_list();
+                        if (rendered) {
+                            content_body.empty();
+                            render_list();
+                        }
                     }
                     else {
                         //  if length did not change, then an internal reference has
@@ -219,6 +236,8 @@
                 unwatch(reference, watch_fn);
             }
         }
+
+        watch(reference, watch_fn);
         
         return {
             change_reference : function (new_reference) {
