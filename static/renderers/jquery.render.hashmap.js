@@ -59,7 +59,10 @@
         var rendered_fields = {};
         var content_body = $('<div>');
 
+        var rendered;
+
         function render_generic() {
+            rendered = true;
             var container = $("<div>");
             var highlight;
             var unhighlight;
@@ -103,9 +106,10 @@
             }
             render_hashmap();
 
-            watch(reference, watch_fn);
             return container;
         }
+        
+        watch(reference, watch_fn);
 
         function render_field(key, reference, after) {
             var field = $('<span>').text('"' + key.replace('"', '\\"') + '"');
@@ -141,30 +145,32 @@
         function watch_fn(update) {
             if (update.value.type == 'hashmap') {
                 var updated_fields = update.value.data;
-                var field;
-                for (field in updated_fields) {
-                    if (rendered_fields[field] === undefined) {
-                        var r = render_field(field, updated_fields[field]);
-                        content_body.prepend(r);
+                if (rendered) {
+                    var field;
+                    for (field in updated_fields) {
+                        if (rendered_fields[field] === undefined) {
+                            var r = render_field(field, updated_fields[field]);
+                            content_body.prepend(r);
+                        }
                     }
-                }
-                for (field in rendered_fields) {
-                    if (updated_fields[field] === undefined) {
-                        rendered_fields[field].remove();
-                        delete rendered_fields[field];
-                    }
-                    //  necessary since references to objects inside of objects are still absolute
-                    //  this will see if a reference was changed, indicating a need to refresh the field
-                    //  internal condition to make sure the value we are updating to is a container type (other types handle updates themselves)
-                    //  TODO: clean up cases
-                    else if (
-                    (updated_fields[field] && (updated_fields[field].internal || updated_fields[field].internal === undefined && (item.data[field] && item.data[field].internal === undefined)))
-                    && item.data[field] && hash_reference(updated_fields[field]) !== hash_reference(item.data[field])) {
-                        // TODO: after char
-                        var old = rendered_fields[field];
-                        delete rendered_fields[field];
-                        old.before(render_field(field, updated_fields[field]));
-                        old.remove();
+                    for (field in rendered_fields) {
+                        if (updated_fields[field] === undefined) {
+                            rendered_fields[field].remove();
+                            delete rendered_fields[field];
+                        }
+                        //  necessary since references to objects inside of objects are still absolute
+                        //  this will see if a reference was changed, indicating a need to refresh the field
+                        //  internal condition to make sure the value we are updating to is a container type (other types handle updates themselves)
+                        //  TODO: clean up cases
+                        else if (
+                        (updated_fields[field] && (updated_fields[field].internal || updated_fields[field].internal === undefined && (item.data[field] && item.data[field].internal === undefined)))
+                        && item.data[field] && hash_reference(updated_fields[field]) !== hash_reference(item.data[field])) {
+                            // TODO: after char
+                            var old = rendered_fields[field];
+                            delete rendered_fields[field];
+                            old.before(render_field(field, updated_fields[field]));
+                            old.remove();
+                        }
                     }
                 }
                 item.data = updated_fields;
