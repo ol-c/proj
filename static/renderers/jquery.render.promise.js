@@ -86,6 +86,12 @@ $.fn.render.promise = function (item, after, parent_source)  {
                 color : 'tomato'
             });
         }
+        else if (item.data.delayed) {
+            state.text('delayed');
+            state.css({
+                color : '#888888'
+            })
+        }
         else {
             state.text('pending');
             state.css({
@@ -110,6 +116,10 @@ $.fn.render.promise = function (item, after, parent_source)  {
             }
             else if (update.value.operation == 'reject') {
                 item.data.rejected = true;
+                update_state();
+            }
+            else if (update.value.operation == 'delay') {
+                item.data.delayed = true;
                 update_state();
             }
             else if (update.value.operation == 'then') {
