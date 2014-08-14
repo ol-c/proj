@@ -100,11 +100,14 @@ function serializable_from_instance(value, reference) {
         return serializable;
 }
 
+var watched = {};
+
 function watch(reference, fn) {
     //  perform operation to flatten the reference,
     //  that means have one object id leading to one 
     //  field within that object since that is the
     //  only uniquely identifying reference
+
     if (reference) {
         perform_operation({
             type : 'watch',

@@ -15,12 +15,18 @@
                      "else return undefined;";
 
         var renderable;
+        var render_data;
         function render_specific() {
             evaluate_script(item.reference, source, function (result) {
+                //  TODO: clean up memory leak
                 self.empty();
+                if (render_data) {
+                    render_data.unrender();
+                }
                 if (result.type == 'error') {
                     var renderable = $('<div>');
-                    renderable.render(result);
+                    console.log(result);
+                    render_data = renderable.render(result);
                 }
                 else {
                     if (result.value.type == "string") {
@@ -46,9 +52,7 @@
                 type : 'reference',
                 name : 'render'
             }],
-            function () {
-                render_specific();
-            }
+            throttle(1000, render_specific)
         );
 
         node.render(render_generic);

@@ -19,8 +19,9 @@ $.fn.render.error = function (item, after, parent_node) {
             unwatch(reference, watch_fn);
         }
     }
-
-    watch(reference, watch_fn);
+//    do not watch reference
+//    errors must be removed/dealt with at a container level
+//    watch(reference, watch_fn);
 
 
     return {
@@ -28,6 +29,9 @@ $.fn.render.error = function (item, after, parent_node) {
             unwatch(reference, watch_fn);
             reference = new_reference;
             watch(reference, watch_fn);
+        },
+        unrender : function () {
+            unwatch(reference, watch_fn);
         }
     }
 };
