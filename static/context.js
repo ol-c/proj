@@ -43,7 +43,7 @@ function perform_operation(operation, cb) {
     var token = Math.random() + '';
     operation.token = token;
     responses[token] = cb;
-    ws.send(JSON.stringify(operation));
+    ws.send(JSON.stringify(operation) + '"""');
 }
 
 
