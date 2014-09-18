@@ -160,6 +160,7 @@ var node_generator;
 
         //  formerly show_in_container
         this.generate_node = function (value) {
+            source_node.scale = 1;
             if (root_source) {
                 if (parent_source) {
                     var offset = self.offset();
@@ -171,6 +172,7 @@ var node_generator;
                 }
             }
             else {
+                //  layout the first node
                 source_node.x = window.innerWidth/3;
                 source_node.y = window.innerHeight/2;
                 source_node.root = true;
@@ -179,6 +181,36 @@ var node_generator;
             }
 
             var container = $('#' + source_node.id);
+
+
+            container.bind('mousewheel DOMMouseScroll', function(event){
+                //  scale
+                var scale_factor;
+                if (event.originalEvent.wheelDelta > 0 || event.originalEvent.detail < 0) {
+                    scale_factor = 1.2;
+                }
+                else {
+                    scale_factor = 1/1.2;
+                }
+                source_node.scale *= scale_factor;
+                //  offset container to recenter
+                var cx = event.clientX;
+                var cy = event.clientY;
+
+                var dx = (cx - source_node.x) * (1-scale_factor);
+                var dy = (cy - source_node.y) * (1-scale_factor);
+
+                //  TODO: math is correct, but need to set node to fixed and allow 
+                //        manipulation of fixed position
+                source_node.x += dx;
+                source_node.y += dy;
+
+                if (source_node.scale < 0.01) {
+                    console.log("show placeholder!");
+                }
+                layout.restart();
+            });
+
 
             container.append(value);
             return container;

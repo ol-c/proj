@@ -41,7 +41,11 @@ $.fn.render.reference = function (item, after, parent_source)  {
 
             var name = data[i].name;
             if (data[i].type == 'reference') {
-                if (name.match(/^\w(\w|\d)*$/)) {
+                //  show relative binding
+                if (data[i].relative) {
+                    container.text('.' + data[i].relative);
+                }
+                else if (name.match(/^\w(\w|\d)*$/)) {
                     container.text('.' + name);
                 }
                 else {

@@ -85,7 +85,7 @@ var layout = {};
             //  fixed targets don't need adjustment
             if (l.target.fixed) return;
 
-            //  adjust source and target to fit the reccomended dimensions
+            //  adjust source and target to fit the recommended dimensions
             var r = recommended_offset(l);
 
             var rendered_children = [];
@@ -114,9 +114,11 @@ var layout = {};
         function translate(d) {
             var x = Math.round(d.x);
             var y = Math.round(d.y);
+            // avoid scale stringifying with eX or e-X
+            var scale = Math.round(d.scale * 1000)/1000;
             y -= d.container.outerHeight()/2;
             //x -= d.container.outerWidth() /2;
-            var translate =  'translate(' + x + 'px, ' + y + 'px);';
+            var translate =  'translate(' + x + 'px, ' + y + 'px) scale(' + scale + ');';
             return translate;
         }
 
@@ -132,7 +134,12 @@ var layout = {};
             border : '1px solid rgba(220, 220, 220, 0.5)',
             'font-size' : '12px',
             'font-family' : 'monospace',
-            'white-space' : 'pre'
+            'white-space' : 'pre',
+            '-webkit-transform-origin' : '0% 50%',
+            '-o-transform-origin' : '0% 50%',
+            '-moz-transform-origin' : '0% 50%',
+            '-ms-transform-origin' : '0% 50%',
+            'transform-origin' : '0% 50%',
         }
 
         var extra_styles = ""
@@ -172,9 +179,9 @@ var layout = {};
         var scroll_top  = $(window).scrollTop();
 
         link
-            .attr('x1', function (d) { return d.rendered_element.offset().left - scroll_left + d.rendered_element.outerWidth(); })
-            .attr('y1', function (d) { return d.rendered_element.offset().top - scroll_top + d.rendered_element.outerHeight()/2; })
-            .attr('x2', function (d) { return Math.round(d.target.x + d.target.container.width()/2); })
+            .attr('x1', function (d) { return d.rendered_element.offset().left - scroll_left + d.rendered_element.outerWidth() * d.source.scale; })
+            .attr('y1', function (d) { return d.rendered_element.offset().top - scroll_top + d.rendered_element.outerHeight()/2 * d.source.scale; })
+            .attr('x2', function (d) { return Math.round(d.target.x + d.target.container.width()/2 * d.target.scale); })
             .attr('y2', function (d) { return Math.round(d.target.y); })
             .each(function (d) {
                 var sw = d.rendered_element.outerWidth();
@@ -183,8 +190,8 @@ var layout = {};
                 var sx = offset.left - scroll_left;
                 var sy = offset.top  - scroll_top;
 
-                var tw = d.target.container.outerWidth();
-                var th = d.target.container.outerHeight();
+                var tw = d.target.container.outerWidth() * d.target.scale;
+                var th = d.target.container.outerHeight() * d.target.scale;
 
                 var tx = d.target.x;
                 var ty = d.target.y - th/2;
@@ -320,8 +327,10 @@ var layout = {};
         var sibling_spacing = 0;
 
         for (var i=0; i<siblings.length; i++) {
-            sibling_heights.push(siblings[i].container.outerHeight() + sibling_spacing);
-            if (siblings[i] == link.target) {
+            var sibling = siblings[i];
+            var sibling_height = (sibling.container.outerHeight() + sibling_spacing) * sibling.scale;
+            sibling_heights.push(sibling_height);
+            if (sibling == link.target) {
                 sibling_index = i;
             }
         }
@@ -335,8 +344,8 @@ var layout = {};
             }
         }
 
-        var sw = link.source.container.outerWidth();
-        var sh = link.source.container.outerHeight();
+        var sw = link.source.container.outerWidth() * link.source.scale;
+        var sh = link.source.container.outerHeight() * link.source.scale;
 
         var dx = sw;
         var dy = sibling_y - total_height/2;

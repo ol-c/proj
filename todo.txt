@@ -59,10 +59,13 @@ X make module references persistant
 X persist delay function
 X    do this by making an optional argument to promise for a
 X    time to fulfill the promise if not yet fulfilled
-  performance profiling
-  expose history
+  resource utilization monitoring
   different arcs for references to already rendered versions
   nodes rendering, layering, and hiding as they should.
   testing suite
       website that allows users to write tests against the api
       and submit them to the testing framework.
+  history
+  clone
+  merge
+  auto optimization / distribution
