@@ -146,6 +146,7 @@ var node_generator;
         var source_node =  {
             x : 0,
             y : 0,
+            opacity : 1,
             id : (Math.random() + '').slice(2),
             rendered_version : false,
             children : []
@@ -197,17 +198,30 @@ var node_generator;
                 var cx = event.clientX;
                 var cy = event.clientY;
 
-                var dx = (cx - source_node.x) * (1-scale_factor);
-                var dy = (cy - source_node.y) * (1-scale_factor);
+                //  TODO: offset entire layout by dx and dy
 
-                //  TODO: math is correct, but need to set node to fixed and allow 
-                //        manipulation of fixed position
-                source_node.x += dx;
-                source_node.y += dy;
-
-                if (source_node.scale < 0.01) {
-                    console.log("show placeholder!");
+                var min_dimension = Math.min(container.width(), container.height()) * source_node.scale;
+                var fade_start = 32;
+                var fade_stop = 16;
+                if (min_dimension < fade_start) {
+                    if (min_dimension < fade_stop) {
+                        source_node.scale /= scale_factor;
+                        scale_factor = 1;
+                        min_dimension = fade_stop;
+                    }
+                    var opacity = (min_dimension - fade_stop) / fade_start;
+                    source_node.opacity = opacity;
                 }
+                else {
+                    source_node.opacity = 1;
+                }
+
+                var dx = (source_node.x - cx) * (scale_factor - 1);
+                var dy = (source_node.y - cy) * (scale_factor - 1);
+
+
+                layout.fix(source_node);
+                layout.offset(dx, dy);
                 layout.restart();
             });
 

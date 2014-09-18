@@ -1,6 +1,5 @@
 var layout = {};
 
-
 (function () {
 
     var last_fixed = null;
@@ -67,18 +66,46 @@ var layout = {};
     };
 
     layout.restart = restart_layout;
+    layout.resume = function () {
+        force_layout.resume();
+    }
+    layout.restart = function () {
+        force_layout.start();
+    }
+    var offset = {x:0, y:0};
+    layout.offset = function (dx, dy) {
+        offset.x += dx;
+        offset.y += dy;
+        force_layout.resume();
+        force_layout.tick();
+        offset.x = 0;
+        offset.y = 0;
+    }
 
 
     function dragstart(d) {
+        layout.fix(d);
+    }
+
+    layout.fix = function(d) {
         if (last_fixed) last_fixed.fixed = false;
-        d3.select(this).classed('fixed', d.fixed = true);
+        d.fixed = true;
         last_fixed = d;
     }
 
     drag.on("dragstart", dragstart);
 
     function tick(e) {
-        //  TODO: force moving nodes off of eachother
+        //  TODO: force nodes off of eachother
+        if (offset.x || offset.y) {
+            node.each(function (d) {
+                d.x += offset.x;
+                d.y += offset.y;
+                d.px += offset.x;
+                d.py += offset.y;
+            });
+            return;
+        }
 
 
         link.each(function (l) {
@@ -142,21 +169,13 @@ var layout = {};
             'transform-origin' : '0% 50%',
         }
 
-        var extra_styles = ""
+        var extra_styles = "";
         for (var style in styles) {
             extra_styles += style + ':' + styles[style] + ';';
         }
 
         node
-           .each(function (d) {
-               if (d.root && !d.fixed) {
-                   //  push root toward left of screen
-                   var k = e.alpha;
-                   d.x -= k * (d.x - window.innerWidth / 16);
-                   d.y -= k * (d.y - window.innerHeight / 2);
-               }
-           })
-           .attr('style', function (d) {
+            .attr('style', function (d) {
                 var trans = translate(d);
                 var transforms = [
                     '-webkit-transform',
@@ -170,7 +189,7 @@ var layout = {};
                 }
                 //  TODO: apply these styles to the div inside of this foreign object
                 //  Want this inside of svg document so we can respect layering
-                var s = extra_styles + t + 'display:' + (d.visible ? "inline-block" : "none");
+                var s = extra_styles + t + 'display:' + (d.visible ? "inline-block" : "none")  + '; opacity:' + d.opacity + ';';
                 $('#'+ d.id).attr('style', s);
                 return '';//extra_styles + t;
             });
@@ -186,9 +205,9 @@ var layout = {};
             .each(function (d) {
                 var sw = d.rendered_element.outerWidth();
                 var sh = d.rendered_element.outerHeight();
-                var offset = d.rendered_element.offset();
-                var sx = offset.left - scroll_left;
-                var sy = offset.top  - scroll_top;
+                var element_offset = d.rendered_element.offset();
+                var sx = element_offset.left - scroll_left;
+                var sy = element_offset.top  - scroll_top;
 
                 var tw = d.target.container.outerWidth() * d.target.scale;
                 var th = d.target.container.outerHeight() * d.target.scale;
@@ -227,9 +246,6 @@ var layout = {};
                 return d.id
             })
             .attr('class', 'node')
-            .on("dblclick", function (d) {
-                console.log('double clicked...')
-            })
             .call(drag);
 
         node_parent
@@ -306,7 +322,6 @@ var layout = {};
         node = overlay.selectAll('.node');
     });
 
-
     function recommended_offset(link) {
 
         var siblings = [];
@@ -355,8 +370,4 @@ var layout = {};
             dy : dy
         };
     }
-
-
-
-
 })()
