@@ -20,29 +20,28 @@
             evaluate_script(item.reference, source, function (result) {
                 //  TODO: clean up memory leak
                 self.empty();
+                var renderable = $('<div>');
                 if (render_data) {
                     //  this  method should clean up memory leak
                     render_data.unrender();
                 }
+                
                 if (result.type == 'error') {
-                    var renderable = $('<div>');
+                    console.log(result)
                     render_data = renderable.render(result);
                 }
+                else if (result.value.type == 'undefined')  {
+                    renderable.text('no render function or no render function return value'); 
+                }
+                else if ( result.value.type == 'reference') {
+                    render_data = renderable.render({
+                        type : 'loader',
+                        reference : result.value.data
+                    });
+                }
                 else {
-                    if (result.value.type == "string" || result.value.type == "number") {
-                        renderable = $(document.createDocumentFragment()).append(result.value.data);
-                    }
-                    else if ( result.value.type == 'reference') {
-                        var renderable = $('<div>');
-                        render_data = renderable.render({
-                            type : 'loader',
-                            reference : result.value.data
-                        });
-                    }
-                    else {
-                        renderable = $('<span>');
-                        renderable.text('hashmap');
-                    }
+                    renderable = $('<div>');
+                    renderable.render(result.value);
                 }
                 self.append(renderable);
             });
@@ -62,9 +61,8 @@
         node.render(render_generic);
 
         var rendered_fields = {};
-        var content_body = $('<div>');
-
         var rendered;
+        var content_body = $('<div>');
 
         function render_generic() {
             rendered = true;
@@ -90,7 +88,6 @@
                 whiteSpace : 'pre',
                 fontFamily : 'monospace',
             });
-
 
             function render_hashmap() {
                 command_line.command(item);
@@ -190,7 +187,6 @@
             }
         }
 
-
         return {
             change_reference : function (new_reference) {
                 unwatch(reference, watch_fn);
@@ -202,5 +198,4 @@
             }
         }
     };
-
 })();
