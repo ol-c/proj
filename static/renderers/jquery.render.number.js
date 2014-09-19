@@ -47,7 +47,6 @@ $.fn.render.number = function (item, after, parent_node) {
             unwatch(reference, watch_fn);
         }
     }
-
     watch(reference, watch_fn);
 
     return {

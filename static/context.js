@@ -100,7 +100,7 @@ function serializable_from_instance(value, reference) {
         return serializable;
 }
 
-var watched = {};
+var already_watching = [];
 
 function watch(reference, fn) {
     //  perform operation to flatten the reference,
@@ -109,13 +109,13 @@ function watch(reference, fn) {
     //  only uniquely identifying reference
 
     if (reference) {
+
         perform_operation({
             type : 'watch',
             reference : reference
         },
         function (response) {
             if (response.type !== 'success') {
-                console.log(reference);
                 throw new Error('error watching reference logged above');
             }
             else {
@@ -248,7 +248,6 @@ $(function () {
         //  sending protocol adds """ to separate JSON responses
         var data_string = event.data.replace('"""', '');
         var data = JSON.parse(data_string);
-        //console.log(data);
         var response = responses[data.token];
         if (response) response(data);
         if (data.type == 'update') {
@@ -261,7 +260,6 @@ $(function () {
             while (updates_to_do.length) {
                 var watching = updates_to_do.shift();
                 for (var i=0; i<original.length; i++) {
-                    console.log(data);
                     if (watching === original[i]) {
                         watching(data);
                     }
@@ -353,7 +351,6 @@ function bind_attribute(element, name, value) {
 }
 
 function bind_html(element, value, last_value) {
-    console.log('binding html...')
     if (value.type == 'string' || value.type == 'number' || value.type == 'undefined') {
         var DOM_elements = $($.parseHTML(value.data + '', document, true));
         if (last_value) {

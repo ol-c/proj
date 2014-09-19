@@ -14,7 +14,7 @@ $.fn.render.loader = function (item, after, parent_node) {
         //  used
         value.empty();
         render_data = value.render(item, after, parent_node);
-        if (new_reference) {
+        if (reference_changed) {
             render_data.change_reference(new_reference);
         }
         if (unrender) {
@@ -24,26 +24,28 @@ $.fn.render.loader = function (item, after, parent_node) {
 
     self.append(value);
 
-    var new_reference = item.reference;
+    var reference = item.reference;
 
     var unrender = false;
+    var reference_changed = false;
 
     return {
         //  this function is here for containers to change
         //  the reference that the rendered version of a
         //  piece of data watches
-        change_reference : function (reference) {
+        change_reference : function (new_reference) {
+            reference = new_reference;
             if (render_data) {
                 render_data.change_reference(reference);
             }
             else {
-                new_reference = reference;
+                reference_changed = true;
             }
         },
         unrender : function () {
             if (render_data) {
                 //  TODO: don't unrender both!!!!
-                //render_data.unrender();
+                render_data.unrender();
             }
             else {
                 unrender = true;
