@@ -73,6 +73,10 @@ $.fn.render.string = function (item, after) {
             unwatch(reference, watch_fn);
             reference = new_reference;
             watch(reference, watch_fn);
+        },
+        unrender : function () {
+            unwatch(reference, watch_fn);
         }
+
     }
 }

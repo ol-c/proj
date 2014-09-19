@@ -200,7 +200,7 @@ var node_generator;
 
                 //  TODO: offset entire layout by dx and dy
 
-                var min_dimension = Math.min(container.width(), container.height()) * source_node.scale;
+                var min_dimension = (container.width() + container.height()) / 2 * source_node.scale;
                 var fade_start = 32;
                 var fade_stop = 16;
                 if (min_dimension < fade_start) {

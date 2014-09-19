@@ -1,4 +1,4 @@
-$.fn.numberroll = function (start_digits, max_digits) {
+$.fn.numberroll = function (start_digits, max_digits, settings) {
     max_digits = max_digits || Infinity;
     var self = this;
     var digits = [];
@@ -59,7 +59,7 @@ $.fn.numberroll = function (start_digits, max_digits) {
             options.push($('<span>').text(j));
         }
         var digit = $('<span>');
-        digit.choose(options);
+        digit.choose(options, settings);
         behave(digit);
         return digit;
     }

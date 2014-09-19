@@ -4,6 +4,8 @@ $.fn.render.promise = function (item, after, parent_source)  {
     this.append(self);
     var node = new node_generator(parent_source);
 
+    var reference = item.reference;
+
 
     var functions = $('<table>');
     var functions_table = $('<tbody>');
@@ -140,7 +142,6 @@ $.fn.render.promise = function (item, after, parent_source)  {
             unwatch(reference, watch_fn);
         }
     }
-
     watch(item.reference, watch_fn);
 
     return {
@@ -148,7 +149,11 @@ $.fn.render.promise = function (item, after, parent_source)  {
             unwatch(reference, watch_fn);
             reference = new_reference;
             watch(reference, watch_fn);
+        },
+        unrender : function () {
+            unwatch(reference, watch_fn);
         }
+
     }
 
 };

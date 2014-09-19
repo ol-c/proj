@@ -11,7 +11,7 @@ $.fn.render.error = function (item, after, parent_node) {
 
     function watch_fn(update) {
         if (update.value.type == 'error') {
-            message.text(update.value.data);
+            message.text(update.value.data.split('\n')[0]);
         }
         else {
             self.empty();

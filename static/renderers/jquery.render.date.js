@@ -68,7 +68,9 @@ $.fn.render.date = function (item, after, parent_node) {
 
     function get_chooser(options) {
         var chooser = $('<span>');
-        chooser.choose(options);
+        chooser.choose(options, {
+            requireShift : true
+        });
         return chooser;
     }
     function get_text(text) {
@@ -85,12 +87,12 @@ $.fn.render.date = function (item, after, parent_node) {
     month = get_text(months);
     monthday = get_chooser(range(1, 32));
     weekday = $('<span>');
-    year.numberroll(4, 4);
+    year.numberroll(4, 4, {requireShift : true});
     
     hour = get_chooser(range(0, 23));
     minute = get_chooser(range(0, 59));
     second = get_chooser(range(0, 59));
-    millisecond.numberroll(3, 3);
+    millisecond.numberroll(3, 3, {requireShift : true});
 
     var local_updates = {};
 
@@ -154,6 +156,10 @@ $.fn.render.date = function (item, after, parent_node) {
             unwatch(reference, watch_fn);
             reference = new_reference;
             watch(reference, watch_fn);
+        },
+        unrender : function () {
+            unwatch(reference, watch_fn);
         }
+
     }
 };

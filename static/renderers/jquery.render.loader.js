@@ -17,11 +17,16 @@ $.fn.render.loader = function (item, after, parent_node) {
         if (new_reference) {
             render_data.change_reference(new_reference);
         }
+        if (unrender) {
+            render_data.unrender();
+        }
     });
 
     self.append(value);
 
-    var new_reference;
+    var new_reference = item.reference;
+
+    var unrender = false;
 
     return {
         //  this function is here for containers to change
@@ -34,6 +39,16 @@ $.fn.render.loader = function (item, after, parent_node) {
             else {
                 new_reference = reference;
             }
+        },
+        unrender : function () {
+            if (render_data) {
+                //  TODO: don't unrender both!!!!
+                //render_data.unrender();
+            }
+            else {
+                unrender = true;
+            }
         }
+
     };
 };

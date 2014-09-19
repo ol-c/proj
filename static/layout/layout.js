@@ -226,6 +226,7 @@ var layout = {};
                     .attr('y', ty)
                     .attr('width', tw)
                     .attr('height', th)
+                    .attr('fill', 'rgba(0,0,0,' + parseInt(d.target.opacity * 255) + ')')
             })
     }
 
@@ -284,8 +285,8 @@ var layout = {};
                 d.source_mask = mask.append('rect');
                 d.target_mask = mask.append('rect');
 
-                d.source_mask.attr('fill', 'black');
-                d.target_mask.attr('fill', 'black');
+                d.source_mask.attr('fill', 'rgba(0,0,0,255)');
+                d.target_mask.attr('fill', 'rgba(0,0,0,255)');
 
                 return 'url(#' + id + ')';
             })

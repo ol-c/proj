@@ -261,6 +261,7 @@ $(function () {
             while (updates_to_do.length) {
                 var watching = updates_to_do.shift();
                 for (var i=0; i<original.length; i++) {
+                    console.log(data);
                     if (watching === original[i]) {
                         watching(data);
                     }
@@ -352,6 +353,7 @@ function bind_attribute(element, name, value) {
 }
 
 function bind_html(element, value, last_value) {
+    console.log('binding html...')
     if (value.type == 'string' || value.type == 'number' || value.type == 'undefined') {
         var DOM_elements = $($.parseHTML(value.data + '', document, true));
         if (last_value) {

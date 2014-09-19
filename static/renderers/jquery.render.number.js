@@ -55,6 +55,10 @@ $.fn.render.number = function (item, after, parent_node) {
             unwatch(reference, watch_fn);
             reference = new_reference;
             watch(reference, watch_fn);
+        },
+        unrender : function () {
+            unwatch(reference, watch_fn);
         }
+
     }
 };

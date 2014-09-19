@@ -1,4 +1,4 @@
-$.fn.choose = function (options) {
+$.fn.choose = function (options, settings) {
     var self = this;
 
     var option_index = 0;
@@ -144,11 +144,12 @@ $.fn.choose = function (options) {
     });
 
     function on_keydown(e) {
-        if (e.keyCode == 37) {
+        var shiftRequiredAndNotPressed = settings && settings.requireShift && !e.shiftKey;
+        if (e.keyCode == 37 || (e.keyCode == 38 && shiftRequiredAndNotPressed)) {
             e.stopImmediatePropagation();
             self.trigger('select_prev');
         }
-        else if (e.keyCode == 39) {
+        else if (e.keyCode == 39 || (e.keyCode == 40 && shiftRequiredAndNotPressed)) {
             e.stopImmediatePropagation();
             self.trigger('select_next');
         }

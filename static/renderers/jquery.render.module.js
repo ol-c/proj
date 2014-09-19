@@ -43,6 +43,16 @@
 
             return container;
         }
+        return {
+            change_reference : function () {
+                // TODO standard like others
+                throw new Error('cannot change reference on a module');
+            },
+            unrender : function () {
+                unwatch(reference, watch_fn);
+            }
+        }
+
     };
 
 })();

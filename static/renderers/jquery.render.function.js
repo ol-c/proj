@@ -149,6 +149,10 @@ $.fn.render.function = function (item, after, parent) {
             unwatch(reference, watch_fn);
             reference = new_reference;
             watch(reference, watch_fn);
+        },
+        unrender : function () {
+            unwatch(reference, watch_fn);
         }
+
     }
 };

@@ -21,6 +21,7 @@
                 //  TODO: clean up memory leak
                 self.empty();
                 if (render_data) {
+                    //  this  method should clean up memory leak
                     render_data.unrender();
                 }
                 if (result.type == 'error') {
@@ -28,11 +29,15 @@
                     render_data = renderable.render(result);
                 }
                 else {
-                    if (result.value.type == "string") {
+                    if (result.value.type == "string" || result.value.type == "number") {
                         renderable = $(document.createDocumentFragment()).append(result.value.data);
                     }
-                    else if (result.value.type == 'reference') {
-                        renderable = $("<div>loader...</div>");
+                    else if ( result.value.type == 'reference') {
+                        var renderable = $('<div>');
+                        render_data = renderable.render({
+                            type : 'loader',
+                            reference : result.value.data
+                        });
                     }
                     else {
                         renderable = $('<span>');
@@ -191,6 +196,9 @@
                 unwatch(reference, watch_fn);
                 reference = new_reference;
                 watch(reference, watch_fn);
+            },
+            unrender : function () {
+                unwatch(reference, watch_fn);
             }
         }
     };

@@ -129,6 +129,7 @@
         function watch_fn(update) {
             if (update.value.type == 'list') {
                 if (update.value.operation == 'push') {
+                    console.log('pushed!')
                     var args = update.value.arguments;
                     for (var i=0; i<args.length; i++) {
                         if (rendered) {
@@ -244,7 +245,11 @@
                 unwatch(reference, watch_fn);
                 reference = new_reference;
                 watch(reference, watch_fn);
+            },
+            unrender : function () {
+                unwatch(reference, watch_fn);
             }
+
         }
     };
 
