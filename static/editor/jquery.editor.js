@@ -590,8 +590,8 @@
                     if (cursor.prev().size() > 0) {
                         //  user edit encodes user intention as best as possible
                         var index_guess = index_guesser();
-                        current_editor.trigger('useredit', 'function (string) {return string.slice(0, ' + index_guess + ') + string.slice(' + index_guess + ' + 1);}');
                         cursor.prev().remove();
+                        current_editor.trigger('useredit', 'function (string) {return string.slice(0, ' + index_guess + ') + string.slice(' + index_guess + ' + 1);}');
                         current_editor.trigger('change');
                     }
                 }

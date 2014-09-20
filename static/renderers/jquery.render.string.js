@@ -20,6 +20,8 @@ $.fn.render.string = function (item, after) {
     content.editor();
     var edits = [];
     content.on('useredit', function (event, data) {
+        local_updates[content.text()] = true;
+        console.log(content.text());
         edits.push(data);
     });
     //  Ignore the first update for a state that we sent here (only want to update when there is new information)
@@ -32,7 +34,6 @@ $.fn.render.string = function (item, after) {
             while (edits.length) {
                 edit_source += ref + ' = (' + edits.shift() + ')(' + ref + ');\n';
             }
-            local_updates[content.text()] = true;
             var ref = [].concat(reference);
             evaluate_script([ref.shift()], edit_source, function (res) {
                 //  TODO: highlight errors...
@@ -40,7 +41,6 @@ $.fn.render.string = function (item, after) {
         }
     }, function (err, res) {
         // TODO: highlight unsaved changes and then highlight differently when saved and fade out highlight
-        
     }));
 
     $(open).hammer().on('touch', function () {
@@ -52,10 +52,13 @@ $.fn.render.string = function (item, after) {
 
     function watch_fn(update) {
         if (update.value.type == 'string') {
+            //console.log(update.value.data, local_updates)
             if (local_updates[update.value.data]) {
+                //console.log('got local update')
                 delete local_updates[update.value.data];
             }
             else {
+                //console.log('got no local update...')
                 content.trigger('update', update.value.data);
             }
         }
