@@ -25,32 +25,20 @@ $.fn.render.string = function (item, after) {
     });
     //  Ignore the first update for a state that we sent here (only want to update when there is new information)
     var local_updates = {};
-//    var after_last_edit = content.text(); //  used for test
     content.on('change', throttle(100, function () {
         if (edits.length) {
 
             var ref = reference_source('this', [].concat(reference).slice(1));
 
-            var edit_source = '';
+            var tmp_ref = '__tmp_ref__';
+            var edit_source = 'var ' + tmp_ref + ' = ' + ref + ';';
+
             //  this will work if all updates to a string are compiled into one update per synchronous call
             while (edits.length) {
-                edit_source += ref + ' = (' + edits.shift() + ')(' + ref + ');\n';
+                edit_source += tmp_ref + ' = (' + edits.shift() + ')(' + tmp_ref + ');\n';
             }
-/*
-            //  BEGIN TEST
-            function test_state() {
-                eval(ref + ' = "' + after_last_edit + '"');
-                eval(edit_source);
-                console.log('-------')
-                console.log('EXPECT:', content.text());
-                console.log('RESULT:', eval(ref));
-                console.log('-------')
-            }
-            var test_context = {};
-            test_state.call(test_context)
-            after_last_edit = content.text();
-            //  END TEST
-*/
+            edit_source += ref + ' = __tmp_ref__;';
+
             var ref = [].concat(reference);
             evaluate_script([ref.shift()], edit_source, function (res) {
                 //  TODO: highlight errors...
@@ -69,14 +57,10 @@ $.fn.render.string = function (item, after) {
 
     function watch_fn(update) {
         if (update.value.type == 'string') {
-            //console.log(update.value.data);
-            //console.log(update.value.data, local_updates)
             if (local_updates[update.value.data]) {
-                //console.log('got local update')
                 delete local_updates[update.value.data];
             }
             else {
-                //console.log('got no local update...')
                 content.trigger('update', update.value.data);
             }
         }
