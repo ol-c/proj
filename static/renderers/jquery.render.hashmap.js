@@ -20,7 +20,7 @@
             evaluate_script(item.reference, source, function (result) {
                 //  TODO: clean up memory leak
                 self.empty();
-                var renderable = $('<div>');
+                var renderable = $(document.createDocumentFragment());
                 if (render_data) {
                     //  this  method should clean up memory leak
                     render_data.unrender();
@@ -39,8 +39,10 @@
                         reference : result.value.data
                     });
                 }
+                else if ( result.value.type == 'string') {
+                    renderable.append(result.value.data);
+                }
                 else {
-                    renderable = $('<div>');
                     renderable.render(result.value);
                 }
                 self.append(renderable);

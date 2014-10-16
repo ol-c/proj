@@ -19,7 +19,7 @@ var layout = {};
         .gravity(0.0000000000001)
         .charge(function (d) {
             //  rendered versions shouldn't push since they are constrained
-            return -1000;
+            return -1;
         })
         .linkDistance(function (d) {
             //  perfect length for recommended offset;
@@ -27,7 +27,7 @@ var layout = {};
             return Math.sqrt(o.dx*o.dx + o.dy*o.dy);
         })
         .linkStrength(function (d) {
-            return 3;
+            return 1;
         })
         .on('tick', tick);
 
@@ -109,32 +109,24 @@ var layout = {};
 
 
         link.each(function (l) {
-            //  fixed targets don't need adjustment
-            if (l.target.fixed) return;
-
             //  adjust source and target to fit the recommended dimensions
             var r = recommended_offset(l);
 
-            var rendered_children = [];
-
-            for (var i=0; i<l.source.children.length; i++) {
-                if (l.source.children[i].source_visible) {
-                    rendered_children.push(l.source.children[i]);
-                }
-            }
-
             var k = e.alpha;
+
+            var actual_dx = l.source.x - l.target.x;
+            var actual_dy = l.source.y - l.target.y;
 
             if (l.target.fixed) {}
             else {
-                l.target.x += r.dx/2 * k;
-                l.target.y += r.dy/2 * k;
+                l.target.x += (actual_dx + r.dx)/2 * k;
+                l.target.y += (actual_dy + r.dy)/2 * k;
             }
 
             if (l.source.fixed) {}
             else {
-                l.source.x -= r.dx/rendered_children.length/2 * k;
-                l.source.y -= r.dy/rendered_children.length/2 * k;
+                l.source.x -= (actual_dx + r.dx)/2 * k;
+                l.source.y -= (actual_dy + r.dy)/2 * k;
             }
         });
 
@@ -198,13 +190,13 @@ var layout = {};
         var scroll_top  = $(window).scrollTop();
 
         link
-            .attr('x1', function (d) { return d.rendered_element.offset().left - scroll_left + d.rendered_element.outerWidth() * d.source.scale; })
+            .attr('x1', function (d) { return d.rendered_element.offset().left - scroll_left + d.rendered_element.outerWidth()/2 * d.source.scale; })
             .attr('y1', function (d) { return d.rendered_element.offset().top - scroll_top + d.rendered_element.outerHeight()/2 * d.source.scale; })
             .attr('x2', function (d) { return Math.round(d.target.x + d.target.container.width()/2 * d.target.scale); })
             .attr('y2', function (d) { return Math.round(d.target.y); })
             .each(function (d) {
-                var sw = d.rendered_element.outerWidth();
-                var sh = d.rendered_element.outerHeight();
+                var sw = d.rendered_element.outerWidth() * d.source.scale;
+                var sh = d.rendered_element.outerHeight() * d.source.scale;
                 var element_offset = d.rendered_element.offset();
                 var sx = element_offset.left - scroll_left;
                 var sy = element_offset.top  - scroll_top;
@@ -214,13 +206,13 @@ var layout = {};
 
                 var tx = d.target.x;
                 var ty = d.target.y - th/2;
-/*
+
                 d.source_mask
                     .attr('x', sx)
                     .attr('y', sy)
                     .attr('width', sw)
                     .attr('height', sh)
-*/
+
                 d.target_mask
                     .attr('x', tx)
                     .attr('y', ty)
@@ -329,10 +321,7 @@ var layout = {};
 
         for (var i=0; i<link.source.children.length; i++) {
             var sibling = link.source.children[i];
-            if (sibling.fixed) {
-                // d3 sets fixed to 1 in some places instead of true..
-            }
-            else if (sibling.source_visible) {
+            if (sibling.source_visible) {
                 siblings.push(sibling);
             }
         }
