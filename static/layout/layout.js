@@ -1,6 +1,6 @@
-var layout = {};
+function create_layout() {
 
-(function () {
+    var layout = {};
 
     var last_fixed = null;
 
@@ -97,7 +97,7 @@ var layout = {};
     drag.on("dragstart", dragstart);
 
     function tick(e) {
-        //  TODO: force nodes off of eachother
+        //  TODO: force pushing nodes off of eachother
         if (offset.x || offset.y) {
             node.each(function (d) {
                 d.x += offset.x;
@@ -169,7 +169,9 @@ var layout = {};
             left : 0,
             margin : 0,
             'background-color' :'rgba(255,255,255, .95)',
-            padding : '4ch',
+//            padding : '4ch',
+            'min-width' : '4ch',
+            'min-height' : '4ch',
             'box-shadow' : "0px 0px 32px rgba(200, 200, 200, 0.95)",
             border : '1px solid rgba(220, 220, 220, 0.5)',
             'font-size' : '12px',
@@ -311,7 +313,7 @@ var layout = {};
                 //  append link to the source node's g element
                 $('#svg-' + d.target.id).append($('#' + d.id));
             })
-                }
+    }
 
     function restart_layout() {
         force_layout.size([window.innerWidth * 20, window.innerHeight]);
@@ -379,4 +381,6 @@ var layout = {};
             dy : dy
         };
     }
-})()
+
+    return layout;
+}

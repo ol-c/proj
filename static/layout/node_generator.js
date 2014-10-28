@@ -4,6 +4,13 @@ var node_generator;
     var root_source;
 
     node_generator = function (parent_source) {
+        var layout;
+        if (parent_source) {
+            layout = parent_source.layout;
+        }
+        else {
+            layout = create_layout();
+        }
         var container = $('<div>');
         container.css({
             verticalAlign : 'top'
@@ -78,6 +85,7 @@ var node_generator;
                 e.stopPropagation();
             });
             collapsed = false;
+            console.log(rendered, layout);
             layout.restart();
             //  TODO: if source node already rendered somewhere else, just draw link to that
         }
@@ -164,7 +172,8 @@ var node_generator;
             opacity : 1,
             id : (Math.random() + '').slice(2),
             rendered_version : false,
-            children : []
+            children : [],
+            layout : layout
         };
 
         if (parent_source) {

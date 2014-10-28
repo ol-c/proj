@@ -29,7 +29,8 @@
                 display : 'inline-block',
                 verticalAlign : 'top',
                 whiteSpace : 'pre',
-                fontFamily : 'monospace'
+                fontFamily : 'monospace',
+                padding : '4ch'
             });
 
             container.on('select', function () {

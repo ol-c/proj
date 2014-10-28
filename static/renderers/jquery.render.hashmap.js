@@ -72,11 +72,9 @@
         }
         else {
             //  don't need original element, just show root of server tree
-            this.render({
-                type : 'ui'
-            });
-            //  TODO: show UI tree
+            //  show UI tree
             node.show();
+            this.render({type : 'ui'});
         }
         function render_generic() {
             rendered = true;
@@ -86,7 +84,8 @@
             
             container.css({
                 display : 'inline-block',
-                verticalAlign : 'top'
+                verticalAlign : 'top',
+                padding : '4ch'
             });
 
             container.on('select', function () {

@@ -1,5 +1,5 @@
 $.renderers = {};
-$.fn.render = function (item, after) {
+$.fn.render = function (item) {
     $(this).css({
         'user-select' : 'none'
     });
