@@ -53,34 +53,49 @@ var node_generator;
 
         var rendered = null;
 
+        function show_generic_view() {
+            source_node.visible = true;
+            layout.restart();
+        }
+
+        function hide_generic_view() {
+            source_node.visible = false;
+            layout.restart();
+        }
+
+        function toggle_generic_view() {
+            collapsed ? show_generic_view()
+                      : hide_generic_view();
+            collapsed = !collapsed;
+        }
+
+        function render_generic_view() {
+            source_node.visible = true;
+            rendered = renderer();
+            generic_view = gen.generate_node(rendered);
+            generic_view.hammer().on('touch', function (e) {
+                //  TODO: select the first selectable child for this
+                e.stopPropagation();
+            });
+            collapsed = false;
+            layout.restart();
+            //  TODO: if source node already rendered somewhere else, just draw link to that
+        }
+        
+        function show() {
+            if (generic_view) show_generic_view();
+            else if (renderer) render_generic_view();
+            else throw new Error('no renderer set')
+        }
+
+        this.show = show;
+
         $(window).on('keydown', function (e) {
             if (self.selected() && e.keyCode == 13) {
                 e.preventDefault();
-                if (generic_view) {
-                    if (collapsed) {
-                        source_node.visible = true;
-                    }
-                    else {
-                        source_node.visible = false;
-                    }
-                    collapsed = !collapsed;
-                    layout.restart();
-                }
-                else if (renderer) {
-                    source_node.visible = true;
-                    rendered = renderer();
-                    generic_view = gen.generate_node(rendered);
-                    generic_view.hammer().on('touch', function (e) {
-                        //  TODO: select the first selectable child for this
-                        e.stopPropagation();
-                    });
-                    collapsed = false;
-                    layout.restart();
-                    //  TODO: if source node already rendered somewhere else, use that
-                }
-                else {
-                    throw new Error('no renderer set');
-                }
+                if (generic_view) toggle_generic_view();
+                else if (renderer) render_generic_view();
+                else throw new Error('no renderer set');
             }
             else if (self.selected() && e.ctrlKey && e.keyCode == 39) {
                 e.preventDefault();

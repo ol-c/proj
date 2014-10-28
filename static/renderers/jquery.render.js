@@ -10,7 +10,7 @@ $.fn.render = function (item, after) {
         throw new Error('requested bad renderer', item);
     }
 }
-
+/*
 var root = {
     type : 'hashmap',
     data : {}
@@ -25,3 +25,4 @@ function get_reference(reference) {
     }
     return value;
 }
+*/

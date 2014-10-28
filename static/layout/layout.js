@@ -57,6 +57,8 @@ var layout = {};
             setTimeout(check_dimensions, 50);
         }
         check_dimensions();
+        node.w = container.outerWidth();
+        node.h = container.outerHeight();
         node.container = container;
     };
 
@@ -82,7 +84,6 @@ var layout = {};
         offset.y = 0;
     }
 
-
     function dragstart(d) {
         layout.fix(d);
     }
@@ -107,6 +108,26 @@ var layout = {};
             return;
         }
 
+        node.each(function (n) {
+            n.w = n.container.outerWidth() * n.scale;
+            n.h = n.container.outerHeight() * n.scale;
+        });
+
+        var overlapping = [];
+
+        node.each(function (n1) {
+            node.each(function (n2) {
+                if (n1 == n2) return;
+                if (n1.x > n2.x + n2.w || n2.x > n1.x + n1.w) {
+                    return;
+                }
+                if (n1.y > n2.y + n2.h || n2.y > n1.y + n1.h) {
+                    return
+                }
+                overlapping.push([n1, n2]);
+                
+            })
+        })
 
         link.each(function (l) {
             //  adjust source and target to fit the recommended dimensions
@@ -135,7 +156,7 @@ var layout = {};
             var y = Math.round(d.y);
             // avoid scale stringifying with eX or e-X
             var scale = Math.round(d.scale * 1000)/1000;
-            y -= d.container.outerHeight()/2;
+            y -= d.h/d.scale/2;
             //x -= d.container.outerWidth() /2;
             var translate =  'translate(' + x + 'px, ' + y + 'px) scale(' + scale + ');';
             return translate;
@@ -192,7 +213,7 @@ var layout = {};
         link
             .attr('x1', function (d) { return d.rendered_element.offset().left - scroll_left + d.rendered_element.outerWidth()/2 * d.source.scale; })
             .attr('y1', function (d) { return d.rendered_element.offset().top - scroll_top + d.rendered_element.outerHeight()/2 * d.source.scale; })
-            .attr('x2', function (d) { return Math.round(d.target.x + d.target.container.width()/2 * d.target.scale); })
+            .attr('x2', function (d) { return Math.round(d.target.x + d.target.w/2); })
             .attr('y2', function (d) { return Math.round(d.target.y); })
             .each(function (d) {
                 var sw = d.rendered_element.outerWidth() * d.source.scale;
@@ -201,11 +222,8 @@ var layout = {};
                 var sx = element_offset.left - scroll_left;
                 var sy = element_offset.top  - scroll_top;
 
-                var tw = d.target.container.outerWidth() * d.target.scale;
-                var th = d.target.container.outerHeight() * d.target.scale;
-
                 var tx = d.target.x;
-                var ty = d.target.y - th/2;
+                var ty = d.target.y - d.target.h/2;
 
                 d.source_mask
                     .attr('x', sx)
@@ -216,9 +234,9 @@ var layout = {};
                 d.target_mask
                     .attr('x', tx)
                     .attr('y', ty)
-                    .attr('width', tw)
-                    .attr('height', th)
-                    .attr('fill', 'rgba(0,0,0,' + parseInt(d.target.opacity * 255) + ')')
+                    .attr('width', d.target.w)
+                    .attr('height', d.target.h)
+                    .attr('fill', 'rgba(0,0,0,' + (parseInt(d.target.opacity * 1000)/1000) + ')')
             })
     }
 
@@ -329,11 +347,12 @@ var layout = {};
         var sibling_index = 0;
         var sibling_heights = [];
         var sibling_y = 0;
-        var sibling_spacing = 0;
+        var sibling_spacing = 32;
+        var child_spacing = 32;
 
         for (var i=0; i<siblings.length; i++) {
             var sibling = siblings[i];
-            var sibling_height = (sibling.container.outerHeight() + sibling_spacing) * sibling.scale;
+            var sibling_height = sibling.h + sibling_spacing * sibling.scale;
             sibling_heights.push(sibling_height);
             if (sibling == link.target) {
                 sibling_index = i;
@@ -349,10 +368,10 @@ var layout = {};
             }
         }
 
-        var sw = link.source.container.outerWidth() * link.source.scale;
-        var sh = link.source.container.outerHeight() * link.source.scale;
+        var sw = link.source.w;
+        var sh = link.source.h;
 
-        var dx = sw;
+        var dx = sw + child_spacing * link.source.scale;
         var dy = sibling_y - total_height/2;
 
         return {

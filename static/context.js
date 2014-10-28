@@ -226,7 +226,7 @@ $(function () {
     ws.onopen = function () {
         var root_id = window.location.host.split('.').shift();
         var reference = [
-            {type : 'reference', name : root_id} //  TODO add internal references...
+            {type : 'reference', name : root_id}
         ];
         var source_ref = 'this';
         evaluate_script(reference, 'this', function (result) {
