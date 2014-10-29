@@ -1,8 +1,6 @@
 var node_generator;
 
 (function () {
-    var root_source;
-
     node_generator = function (parent_source) {
         var layout;
         if (parent_source) {
@@ -85,7 +83,6 @@ var node_generator;
                 e.stopPropagation();
             });
             collapsed = false;
-            console.log(rendered, layout);
             layout.restart();
             //  TODO: if source node already rendered somewhere else, just draw link to that
         }
@@ -186,15 +183,13 @@ var node_generator;
         //  formerly show_in_container
         this.generate_node = function (value) {
             source_node.scale = 1;
-            if (root_source) {
-                if (parent_source) {
-                    var offset = self.offset();
-                    source_node.source_visible = true;
-                    source_node.x = offset.left + self.outerWidth() + 256;
-                    source_node.y = offset.top + self.outerHeight() / 2
-                    layout.add_node(source_node);
-                    layout.add_link({source : parent_source, target : source_node, rendered_element : self});
-                }
+            if (parent_source) {
+                var offset = self.offset();
+                source_node.source_visible = true;
+                source_node.x = offset.left + self.outerWidth() + 256;
+                source_node.y = offset.top + self.outerHeight() / 2
+                layout.add_node(source_node);
+                layout.add_link({source : parent_source, target : source_node, rendered_element : self});
             }
             else {
                 //  layout the first node
@@ -206,7 +201,6 @@ var node_generator;
             }
 
             var container = $('#' + source_node.id);
-
 
             container.bind('mousewheel DOMMouseScroll', function(event){
                 //  scale

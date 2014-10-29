@@ -47,18 +47,13 @@ $.fn.render.ui = function (item, after, parent_source) {
 
         surface.append([rendered, content]);
 
-        function apply_transform() {
-        }
-
-        apply_transform();
-
         surface.bind('dblclick', function (e) {
             e.stopPropagation();
             var container = $('<div>');
             var w = 100;
             var h = 100;
-            var child_x = e.clientX - parent_node.node().x - 50;
-            var child_y = e.clientY - parent_node.node().y  - 50;
+            var child_x = e.clientX - parent_node.node().x - w/2;
+            var child_y = e.clientY - parent_node.node().y + parent_node.node().h/2  - h/2;
             container.css({
                 border : '1px solid black',
                 position : 'absolute',
@@ -80,16 +75,28 @@ $.fn.render.ui = function (item, after, parent_source) {
                 var resize_target = 32;
                 var last_x = e.clientX;
                 var last_y = e.clientY;
+                var target = this;
                 var parent_offset = $(this).parent().offset();
                 var ox = last_x - parent_offset.left - child_x;
                 var oy = last_y - parent_offset.top - child_y;
-                var edge = {
-                    left : ox < resize_target && ox > 0,
-                    top : oy < resize_target && oy > 0 && ox < w,
-                    right : ox > w - resize_target && ox < w,
-                    bottom : oy > h - resize_target && oy < h && ox < w
-                };
                 var interior = ox > resize_target && ox < w - resize_target && oy > resize_target && oy < h - resize_target;
+                var edge = get_edge(e);
+                
+                function get_edge(e) {
+                    last_x = e.clientX;
+                    last_y = e.clientY;
+                    parent_offset = $(target).parent().offset();
+                    ox = last_x - parent_offset.left - child_x;
+                    oy = last_y - parent_offset.top - child_y;
+                    interior = ox > resize_target && ox < w - resize_target && oy > resize_target && oy < h - resize_target;
+
+                    return {
+                        left : ox < resize_target && ox > 0,
+                        top : oy < resize_target && oy > 0 && ox < w,
+                        right : ox > w - resize_target && ox < w,
+                        bottom : oy > h - resize_target && oy < h && ox < w
+                    };
+                }
 
                 $(window).bind('mousemove', drag);
                 $(window).one('mouseup', function () {
@@ -103,19 +110,23 @@ $.fn.render.ui = function (item, after, parent_source) {
                     if (edge.left) {
                         w -= delta_x;
                         child_x += delta_x;
+                        if (w < 2*resize_target) {
+                            child_x -= 2*resize_target - w;
+                        }
                     }
                     else if (edge.right) {
                         w += delta_x;
-                        if (w < 2*resize_target) child_x += w - 2*resize_target;
                     }
 
                     if (edge.top) {
                         child_y += delta_y;
                         h -= delta_y;
+                        if (h < 2*resize_target) {
+                            child_y -= 2*resize_target - h;
+                        }
                     }
                     else if (edge.bottom) {
                         h += delta_y;
-                        if (h < 2*resize_target) child_y += h - 2*resize_target;
                     }
                     w = Math.max(2*resize_target, w);
                     h = Math.max(2*resize_target, h);
@@ -129,6 +140,7 @@ $.fn.render.ui = function (item, after, parent_source) {
 
                     last_x += delta_x;
                     last_y += delta_y;
+                    edge = get_edge(e);
                 }
             };
 

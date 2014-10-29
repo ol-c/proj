@@ -31,9 +31,9 @@ function create_layout() {
         })
         .on('tick', tick);
 
-
     layout.add_node = function (node) {
         node_data.push(node);
+
         initialize_links_and_nodes();
 
         var container = $('#' + node.id);
@@ -169,7 +169,6 @@ function create_layout() {
             left : 0,
             margin : 0,
             'background-color' :'rgba(255,255,255, .95)',
-//            padding : '4ch',
             'min-width' : '4ch',
             'min-height' : '4ch',
             'box-shadow' : "0px 0px 32px rgba(200, 200, 200, 0.95)",
@@ -260,7 +259,6 @@ function create_layout() {
             })
             .attr('class', 'node')
             .call(drag);
-
         node_parent
             .append('svg')
             .attr('width', window.innerWidth)
