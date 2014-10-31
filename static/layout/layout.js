@@ -169,8 +169,6 @@ function create_layout() {
             left : 0,
             margin : 0,
             'background-color' :'rgba(255,255,255, .95)',
-            'min-width' : '4ch',
-            'min-height' : '4ch',
             'box-shadow' : "0px 0px 32px rgba(200, 200, 200, 0.95)",
             border : '1px solid rgba(220, 220, 220, 0.5)',
             'font-size' : '12px',
@@ -310,6 +308,7 @@ function create_layout() {
             .each(function (d) {
                 //  append link to the source node's g element
                 $('#svg-' + d.target.id).append($('#' + d.id));
+                //  sort the sources children according to document order
             })
     }
 
@@ -332,6 +331,13 @@ function create_layout() {
         link = overlay.selectAll('.link');
         node = overlay.selectAll('.node');
     });
+
+    layout.sort_children = function (node) {
+        node.children.sort(function (a, b) {
+            var pos = comparePosition(a.source_element[0], b.source_element[0]) == 2 ? 1 : -1;
+            return pos;
+        })
+    }
 
     function recommended_offset(link) {
 
@@ -378,6 +384,21 @@ function create_layout() {
             dx : dx,
             dy : dy
         };
+    }
+    
+    // Compare Position - MIT Licensed, John Resig
+    function comparePosition(a, b){
+      return a.compareDocumentPosition ?
+        a.compareDocumentPosition(b) :
+        a.contains ?
+          (a != b && a.contains(b) && 16) +
+            (a != b && b.contains(a) && 8) +
+            (a.sourceIndex >= 0 && b.sourceIndex >= 0 ?
+              (a.sourceIndex < b.sourceIndex && 4) +
+                (a.sourceIndex > b.sourceIndex && 2) :
+              1) +
+          0 :
+          0;
     }
 
     return layout;

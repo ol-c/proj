@@ -68,13 +68,12 @@
 
         */
             this.append(self);
-            self.append('object');
+            self.append('item');
         }
         else {
             //  don't need original element, just show root of server tree
             //  show UI tree
             node.show();
-            this.render({type : 'ui'});
         }
         function render_generic() {
             rendered = true;

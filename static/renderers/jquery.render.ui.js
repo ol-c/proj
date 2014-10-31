@@ -11,39 +11,73 @@ $.fn.render.ui = function (item, after, parent_source) {
     }
 
     function render_container() {
-        var directives = {};
+        var directives = [
+            [/^\s*\/\/\s*(javascript|js)/, function (value) {
+                move_content_right();
+                content.trigger('highlight', 'javascript');
+                var val;
+                try {
+                    return eval('(function () {\n' + value + '\n})()');
+                }
+                catch (error) {
+                    console.log(error);
+                }
+            }]
+        ];
+
+        function move_content_right() {
+            content.css({
+                left : '100%',
+                top : 0,
+                position : 'absolute',
+                padding : 0,
+                paddingLeft : '4ch'
+            });
+        }
+        function reset_content() {
+            content.css({
+                position : '',
+                display : 'inline-block',
+                left : 0,
+                top : 0,
+                paddingLeft : 0
+            })
+        }
 
         function change() {
             var value = content.text();
-            if (directives[value.split('\n')[0]]) {
-                
+            var directive_used = false;
+            for (var i=0; i<directives.length; i++) {
+                if (directives[i][0].test(value)) {
+                    var rendering = directives[i][1](value);
+                    if (rendering) {
+                        rendered.empty();
+                        rendered.append(rendering);
+                    }
+                    directive_used = true;
+                    break;
+                }
             }
-            else {
-                rendered.css({
-                    whiteSpace : 'pre'
-                })
-                rendered.text(value);
+            if (!directive_used) {
+                content.trigger('highlight', 'none');
+                rendered.empty();
+                reset_content();
             }
+
         }
 
-        var rendered = $('<div>').css({
-            width : '100%',
-            height : '100%'
-        })
-
-        var content = $('<div>').css({
-            position : 'absolute',
-            left : '100%',
-            paddingLeft : '1em',
-            top : 0
-        });
+        var content = $('<div>');
         content.editor({
-            placeholder : $('<span> >>> </span>')
+            placeholder : $('<div></div>').css({
+                color : '#888888',
+                padding : '4ch'
+            })
         })
 
         content.on('change', change);
 
         var surface = $('<div>');
+        var rendered = $('<div>');
 
         surface.append([rendered, content]);
 
@@ -140,7 +174,7 @@ $.fn.render.ui = function (item, after, parent_source) {
 
                     last_x += delta_x;
                     last_y += delta_y;
-                    edge = get_edge(e);
+                //    edge = get_edge(e);
                 }
             };
 

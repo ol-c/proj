@@ -83,6 +83,7 @@ var node_generator;
                 e.stopPropagation();
             });
             collapsed = false;
+            if (parent_source) layout.sort_children(parent_source);
             layout.restart();
             //  TODO: if source node already rendered somewhere else, just draw link to that
         }
@@ -168,9 +169,11 @@ var node_generator;
             y : 0,
             opacity : 1,
             id : (Math.random() + '').slice(2),
+            source_element : self,
             rendered_version : false,
             children : [],
-            layout : layout
+            layout : layout,
+            container : container
         };
 
         if (parent_source) {

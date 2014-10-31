@@ -361,7 +361,11 @@
         }
 
         var highlighters = {
-            'none' : function () {},
+            'none' : function () {
+                self.children().css({
+                    color : 'none'
+                });
+            },
             'javascript' : function () {
                 var options = {
                     tolerant : true,
@@ -436,6 +440,11 @@
                 }
             }
         };
+
+        self.on('highlight', function (event, data) {
+            highlighters[data.toLowerCase()]();
+            self.settings.highlighting = data;
+        });
 
         self.on('change', function () {
             var highlighting = self.settings.highlighting;
