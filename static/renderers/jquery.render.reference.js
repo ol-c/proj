@@ -11,45 +11,48 @@ $.fn.render.reference = function (item, after, parent_source)  {
     var content = $('<span>');
     self.append(content);
 
-    function render_referenced(reference, node) {
-        return function () {
-            //  resolve reference
-            var container = $('<div>').css({
+    function render_referenced(reference, container, placeholder) {
+        resolve_reference(reference, function (item) {
+            var insert = $('<div>').css({
                 display : 'inline-block'
             });
-
-            resolve_reference(reference, function (item) {
-                var insert = $('<div>').css({
-                    display : 'inline-block'
+            if (item.type == "hashmap" || item.type == 'list') {
+                container.render(item, null, parent_source, {
+                    placeholder : placeholder
                 });
-                insert.render(item, after, node.node());
-                container.append(insert);
-            });
+            }
+            else {
 
-            return container;
-        };
+                var node = new node_generator(parent_source);
+
+                insert.render(item, after, node.node());
+                node.render(function () {
+                    return insert;
+                });
+                node.container().append(placeholder);
+                container.append(node.container());
+            }
+        });
     }
 
     function render(data) {
         content.empty();
         content.append('reference');
         for (var i=0; i<data.length; i++) {
-            var node = new node_generator(parent_source);
-
-            node.render(render_referenced(data.slice(0, i+1), node));
-            var container = node.container();
+            var container = $('<div>').css('display', 'inline-block');
+            var placeholder;
 
             var name = data[i].name;
             if (data[i].type == 'reference') {
                 //  show relative binding
                 if (data[i].relative) {
-                    container.text('.' + data[i].relative);
+                    placeholder = '.' + data[i].relative;
                 }
                 else if (name.match(/^\w(\w|\d)*$/)) {
-                    container.text('.' + name);
+                    placeholder = '.' + name;
                 }
                 else {
-                    container.text('["' + name + '"]');
+                    placeholder = '["' + name + '"]';
                 }
             }
             else {
@@ -59,8 +62,9 @@ $.fn.render.reference = function (item, after, parent_source)  {
                     var arg = JSON.stringify(data[i].arguments[j]);
                     args.push(arg);
                 }
-                container.append('(', args.join(', ') ,')');
+                placeholder = '(', args.join(', ') ,')';
             }
+            render_referenced(data.slice(0, i+1), container, placeholder);
             content.append(container);
         }
     }

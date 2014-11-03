@@ -1,7 +1,7 @@
 (function () {
     var rendered = {};
 
-    $.fn.render.hashmap = function (item, after, parent_source) {
+    $.fn.render.hashmap = function (item, after, parent_source, options) {
         var reference = item.reference;
         var rendered_fields = {};
         var rendered;
@@ -68,7 +68,9 @@
 
         */
             this.append(self);
-            self.append('item');
+            var placeholder = 'item';
+            if (options && options.placeholder) placeholder = options.placeholder;
+            self.append(placeholder);
         }
         else {
             //  don't need original element, just show root of server tree

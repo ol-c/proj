@@ -59,8 +59,13 @@ X make module references persistant
 X persist delay function
 X    do this by making an optional argument to promise for a
 X    time to fulfill the promise if not yet fulfilled
-  resource utilization monitoring
+  Client datatype
+      immutable type
+      specify a dsl when create it and allow people to edit the DSL with syntax highlighting
+      also allow people to open a node that shows the result
+          a renderer should know if it being opened in a graph of source, so the renderer can open subsequent nodes
   different arcs for references to already rendered versions
+  resource utilization monitoring
   nodes rendering, layering, and hiding as they should.
   testing suite
       website that allows users to write tests against the api
@@ -68,4 +73,5 @@ X    time to fulfill the promise if not yet fulfilled
   history
   clone
   merge
+-- release!
   auto optimization / distribution
