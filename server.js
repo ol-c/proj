@@ -1,9 +1,3 @@
-
-//  performance profiling
-//require('look').start(8080);
-
-
-
 var cluster = require('cluster');
 var express = require('express');
 var http    = require('http');
