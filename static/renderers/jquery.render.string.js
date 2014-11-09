@@ -17,7 +17,9 @@ $.fn.render.string = function (item, after) {
     string.append([content, close, after]);
     content.text(item.data);
     $(this).append(string);
-    content.editor();
+    content.editor({
+        
+    });
     var edits = [];
     content.on('useredit', function (event, data) {
         local_updates[content.text()] = true;
@@ -41,7 +43,7 @@ $.fn.render.string = function (item, after) {
 
             var ref = [].concat(reference);
             evaluate_script([ref.shift()], edit_source, function (res) {
-                //  TODO: highlight errors...
+                //  TODO: expose errors...
             });
         }
     }, function (err, res) {
