@@ -59,21 +59,25 @@ X make module references persistant
 X persist delay function
 X    do this by making an optional argument to promise for a
 X    time to fulfill the promise if not yet fulfilled
-  normalize interface for editor saving (so strings, functions and clients can use it now)
 X Client datatype
 X     immutable type
-      specify a dsl when create it and allow people to edit the DSL with syntax highlighting
-      also allow people to open a node that shows the result
-          a renderer should know if it being opened in a graph of source, so the renderer can open subsequent nodes
+X     allow people to open a node that shows the result
+X         a renderer should know if it being opened in a graph of source, so the renderer can open subsequent nodes
+X     specify a dsl when create it
+X     allow people to edit the DSL with syntax highlighting
+X normalize interface for editor saving (so strings and clients can use it now)
+X     current tools are good enough since clients and strings have different enough cases
   move jumping between nodes and parents into layout module
+  nodes rendering, layering, and hiding as they should.
   different arcs for references to already rendered versions
   resource utilization monitoring
-  nodes rendering, layering, and hiding as they should.
-  testing suite
-      website that allows users to write tests against the api
-      and submit them to the testing framework.
   history
+  usage
+  basic tests
   clone
   merge
 -- release!
+  testing suite
+      website that allows users to write tests against the api
+      and submit them to the testing framework.
   auto optimization / distribution

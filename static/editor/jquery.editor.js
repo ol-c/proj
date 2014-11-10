@@ -643,6 +643,7 @@
             var char = String.fromCharCode(e.which);
             var c = create_char(char);
             cursor.before(c);
+            if (char === '"') char = '\\"';
 
 
             //  Guess cursor position

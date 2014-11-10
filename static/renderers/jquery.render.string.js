@@ -29,7 +29,6 @@ $.fn.render.string = function (item, after) {
     var local_updates = {};
     content.on('change', throttle(100, function () {
         if (edits.length) {
-
             var ref = reference_source('this', [].concat(reference).slice(1));
 
             var tmp_ref = '__tmp_ref__';
@@ -46,8 +45,6 @@ $.fn.render.string = function (item, after) {
                 //  TODO: expose errors...
             });
         }
-    }, function (err, res) {
-        // TODO: highlight unsaved changes and then highlight differently when saved and fade out highlight
     }));
 
     $(open).hammer().on('touch', function () {

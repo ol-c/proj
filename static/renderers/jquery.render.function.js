@@ -97,6 +97,7 @@ $.fn.render.function = function (item, after, parent) {
     var local_updates = {};
 
     var throttled_set = throttle(100, function () {
+        body.css('background', 'white');
         try {
             eval('function __tmp__ (' + params.text() + ') {' + body.text() + '}');
         }
@@ -109,14 +110,13 @@ $.fn.render.function = function (item, after, parent) {
             local_updates[src] = true;
             var ref = reference_source('this', reference.slice(1));
             var source = ref + ' = ' + src; 
-            evaluate_script([item.reference[0]], source);
+            evaluate_script([item.reference[0]], source, function (res) {
+                //  TODO: expose error
+            });
         }
         else {
             console.log('ERROR saving function parameters improper form')
         }
-    }, function (err, res) {
-        // TODO: highlight unsaved changes and then highlight differently when saved and fade out highlight
-        
     });
 
     body.on('change', throttled_set);
