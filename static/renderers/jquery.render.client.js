@@ -11,7 +11,11 @@ $.fn.render.client = function (item, after, parent_source)  {
 
     function render() {
         source_container.empty();
-        source_container.append(clients[item.data.language].render(item.data.script));
+        var client = clients[item.data.language];
+        if (client === undefined) {
+            client = clients.text;
+        }
+        source_container.append(client.render(item.data.script));
         return source_container;
     }
     node.render(render);
@@ -33,8 +37,10 @@ $.fn.render.client = function (item, after, parent_source)  {
     }
     source_node.render(function () {
         editor.text(item.data.script);
+        var client = clients[item.data.language];
+        if (client === undefined) client = clients.text;
         editor.editor({
-            highlighting : clients[item.data.language].highlighter
+            highlighting : client.highlighter
         });
 
         var edits = [];

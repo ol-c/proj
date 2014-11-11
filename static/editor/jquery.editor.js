@@ -644,6 +644,7 @@
             var c = create_char(char);
             cursor.before(c);
             if (char === '"') char = '\\"';
+            else if (char === '\\') char = '\\\\';
 
 
             //  Guess cursor position
