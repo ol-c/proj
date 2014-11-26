@@ -3,80 +3,36 @@
 
     $.fn.render.hashmap = function (item, after, parent_source, options) {
         var reference = item.reference;
+
+        var tag = hash_reference(reference);
+        if (tagged_node(tag)) {
+            console.log(tagged_node(tag));
+            return;
+        }
+        var node = new node_generator(parent_source);
+        tag_node(node, tag);
+
         var rendered_fields = {};
         var rendered;
         var content_body = $('<div>');
 
         var command_line = $('<span>');
-        var node = new node_generator(parent_source);
         var self = node.container();
         node.render(render_generic);
 
-
         if (parent_source) {
-/*
-            var source = "if (type(this.render) == 'function' ) return this.render();\n" +
-                         "else if (type(this.render) == 'reference') return resolve(this.render);\n" +
-                         "else return undefined;";
-
-            var renderable;
-            var render_data;
-            function render_specific() {
-                evaluate_script(item.reference, source, function (result) {
-                    //  TODO: clean up memory leak
-                    self.empty();
-                    var renderable = $(document.createDocumentFragment());
-                    if (render_data) {
-                        //  this  method should clean up memory leak
-                        render_data.unrender();
-                    }
-                    
-                    if (result.type == 'error') {
-                        console.log(result)
-                        render_data = renderable.render(result);
-                    }
-                    else if (result.value.type == 'undefined')  {
-                        renderable.text('object'); 
-                    }
-                    else if ( result.value.type == 'reference') {
-                        render_data = renderable.render({
-                            type : 'loader',
-                            reference : result.value.data
-                        });
-                    }
-                    else if ( result.value.type == 'string') {
-                        renderable.append(result.value.data);
-                    }
-                    else {
-                        renderable.render(result.value);
-                    }
-                    self.append(renderable);
-                });
-            }
-
-            render_specific();
-
-            //  watch render field and rerender when needed
-            watch([
-                reference[0], {
-                    type : 'reference',
-                    name : 'render'
-                }],
-                throttle(1000, render_specific)
-            );
-
-
-        */
             this.append(self);
             var placeholder = 'item';
             if (options && options.placeholder) placeholder = options.placeholder;
             self.append(placeholder);
         }
         else {
-            //  don't need original element, just show root of server tree
-            //  show UI tree
+            //  don't need original element, just show root
             node.show();
         }
+        
+        watch(reference, watch_fn);
+
         function render_generic() {
             rendered = true;
             var container = $("<div>");
@@ -125,7 +81,6 @@
             return container;
         }
         
-        watch(reference, watch_fn);
 
         function render_field(key, reference, after) {
             var field = $('<span>').text('"' + key.replace('"', '\\"') + '"');

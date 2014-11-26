@@ -1,6 +1,16 @@
 var node_generator;
+var tag_node;
+var tagged_node;
 
 (function () {
+    var tags = {};
+    tag_node = function(node, tag) {
+        tags[tag] = node;
+    }
+    tagged_node = function(tag) {
+        return tags[tag];
+    }
+
     node_generator = function (parent_source) {
         var layout;
         if (parent_source) {
@@ -57,6 +67,7 @@ var node_generator;
         var collapsed = true;
 
         var rendered = null;
+
 
         function show_generic_view() {
             source_node.visible = true;
@@ -167,17 +178,22 @@ var node_generator;
         var source_node =  {
             x : 0,
             y : 0,
+            visible : true,
+            parent_visible : true,
             opacity : 1,
             id : (Math.random() + '').slice(2),
             source_element : self,
             rendered_version : false,
             children : [],
+            parents : [],
+            main_parent : parent_source,
             layout : layout,
             container : container
         };
 
         if (parent_source) {
             parent_source.children.push(source_node);
+            source_node.parents.push(parent_source);
         }
         else {
             source_node.root = true;

@@ -67,8 +67,8 @@ X     specify a dsl when create it
 X     allow people to edit the DSL with syntax highlighting
 X normalize interface for editor saving (so strings and clients can use it now)
 X     current tools are good enough since clients and strings have different enough cases
-  move jumping between nodes and parents into layout module
   nodes rendering, layering, and hiding as they should.
+  move jumping between nodes and parents into layout module
   different arcs for references to already rendered versions
   resource utilization monitoring
   history

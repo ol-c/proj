@@ -201,7 +201,7 @@ function create_layout() {
                 }
                 //  TODO: apply these styles to the div inside of this foreign object
                 //  Want this inside of svg document so we can respect layering
-                var s = extra_styles + t + 'display:' + (d.visible ? "inline-block" : "none")  + '; opacity:' + d.opacity + ';';
+                var s = extra_styles + t + 'display:' + (d.visible && d.parent_visible ? "inline-block" : "none")  + '; opacity:' + d.opacity + ';';
                 $('#'+ d.id).attr('style', s);
                 return '';//extra_styles + t;
             });
@@ -342,10 +342,13 @@ function create_layout() {
     function recommended_offset(link) {
 
         var siblings = [];
+        //  if source is not the main parent, don't offset
+        if (link.source !== link.target.main_parent) return {dx : 0, dy : 0};
 
         for (var i=0; i<link.source.children.length; i++) {
             var sibling = link.source.children[i];
-            if (sibling.source_visible) {
+            //  source node must be visible and source node must be the main_parent of the sibling
+            if (sibling.source_visible && sibling.main_parent == link.source) {
                 siblings.push(sibling);
             }
         }
