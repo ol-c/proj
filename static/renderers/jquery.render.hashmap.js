@@ -4,13 +4,7 @@
     $.fn.render.hashmap = function (item, after, parent_source, options) {
         var reference = item.reference;
 
-        var tag = hash_reference(reference);
-        if (tagged_node(tag)) {
-            console.log(tagged_node(tag));
-            return;
-        }
-        var node = new node_generator(parent_source);
-        tag_node(node, tag);
+        var node = new node_generator(parent_source, hash_reference(reference));
 
         var rendered_fields = {};
         var rendered;
@@ -18,6 +12,7 @@
 
         var command_line = $('<span>');
         var self = node.container();
+
         node.render(render_generic);
 
         if (parent_source) {

@@ -67,6 +67,13 @@ function create_layout() {
         initialize_links_and_nodes();
     };
 
+    var visual_links = [];
+
+    layout.add_visual_link = function (link) {
+        console.log('added visual link', link)
+        visual_links.push(link);
+    }
+
     layout.restart = restart_layout;
     layout.resume = function () {
         force_layout.resume();

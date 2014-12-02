@@ -1,17 +1,10 @@
 var node_generator;
-var tag_node;
-var tagged_node;
 
 (function () {
     var tags = {};
-    tag_node = function(node, tag) {
-        tags[tag] = node;
-    }
-    tagged_node = function(tag) {
-        return tags[tag];
-    }
+    //  tag is used so we don't rerender the same node in multiple places
+    node_generator = function (parent_source, tag) {
 
-    node_generator = function (parent_source) {
         var layout;
         if (parent_source) {
             layout = parent_source.layout;
@@ -20,6 +13,25 @@ var tagged_node;
             layout = create_layout();
         }
         var container = $('<div>');
+        var self = container;
+
+        var source_node =  {
+            x : 0,
+            y : 0,
+            scale : 1,
+            visible : true,
+            parent_visible : true,
+            opacity : 1,
+            id : (Math.random() + '').slice(2),
+            source_element : self,
+            rendered_version : false,
+            children : [],
+            parents : [],
+            main_parent : parent_source,
+            layout : layout,
+            container : container
+        };
+
         container.css({
             verticalAlign : 'top'
         });
@@ -35,9 +47,7 @@ var tagged_node;
         this.node = function () {
             return source_node;
         }
-
-        var self = container;
-
+        
         //  selectable container
         self.selectable();
         var highlighter = function () {
@@ -86,6 +96,17 @@ var tagged_node;
         }
 
         function render_generic_view() {
+            if (tags[tag]) {
+                //  if tag already has a rendered view, add a visual link
+                layout.add_visual_link({source : parent_source, target : tags[tag], rendered_element : self});
+                //   TODO: if source_node container hidden, destroy all visual links
+                //   TODO: if source_node container shown, automaticall create all visual links instead of manually opening and closing
+                //   TODO: turn visual links into graph links and graph links into visual links
+                generic_view = true;
+                return;
+            }
+            tags[tag] = source_node;
+
             source_node.visible = true;
             rendered = renderer();
             generic_view = gen.generate_node(rendered);
@@ -174,22 +195,6 @@ var tagged_node;
                 if (unhighlighter) unhighlighter();
             }
         }
-
-        var source_node =  {
-            x : 0,
-            y : 0,
-            visible : true,
-            parent_visible : true,
-            opacity : 1,
-            id : (Math.random() + '').slice(2),
-            source_element : self,
-            rendered_version : false,
-            children : [],
-            parents : [],
-            main_parent : parent_source,
-            layout : layout,
-            container : container
-        };
 
         if (parent_source) {
             parent_source.children.push(source_node);
