@@ -1,6 +1,6 @@
 $.fn.render.function = function (item, after, parent) {
-    var node = new node_generator(parent);
     var reference = item.reference;
+    var node = new node_generator(parent, hash_reference(reference));
 
     node.container().css({
         verticalAlign : 'top'

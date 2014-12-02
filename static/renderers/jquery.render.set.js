@@ -4,7 +4,7 @@
     $.fn.render.set = function (item, after, parent_source) {
 
         var command_line = $('<span>');
-        var node = new node_generator(parent_source);
+        var node = new node_generator(parent_source, hash_reference(item.reference));
         this.append(node.container());
 
         var self = node.container();

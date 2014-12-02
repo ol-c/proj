@@ -1,6 +1,6 @@
 $.fn.render.ui = function (item, after, parent_source) {
     var reference = item.reference;
-    var parent_node = new node_generator(parent_source);
+    var parent_node = new node_generator(parent_source, hash_reference(reference));
     var self = parent_node.container();
     parent_node.render(render_container);
 
@@ -181,7 +181,7 @@ $.fn.render.ui = function (item, after, parent_source) {
             container.on('mousedown', start_drag);
             surface.append(container);
             var parent_offset = self.parent().offset();
-            var node = new node_generator(parent_source);
+            var node = new node_generator(parent_source, hash_reference(reference));
             node.render(function () {
                 var rendered_node = $('<div>');
                 rendered_node.render({

@@ -5,7 +5,7 @@
         var reference = item.reference;
         var container = $("<div>");
 
-        var node = new node_generator(parent_source);
+        var node = new node_generator(parent_source, hash_reference(reference));
         this.append(node.container());
 
         var self = node.container();

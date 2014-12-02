@@ -23,7 +23,7 @@ $.fn.render.reference = function (item, after, parent_source)  {
             }
             else {
 
-                var node = new node_generator(parent_source);
+                var node = new node_generator(parent_source, hash_reference(reference));
 
                 insert.render(item, after, node.node());
                 node.render(function () {

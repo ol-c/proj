@@ -2,9 +2,9 @@ $.fn.render.promise = function (item, after, parent_source)  {
 
     var self = this;
     this.append(self);
-    var node = new node_generator(parent_source);
 
     var reference = item.reference;
+    var node = new node_generator(parent_source, hash_reference(reference));
 
 
     var functions = $('<table>');

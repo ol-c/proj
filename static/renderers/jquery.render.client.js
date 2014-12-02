@@ -5,7 +5,7 @@ $.fn.render.client = function (item, after, parent_source)  {
 
     var reference = item.reference;
 
-    var node = new node_generator(parent_source);
+    var node = new node_generator(parent_source, hash_reference(reference));
 
     var clients = $.fn.render.client.clients;
 
